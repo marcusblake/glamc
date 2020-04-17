@@ -4,22 +4,18 @@ int my_var;
 struct Point {
     int x;
     int y;
-    string me;
-    
+
     func getSum() int {
         return x + y;
     }
 }
 
 func main() int {
-    x := 2;
-    y := [2,3,4,5];
+   id := 2;
+   arr := [1,2,3,4,5];
+   Point x = Point{x: 1};
 
-    for (var in y) {
-        print(var);
-    }
-
-    Point my_point;
-
-    my_point.getSum();
+   for (var in arr) {
+       print(var);
+   }
 }

@@ -39,6 +39,7 @@ rule token = parse
 | "in"     { IN }
 | "return" { RETURN }
 | "int"    { INT }
+| "string" { STRING }
 | "float"  { FLOAT }
 | "char"   { CHAR }
 | "bool"   { BOOL }
@@ -56,7 +57,7 @@ and comment = parse
   "*/" { token lexbuf }
 | _    { comment lexbuf }
 
-{
+(* {
    let to_string = function
     | LPAREN -> Printf.sprintf "LPAREN"
     | RPAREN -> Printf.sprintf "RPAREN"
@@ -107,4 +108,4 @@ and comment = parse
     | x -> loop (to_string x :: prog) (token lexbuf)) in
   let prog = String.concat " " (loop [] (token lexbuf)) in
   print_endline prog
-}
+} *)

@@ -48,7 +48,7 @@ func_decl:
   FUNC ID LPAREN vardecl_parms RPAREN type_ LBRACE stmt_list RBRACE
   {
     {
-      name = $2;
+      func_name = $2;
       parameters = $4;
       return_type = $6;
       body = $8
@@ -59,7 +59,7 @@ struct_decl:
   STRUCT ID LBRACE vardecls_semi func_decls RBRACE
   {
     {
-      name = $2;
+      struct_name = $2;
       fields = $4;
       methods = $5
     }
@@ -138,6 +138,7 @@ expr:
   | expr AND expr                        { Binop($1, And, $3) } /* true && false */
   | expr OR expr                         { Binop($1, Or, $3) } /* true || false */
   | ID ASSIGN expr                       { Assign($1, $3) } /* x = 2 */
+  | ID LBRACKET expr RBRACKET            { SeqAccess($1, $3) }
   | ID LPAREN expr_params RPAREN         { Call($1, $3) }
   | ID DOT ID LPAREN expr_params RPAREN  { StructCall($1, $3, $5) } /* point.toString() */
   | ID DOT ID                            { StructAccess($1, $3) }

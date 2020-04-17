@@ -21,6 +21,7 @@ and expr =
   | Binop of expr * op * expr
   | Assign of string * expr
   | Call of string * expr list
+  | SeqAccess of string * expr
   | StructCall of string * string * expr list (* name of identifier along with function call and list of arguments *)
   | StructAccess of string * string (* name of identifier and name of variable being accessed *)
 
@@ -28,7 +29,7 @@ and expr =
 type stmt =
   Block of stmt list
   | Expr of expr
-  | Declare of bind
+  (* | Declare of bind *)
   | Explicit of bind * expr
   | Define of string * expr (* Will be used for := *)
   | If of expr * stmt * stmt
@@ -38,7 +39,7 @@ type stmt =
 
 (* Define the type of a funcion *)
 type func_def = {
-  name: string;
+  func_name: string;
   parameters: bind list;
   return_type: ty;
   body: stmt list;
@@ -57,7 +58,7 @@ type func_def = {
   }
 *)
 type struct_def = {
-  name: string;
+  struct_name: string;
   fields: bind list;
   methods: func_def list;
 }
@@ -81,14 +82,29 @@ let third = function
 let string_of_op = function
     Add -> "+"
   | Sub -> "-"
+  | Mult -> "*"
+  | Div -> "/"
   | Equal -> "=="
   | Neq -> "!="
-  | Less -> "<"
   | And -> "&&"
   | Or -> "||"
+  | Less -> "<"
+  | Leq -> "<="
+  | Greater -> ">"
+  | Geq -> ">="
+
+let rec string_of_typ = function
+    Int -> "int"
+  | Bool -> "bool"
+  | Float -> "float"
+  | Char -> "char"
+  | String -> "string"
+  | Struct d -> Printf.sprintf "struct %s" d
+  | List d -> Printf.sprintf "list<%s>" (string_of_typ d)
+
 
 let rec string_of_expr = function
-    Literal(l) -> string_of_int l
+    IntLit(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | Id(s) -> s
@@ -97,6 +113,16 @@ let rec string_of_expr = function
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | FloatLit(l) -> string_of_float l
+  | CharLit(l) -> Char.escaped l
+  | StringLit(l) -> l
+  | StructLit(t, d) -> t ^ "{" ^ String.concat ", " (List.map (fun (s, e) -> s ^ ": " ^ string_of_expr e) d) ^ "}"
+  | Seq(s) -> "[" ^ String.concat ", " (List.map string_of_expr s) ^ "]"
+  | SeqAccess(s,e) -> s ^ "[" ^ string_of_expr e ^ "]"
+  | StructCall(st, fn, ps) -> st ^ "." ^ fn ^ "(" ^ String.concat ", " (List.map string_of_expr ps) ^ ")"
+  | StructAccess(st, fld) -> st ^ "." ^ fld
+
+let string_of_bind (t, id) = string_of_typ t ^ " " ^ id
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -105,25 +131,31 @@ let rec string_of_stmt = function
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
   | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
                       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
+  | Define(v, e) -> v ^ " := " ^ string_of_expr e ^ ";\n"
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  | Explicit(b, e) -> string_of_bind b ^ " = " ^ string_of_expr e
+  | Iterate(v, e, s) -> "for (" ^ v ^ " in " ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
-let string_of_typ = function
-    Int -> "int"
-  | Bool -> "bool"
+(* let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n" *)
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
-let string_of_fdecl fdecl =
-  string_of_typ fdecl.rtyp ^ " " ^
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
-  ")\n{\n" ^
-  String.concat "" (List.map string_of_vdecl fdecl.locals) ^
-  String.concat "" (List.map string_of_stmt fdecl.body) ^
-  "}\n"
+let string_of_fdecl func =
+  "func " ^ func.func_name ^ "(" ^ 
+  String.concat ", " (List.map string_of_bind func.parameters) ^ ") " ^
+  string_of_typ func.return_type ^ " {\n" ^
+  String.concat "" (List.map string_of_stmt func.body) ^
+  "\n}\n"
 
-let string_of_program (vars, funcs) =
+let string_of_struct struct_type = 
+  "struct " ^ struct_type.struct_name ^ "{\n" ^
+  String.concat ";\n" (List.map string_of_bind struct_type.fields) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl struct_type.methods) ^
+  "\n}\n"
+
+let string_of_program (vars, funcs, structs) =
   "\n\nParsed program: \n\n" ^
-  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
-  String.concat "\n" (List.map string_of_fdecl funcs)
+  String.concat ";\n" (List.map string_of_bind vars) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl funcs) ^ "\n" ^
+  String.concat "\n" (List.map string_of_struct structs)
 
 
