@@ -12,10 +12,15 @@ struct Point {
 
 func main() int {
    id := 2;
-   arr := [1,2,3,4,5];
-   Point x = Point{x: 1};
+   list<int> arr = [1,2,3,4,5];
+   Point my_point = Point{x: 1};
+
+   global = my_point.x;
 
    for (var in arr) {
        print(var);
    }
+
+   list<list<Point>> my_list = [[Point{x:1, y:2}],[Point{}]];
+   return 0;
 }

@@ -99,7 +99,7 @@ let rec string_of_typ = function
   | Float -> "float"
   | Char -> "char"
   | String -> "string"
-  | Struct d -> Printf.sprintf "struct %s" d
+  | Struct d -> d
   | List d -> Printf.sprintf "list<%s>" (string_of_typ d)
 
 
@@ -133,7 +133,7 @@ let rec string_of_stmt = function
                       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
   | Define(v, e) -> v ^ " := " ^ string_of_expr e ^ ";\n"
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | Explicit(b, e) -> string_of_bind b ^ " = " ^ string_of_expr e
+  | Explicit(b, e) -> string_of_bind b ^ " = " ^ string_of_expr e ^ "\n"
   | Iterate(v, e, s) -> "for (" ^ v ^ " in " ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
 (* let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n" *)
@@ -148,13 +148,13 @@ let string_of_fdecl func =
 
 let string_of_struct struct_type = 
   "struct " ^ struct_type.struct_name ^ "{\n" ^
-  String.concat ";\n" (List.map string_of_bind struct_type.fields) ^ "\n" ^
+  String.concat ";\n" (List.map string_of_bind struct_type.fields) ^ ";\n" ^
   String.concat "\n" (List.map string_of_fdecl struct_type.methods) ^
   "\n}\n"
 
 let string_of_program (vars, funcs, structs) =
   "\n\nParsed program: \n\n" ^
-  String.concat ";\n" (List.map string_of_bind vars) ^ "\n" ^
+  String.concat ";\n" (List.map string_of_bind vars) ^ ";\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs) ^ "\n" ^
   String.concat "\n" (List.map string_of_struct structs)
 
