@@ -12,19 +12,30 @@ rule token = parse
 | ')'      { RPAREN }
 | '{'      { LBRACE }
 | '}'      { RBRACE }
+| '['      { LBRACKET }
+| ']'      { RBRACKET }
 | ';'      { SEMI }
+| ':'      { COLON }
 | ','      { COMMA }
+| '.'      { DOT }
 | '+'      { PLUS }
 | '-'      { MINUS }
+| '*'      { MULT }
+| '/'      { DIV }
 | '='      { ASSIGN }
+| ":="     { DEFINE }
 | "=="     { EQ }
 | "!="     { NEQ }
 | '<'      { LT }
+| '>'      { GT }
+| "<="     { LTEQ }
+| ">="     { GTEQ }
 | "&&"     { AND }
 | "||"     { OR }
 | "if"     { IF }
 | "else"   { ELSE }
 | "while"  { WHILE }
+| "for"    { FOR }
 | "in"     { IN }
 | "return" { RETURN }
 | "int"    { INT }
@@ -35,6 +46,7 @@ rule token = parse
 | "false"  { BLIT(false) }
 | "list"   { LIST }
 | "struct" { STRUCT }
+| "func"   { FUNC }
 | digit+ as lem  { LITERAL(int_of_string lem) }
 | letter (digit | letter | '_')* as lem { ID(lem) }
 | eof { EOF }
