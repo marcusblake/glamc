@@ -133,7 +133,7 @@ let rec string_of_stmt = function
                       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
   | Define(v, e) -> v ^ " := " ^ string_of_expr e ^ ";\n"
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | Explicit(b, e) -> string_of_bind b ^ " = " ^ string_of_expr e ^ "\n"
+  | Explicit(b, e) -> string_of_bind b ^ " = " ^ string_of_expr e ^ ";\n"
   | Iterate(v, e, s) -> "for (" ^ v ^ " in " ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
 (* let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n" *)
