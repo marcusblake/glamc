@@ -1,0 +1,36 @@
+int global;
+int my_var;
+
+struct Point {
+    int x;
+    int y;
+
+    func getSum() int {
+        return x + y;
+    }
+
+    func toString() string {
+        return int_to_string(x) + " " + int_to_string(y);
+    }
+}
+
+func main() int {
+   id := 2.22;
+   list<int> arr = [1,0.2e-2,3.0e2,4,5];
+   Point my_point = Point{x: 1};
+
+   global = my_point.x;
+
+   for (var in arr) {
+       print(var);
+   }
+
+   if ("hello" == "world") {
+       println("true");
+   } else {
+       println("false");
+   }
+
+   list<list<Point>> my_list = [[Point{x:1, y:2}],[Point{}]];
+   return 0;
+}
