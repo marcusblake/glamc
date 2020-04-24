@@ -24,7 +24,9 @@ and expr =
   | SeqAccess of string * expr
   | StructCall of string * string * expr list (* name of identifier along with function call and list of arguments *)
   | StructAccess of string * string (* name of identifier and name of variable being accessed *)
+  | StructAssign of string * string * expr
 
+  
 (* A statement is something that controls how the program is executed *)
 type stmt =
   Block of stmt list
@@ -32,7 +34,8 @@ type stmt =
   (* | Declare of bind *)
   | Explicit of bind * expr
   | Define of string * expr (* Will be used for := *)
-  | If of expr * stmt * stmt
+  | If of expr * stmt
+  | IfElse of expr * stmt * stmt
   | Iterate of string * expr * stmt
   | While of expr * stmt
   | Return of expr
@@ -121,6 +124,7 @@ let rec string_of_expr = function
   | SeqAccess(s,e) -> s ^ "[" ^ string_of_expr e ^ "]"
   | StructCall(st, fn, ps) -> st ^ "." ^ fn ^ "(" ^ String.concat ", " (List.map string_of_expr ps) ^ ")"
   | StructAccess(st, fld) -> st ^ "." ^ fld
+  | StructAssign(st, fld, e) -> st ^ "." ^ fld ^ " = " ^(string_of_expr e)
 
 let string_of_bind (t, id) = string_of_typ t ^ " " ^ id
 
@@ -129,7 +133,8 @@ let rec string_of_stmt = function
     "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
   | Expr(expr) -> string_of_expr expr ^ ";\n"
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
-  | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
+  | If(e, s1) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s1
+  | IfElse(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
                       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
   | Define(v, e) -> v ^ " := " ^ string_of_expr e ^ ";\n"
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s

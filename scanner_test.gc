@@ -20,7 +20,7 @@ func main() int {
    Point my_point = Point{x: 1};
 
    global = my_point.x;
-
+   my_point.x = 2 * 3 + 16 - 4;
    for (var in arr) {
        print(var);
    }
@@ -28,7 +28,9 @@ func main() int {
    if ("hello" == "world") {
        println("true");
    } else {
-       println("false");
+       if (id >= int_to_float(2)) {
+           println("greater than two");
+       }
    }
 
    list<list<Point>> my_list = [[Point{x:1, y:2}],[Point{}]];
