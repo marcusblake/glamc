@@ -1,8 +1,6 @@
 # glamc
 
-Welcome to the GlamC github bois
-Yeet
-
+Welcome to the GlamC github
 
 Makefile usage:
 
