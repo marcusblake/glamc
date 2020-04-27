@@ -24,7 +24,9 @@ and expr =
   | SeqAccess of string * expr
   | StructCall of string * string * expr list (* name of identifier along with function call and list of arguments *)
   | StructAccess of string * string (* name of identifier and name of variable being accessed *)
+  | StructAssign of string * string * expr
 
+  
 (* A statement is something that controls how the program is executed *)
 type stmt =
   Block of stmt list
@@ -32,7 +34,8 @@ type stmt =
   (* | Declare of bind *)
   | Explicit of bind * expr
   | Define of string * expr (* Will be used for := *)
-  | If of expr * stmt * stmt
+  | If of expr * stmt
+  | IfElse of expr * stmt * stmt
   | Iterate of string * expr * stmt
   | While of expr * stmt
   | Return of expr
@@ -121,6 +124,7 @@ let rec string_of_expr = function
   | SeqAccess(s,e) -> s ^ "[" ^ string_of_expr e ^ "]"
   | StructCall(st, fn, ps) -> st ^ "." ^ fn ^ "(" ^ String.concat ", " (List.map string_of_expr ps) ^ ")"
   | StructAccess(st, fld) -> st ^ "." ^ fld
+  | StructAssign(st, fld, e) -> st ^ "." ^ fld ^ " = " ^(string_of_expr e)
 
 let string_of_bind (t, id) = string_of_typ t ^ " " ^ id
 
@@ -129,7 +133,8 @@ let rec string_of_stmt = function
     "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
   | Expr(expr) -> string_of_expr expr ^ ";\n"
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
-  | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
+  | If(e, s1) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s1
+  | IfElse(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
                       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
   | Define(v, e) -> v ^ " := " ^ string_of_expr e ^ ";\n"
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
@@ -157,5 +162,55 @@ let string_of_program (vars, funcs, structs) =
   String.concat ";\n" (List.map string_of_bind vars) ^ ";\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs) ^ "\n" ^
   String.concat "\n" (List.map string_of_struct structs)
+  
+let check_func  (context : (ty * string) list) (f : func_def) : context = 
+  let parameters : (ty * string) list = f.parameters in
+  let local_context = parameters @ context in
+  let body : stmt list = f.body in
+  let rec iterateStatements (context : (ty * string) list) (statements: stmt list)  : bool = 
+    match statements with
+    | [] -> context
+    | head :: tail
+    match head with
+      | Return e -> 
+         check_expr e = f.return_type
+      | If (expr, stmt) ->
+        begin
+         let expr_type = check_expr context expr in
+         if expr_type <> Bool then false 
+         else check_stmt context stmt
+        end
+      | Block lst ->
+        iterateStatements context lst 
+      | Expr expr ->
+        check_expr context expr
+      | Explicit ((ty, name),expr)->
+        let expr_type = check_expr expr in
+        if expr_type <> ty then false
+        else iterateStatements ((ty,name) :: context) tail
+      | Define (name, expr) ->
+        let expr_type = check_expr expr in
+        iterateStatements ((ty,name) :: context) tail
+      | IfElse (expr, stmt1, stmt2) ->
+        begin
+         let expr_type = check_expr context expr in
+         if expr_type <> Bool then false 
+         else check_stmt context stmt1 && check_stmt context stmt2
+        end
+
+      | Iterate (x, e, stmt) ->
+        let expr_type = check_expr context e in
+        begin
+          match expr_type with
+          | List _ -> check_stmt stmt
+          | _ -> false
+        end
+      | While (e, stmt) ->
+         let expr_type = check_expr context expr in
+         if expr_type <> Bool then false 
+         else check_stmt context stmt1 && check_stmt context stmt2
+  in 
+    iterateStatements body
+;;
 
 

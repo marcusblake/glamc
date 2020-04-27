@@ -142,19 +142,31 @@ expr:
   | ID LPAREN expr_params RPAREN         { Call($1, $3) }
   | ID DOT ID LPAREN expr_params RPAREN  { StructCall($1, $3, $5) } /* point.toString() */
   | ID DOT ID                            { StructAccess($1, $3) }
+  | ID DOT ID ASSIGN expr                { StructAssign($1, $3, $5) }
 
 
 stmt_list:
   /* nothing */     { [] }
   | stmt stmt_list  { $1 :: $2 }
 
+block:
+  LBRACE stmt_list RBRACE { Block $2 }
+
+
+if_stmt:
+  | IF LPAREN expr RPAREN block             { If($3,$5) }
+
+ifelse_stmt:
+   IF LPAREN expr RPAREN block ELSE block  { IfElse($3,$5,$7) } /* if (d > 3) { } else { } */
+
 stmt:
     expr SEMI                             { Expr $1 } /* For any standalone expression */
-  | LBRACE stmt_list RBRACE               { Block $2 } /*  */
+  | block                                 { $1 } /*  */
   | vardecl ASSIGN expr SEMI              { Explicit($1, $3) } /* int x = 2; */
   | ID DEFINE  expr SEMI                  { Define($1, $3) } /* id := 2 */
   | RETURN expr SEMI                      { Return $2 } /* return 2; */
-  | FOR LPAREN ID IN expr RPAREN stmt     { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
-  | WHILE LPAREN expr RPAREN stmt         { While($3, $5) }
-  | IF LPAREN expr RPAREN stmt ELSE stmt  { If($3,$5,$7) } /* if (d > 3) { } else { } */
+  | FOR LPAREN ID IN expr RPAREN block     { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
+  | WHILE LPAREN expr RPAREN block        { While($3, $5) }
+  | if_stmt                               { $1 }
+  | ifelse_stmt                           { $1 }
 
