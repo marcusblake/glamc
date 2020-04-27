@@ -162,5 +162,55 @@ let string_of_program (vars, funcs, structs) =
   String.concat ";\n" (List.map string_of_bind vars) ^ ";\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs) ^ "\n" ^
   String.concat "\n" (List.map string_of_struct structs)
+  
+let check_func  (context : (ty * string) list) (f : func_def) : context = 
+  let parameters : (ty * string) list = f.parameters in
+  let local_context = parameters @ context in
+  let body : stmt list = f.body in
+  let rec iterateStatements (context : (ty * string) list) (statements: stmt list)  : bool = 
+    match statements with
+    | [] -> context
+    | head :: tail
+    match head with
+      | Return e -> 
+         check_expr e = f.return_type
+      | If (expr, stmt) ->
+        begin
+         let expr_type = check_expr context expr in
+         if expr_type <> Bool then false 
+         else check_stmt context stmt
+        end
+      | Block lst ->
+        iterateStatements context lst 
+      | Expr expr ->
+        check_expr context expr
+      | Explicit ((ty, name),expr)->
+        let expr_type = check_expr expr in
+        if expr_type <> ty then false
+        else iterateStatements ((ty,name) :: context) tail
+      | Define (name, expr) ->
+        let expr_type = check_expr expr in
+        iterateStatements ((ty,name) :: context) tail
+      | IfElse (expr, stmt1, stmt2) ->
+        begin
+         let expr_type = check_expr context expr in
+         if expr_type <> Bool then false 
+         else check_stmt context stmt1 && check_stmt context stmt2
+        end
+
+      | Iterate (x, e, stmt) ->
+        let expr_type = check_expr context e in
+        begin
+          match expr_type with
+          | List _ -> check_stmt stmt
+          | _ -> false
+        end
+      | While (e, stmt) ->
+         let expr_type = check_expr context expr in
+         if expr_type <> Bool then false 
+         else check_stmt context stmt1 && check_stmt context stmt2
+  in 
+    iterateStatements body
+;;
 
 
