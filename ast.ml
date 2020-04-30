@@ -1,9 +1,15 @@
 (* The following defines the following operations +, -, *, / , && , ||, ==, !=, <, >, <=, >= *)
 type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq | Geq
 
-
-(* TODO: How to define the type of a struct *)
-type ty = Int | Bool | Float | Char | String | Struct of string | List of ty
+type ty =
+   | Int
+   | Bool
+   | Float
+   | Char
+   | String
+   | Struct of (ty * string) list
+   | List of ty 
+   | Arrow of ty list * ty
 
 type bind = ty * string
 
@@ -48,18 +54,17 @@ type func_def = {
   body: stmt list;
 }
 
+type func_def = {
+  func_name: string;
+  parameters: bind list;
+  return_type: ty;
+  body: stmt list;
+}
+
+let type_signature (func_def: func_def)  = 
+  Arrow(List.map fst func_def.parameters, func_def.return_type)
+  
 (* A struct has a name, data fields, and functions *)
-
-(* 
-  struct Point {
-    int x;
-    int y;
-
-    func getSum() int {
-      return x + y;
-    }
-  }
-*)
 type struct_def = {
   struct_name: string;
   fields: bind list;
@@ -69,7 +74,6 @@ type struct_def = {
 (* Our program consists of global variables, funtion definitions, and struct definitions *)
 type program = bind list * func_def list * struct_def list
 
-
 let fir = function
   | (a,_,_) -> a
 
@@ -78,8 +82,6 @@ let sec = function
 
 let third = function
   | (_,_,a) -> a
-
-
 
 (* Pretty-printing functions *)
 let string_of_op = function
@@ -163,6 +165,144 @@ let string_of_program (vars, funcs, structs) =
   String.concat "\n" (List.map string_of_fdecl funcs) ^ "\n" ^
   String.concat "\n" (List.map string_of_struct structs)
   
+let rec lookup_in_context context str = 
+  match context with
+  | (t, name) :: rest-> 
+      if name = str then t else lookup_in_context rest str
+  | [] -> raise Not_found
+  
+let check_expr (context : (ty * string) list) (expr: expr) : ty = 
+  match expr with
+  | IntLit _ -> Int
+  | BoolLit _ -> Bool
+  | FloatLit _ -> Float
+  | CharLit _ -> Char
+  | StringLit _ -> string
+  | Seq lst -> 
+    begin
+      match List.rev lst with
+      | last_expr :: xs -> check_expr context last_expr
+      | _ -> raise Not_found
+    end
+  | Id name -> lookup_in_context context name
+  | Binop (lhs, op, rhs) ->
+    begin
+      match op with
+        | Add 
+        | Sub
+        | Mult
+        | Div -> 
+          begin
+             match (check_expr lhs, check_expr rhs) with
+             | (Int, Int) -> Int
+             | _ -> raise Not_found
+          end
+        | And
+        | Or -> 
+          begin
+             match (check_expr lhs, check_expr rhs) with
+             | (Bool, Bool) -> Bool
+             | _ -> raise Not_found
+          end
+        | Equal ->
+          begin
+             match (check_expr lhs, check_expr rhs) with
+             | (x, y) -> if x = y then x else raise Not_found
+             | _ -> raise Not_found
+          end
+        | Neq | Less | Greater | Leq | Geq -> 
+          begin
+             match (check_expr lhs, check_expr rhs) with
+             | (Float, Float) -> Float
+             | _ -> raise Not_found
+          end
+    end
+  
+  | Assign (name, e) -> 
+    check_expr context e
+  | Call (name, arguments) -> 
+    begin
+      let funcType = lookup_in_context context name
+      match funcType with
+          | Arrow (param_types, return_type) ->
+              let rec helper arguments param_types = 
+                match arguments, param_types with
+                | arg :: args, ptype :: ptypes ->
+                  let arg_type = check_expr context arg in
+                  if arg_type = ptype 
+                  then helper args ptypes
+                  else raise Not_found
+                | [], [] -> return_type
+              in
+              helper arguments param_types
+          | _ -> raise Not_found
+    end
+   of string * expr list
+  | SeqAccess (var_name, inside_bracket) -> 
+    begin
+        match (lookup_in_context context var_name, check_expr inside_bracket) with
+        | (List ty, Int) -> ty
+        | _ -> raise Not_found  
+    end
+  | StructCall (var_name, method_name, args) -> 
+    begin
+      let struct_type = lookup_in_context context var_name in
+      match struct_type with
+      | StructType struct_context ->
+          let method_type = lookup_in_context struct_context method_name in
+          begin
+          match method_type with
+          | Arrow (param_types, return_type) ->
+              let rec helper arguments param_types = 
+                match arguments, param_types with
+                | arg :: args, ptype :: ptypes ->
+                  let arg_type = check_expr context arg in
+                  if arg_type = ptype 
+                  then helper args ptypes
+                  else raise Not_found
+                | [], [] -> return_type
+              in
+              helper arguments param_types
+          | _ -> raise Not_found
+          end
+      | _ -> raise Not_found
+    end
+  
+  
+| StructAccess (var_name, instance_var) -> 
+    begin
+      let struct_type = lookup_in_context context var_name in
+      match struct_type with
+      | StructType struct_context ->
+        lookup_in_context struct_context instance_var
+    end
+  | StructAssign (var_name, instance_var, expr) -> 
+    begin
+      let struct_type = lookup_in_context context var_name in
+      match struct_type with
+      | StructType struct_context ->
+        let expected_type = lookup_in_context struct_context instance_var in
+        let actual_type = check_expr context expr in
+        if expected_type = actual_type 
+        then actual_type 
+        else raise Not_found
+    end
+  (* of string * string * expr *)
+  | StructLit (struct_name, values) ->
+    let struct_type = lookup_in_context context struct_name in
+    match struct_type with
+    | Struct (struct_context) ->
+    let rec helper values = 
+      match values with
+        | [] ->   Struct (struct_context)
+        | (name, e) :: vs ->    
+          let expected = lookup_in_context struct_context name in
+          let actual = check_expr context e in
+          if expected = actual then helper vs
+          else raise Not_found
+    in
+    helper values
+  
 let check_func  (context : (ty * string) list) (f : func_def) : context = 
   let parameters : (ty * string) list = f.parameters in
   let local_context = parameters @ context in
@@ -212,5 +352,60 @@ let check_func  (context : (ty * string) list) (f : func_def) : context =
   in 
     iterateStatements body
 ;;
+
+let bind_of_func_def f =
+  let name = f.func_name in
+  let typ = type_signature f in
+  (typ, name)
+  ;;
+
+let check_struct_def (context: (ty * string) list) (sd: struct_def) : context = 
+  let struct_name = sd.struct_name in
+  let fields = sd.fields in
+  let methods = sd.methods in
+  let method_signatures = List.map bind_of_func_def methods in
+  let context = fields @ method_signatures @ context in
+  let rec helper methods = match methods with
+    | [] -> Struct (fields @ method_signatures)
+    | func_def :: rest -> 
+      check_func_def context func_def;
+      helper rest
+  in
+    helper methods
+
+;;
+
+let bind_of_struct_def = 
+  let struct_name = sd.struct_name in
+  let fields = sd.fields in
+  let methods = sd.methods in
+  let method_signatures = List.map bind_of_func_def methods in
+  fields @ method_signatures
+;;
+
+let check_program (context, func_defs, structs) =
+  let func_def_binds = List.map bind_of_func_def methods in
+  let struct_binds = List.map bind_of_struct_def structs in
+  let context = func_def_binds @ context in
+  begin
+    let rec funchelper = match func_defs with
+    | [] -> ()
+    | fd :: fds -> 
+        check_func_def context fd; 
+        funchelper fds
+    in 
+    funchelper func_defs
+  end;
+  begin
+    let rec structhelper = match structs with
+    | [] -> ()
+    | st :: sts -> 
+        check_func_def context st; 
+        structhelper sts
+    in
+    structhelper structs
+  end
+;;
+
 
 
