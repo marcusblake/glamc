@@ -2,12 +2,22 @@ open Ast
 open Sast
 open Exceptions
 
-let rec lookup_in_context context str = 
-  match context with
-  | (t, name) :: rest-> 
-      if name = str then t else lookup_in_context rest str
-| [] -> raise (Not_in_context str)
-;;
+
+(* Map used for symbol table *)
+module StringMap = Map.Make(String)
+
+
+let type_signature (func_def: func_def)  = 
+  Arrow(List.map fst func_def.parameters, func_def.return_type)
+
+(* let lookup_in_context context str = 
+  try StringMap.find str context 
+  with Not_found -> raise (UnrecognizedIdentifier str)
+;; *)
+
+let lookup_identifier str = 
+  try StringMap.find str symbols
+  with Not_found -> raise (UnrecognizedIdentifier str)
 
 
 let print_context ctx = 
@@ -19,14 +29,14 @@ ctx
      )
 ;;
 
-let rec check_expr (context : (ty * string) list) (expr: expr) : ty = 
+let rec check_expr context expr = 
   match expr with
-  | IntLit _ -> Int
-  | BoolLit _ -> Bool
-  | FloatLit _ -> Float
-  | CharLit _ -> Char
-  | StringLit _ -> String
-  | Seq lst -> 
+  | IntLit l -> (Int, SIntLit l)
+  | BoolLit l -> (Bool, SBoolLit l)
+  | FloatLit l -> (Float, SFloatLit l)
+  | CharLit l -> (Char, SFloatLit l)
+  | StringLit l -> (String, SStringLit l)
+  (* | Seq lst -> 
     begin
       match lst with
       | head :: tail  -> 
@@ -43,7 +53,7 @@ let rec check_expr (context : (ty * string) list) (expr: expr) : ty =
               List(expected)
             end
       | _ -> raise Empty_sequence
-    end 
+    end  *)
   | Id name -> 
       print_endline "looking up id";
       let ret = 
@@ -54,46 +64,34 @@ let rec check_expr (context : (ty * string) list) (expr: expr) : ty =
         print_endline "finished looking up id";
         ret
   | Binop (lhs, op, rhs) ->
-    begin
-      match op with
-        | Add 
-        | Sub
-        | Mult
-        | Div -> 
-          begin
-             match (check_expr context lhs, check_expr context rhs) with
-             | (Int, Int) -> Int
-             | (Int, Float) -> Float
-             | (Float, Int) -> Float
-             | (Float, Float) -> Float
-             | (String, String) -> String
-             | (x, y) -> 
-                print_endline (string_of_typ x);
-                print_endline (string_of_typ y);
-                raise Bad_arithmetic
-             
-          end
-        | And
-        | Or -> 
-          begin
-             match (check_expr context lhs, check_expr context rhs) with
-             | (Bool, Bool) -> Bool
-              | _ -> raise Bad_logical
-          end
-        | Equal ->
-          begin
-             match (check_expr context lhs, check_expr context rhs) with
-             | (x, y) -> if x = y then Bool else raise Not_found
-              | _ -> raise Bad_equal
-          end
-        | Neq | Less | Greater | Leq | Geq -> 
-          begin
-             match (check_expr context lhs, check_expr context rhs) with
-             | (Float, Float) -> Bool
-             | (Int, Int) -> Bool
-              | _ -> raise Bad_compare
-          end
-    end
+    let (t1, lhs') = check_expr context lhs in
+    let (t2, rhs') = check_expr context rhs in
+    if t1 = t2 then
+      let ty = match op with
+      | Add | Sub | Mult | Div -> 
+        (* Should only be able to perform these operations with integers, floats, and chars *)
+        (match t1 with
+        | Int -> Int
+        | Float -> Float
+        | Char -> Char
+        | _ -> raise Bad_arithmetic)
+      | And | Or ->
+        (match t1 with
+        | Bool -> Bool
+        | _ -> raise Bad_logical)
+      | Equal | Neq ->
+        (match t1 with
+        (* Only only equality comparison for basic types for now *)
+        | Int | Float | Char | Bool -> Bool
+        | _ -> raise Bad_equal)
+      | Neq | Less | Greater | Leq | Geq -> 
+        (match t1 with
+        (* Should only be able to do these compare for integers, floats, and characters *)
+        | Int | Float | Char -> Bool
+        | _ -> raise Bad_compare)
+      in
+      (ty, SBinop((t1,lhs'), op, (t2, rhs'))
+    else raise (IllegalBinOp "TODO: INSERT EXPRESSION")
   
   | Assign (name, e) -> 
     check_expr context e
@@ -134,7 +132,7 @@ let rec check_expr (context : (ty * string) list) (expr: expr) : ty =
             | _ -> raise Not_arrow
     end
 
-  | SeqAccess (var_name, inside_bracket) -> 
+  (* | SeqAccess (var_name, inside_bracket) -> 
     
     
     begin
@@ -164,9 +162,9 @@ let rec check_expr (context : (ty * string) list) (expr: expr) : ty =
           | _ -> raise Struct_not_arrow
           end
       | _ -> raise Not_a_struct
-    end
+    end *)
   
-  
+(*   
 | StructAccess (var_name, instance_var) -> 
     begin
       let struct_type = lookup_in_context context var_name in
@@ -205,7 +203,7 @@ print_endline "====finished accessing struct of type";
       | Struct s -> 
         match lookup_in_context context s with
         | StructShape (_, struct_context) -> helper struct_context
-    end
+    end *)
   (* of string * string * expr *)
   | StructLit (struct_name, values) ->
     let struct_type = lookup_in_context context struct_name in
@@ -233,75 +231,75 @@ print_endline "====finished accessing struct of type";
 ;;
 
 let check_func_def  (context : (ty * string) list) (f : func_def) : bool = 
-  let parameters : (ty * string) list = f.parameters in
+  let parameters = f.parameters in
   let local_context = parameters @ context in
-  let body : stmt list = f.body in
+  let body = f.body in
   let rec check_stmts (context : (ty * string) list) (statements: stmt list)  : bool = 
       match statements with
         | [] -> true (* TODO: fix later *)
         | head :: tail ->
           match head with
-        | Return e -> 
-          if check_expr context e = f.return_type 
-          then check_stmts context tail
-          else false
-      | If (expr, stmt) ->
-        begin
-         let expr_type = check_expr context expr in
-         if expr_type <> Bool then false 
-         else 
-          if check_stmts context [stmt]
-          then check_stmts context tail
-          else false
-        end
-      | Block lst ->
-        if check_stmts context lst 
-        then check_stmts context tail
-        else false
-      | Expr expr ->
-        ignore(check_expr context expr); 
-        check_stmts context tail
-      | Explicit ((ty, name),expr)->
-        let expr_type : ty = check_expr context expr in
-        if not (typ_eq expr_type ty) then false
-        else check_stmts ((ty,name) :: context) tail
-      | Define (name, expr) ->
-        let expr_type = check_expr context expr in
-        check_stmts ((expr_type,name) :: context) tail
-      | IfElse (expr, stmt1, stmt2) ->
-        begin
-         let expr_type = check_expr context expr in
-         if expr_type <> Bool then false 
-         else 
-         check_stmts context [stmt1] && 
-         check_stmts context [stmt2] &&
-         check_stmts context tail
-        end
-
-      | Iterate (x, e, stmt) ->
-        let expr_type = check_expr context e in
-        begin
-          match expr_type with
-          | List ty -> 
-              check_stmts ((ty, x) :: context) [stmt] && 
-              check_stmts context tail
-          | _ -> false
-        end
-      | While (e, stmt) ->
-         let expr_type = check_expr context e in
-         if expr_type <> Bool then false 
-         else check_stmts context [stmt] && 
-              check_stmts context tail
-         (* in
-         let checked = check_stmts context head in 
-         if checked then
-            checked && iterateStatements context tail
-         else 
+          | Return e -> 
+            if check_expr context e = f.return_type 
+            then check_stmts context tail
+            else false
+          | If (expr, stmt) ->
             begin
-              print_endline "failed to typecheck!!!";
-              print_endline (string_of_stmt head);
-              false
-            end *)
+            let expr_type = check_expr context expr in
+            if expr_type <> Bool then false 
+            else 
+              if check_stmts context [stmt]
+              then check_stmts context tail
+              else false
+            end
+          | Block lst ->
+            if check_stmts context lst 
+            then check_stmts context tail
+            else false
+          | Expr expr ->
+            ignore(check_expr context expr); 
+            check_stmts context tail
+          | Explicit ((ty, name),expr)->
+            let expr_type : ty = check_expr context expr in
+            if not (typ_eq expr_type ty) then false
+            else check_stmts ((ty,name) :: context) tail
+          | Define (name, expr) ->
+            let expr_type = check_expr context expr in
+            check_stmts ((expr_type,name) :: context) tail
+          | IfElse (expr, stmt1, stmt2) ->
+            begin
+            let expr_type = check_expr context expr in
+            if expr_type <> Bool then false 
+            else 
+            check_stmts context [stmt1] && 
+            check_stmts context [stmt2] &&
+            check_stmts context tail
+            end
+
+          | Iterate (x, e, stmt) ->
+            let expr_type = check_expr context e in
+            begin
+              match expr_type with
+              | List ty -> 
+                  check_stmts ((ty, x) :: context) [stmt] && 
+                  check_stmts context tail
+              | _ -> false
+            end
+          | While (e, stmt) ->
+            let expr_type = check_expr context e in
+            if expr_type <> Bool then false 
+            else check_stmts context [stmt] && 
+                  check_stmts context tail
+          (* in
+          let checked = check_stmts context head in 
+          if checked then
+              checked && iterateStatements context tail
+          else 
+              begin
+                print_endline "failed to typecheck!!!";
+                print_endline (string_of_stmt head);
+                false
+              end *)
   in 
     check_stmts context body
 ;;
@@ -352,28 +350,18 @@ let check_program (context, func_defs, structs) =
 print_endline "====start of printing context";
   print_context(context);
 print_endline "===end of printing context";
-  begin
     let rec funchelper func_defs = match func_defs with
     | [] -> ()
     | fd :: fds -> 
-        if check_func_def context fd
-        then funchelper fds
-        else 
-            begin 
-              print_endline fd.func_name;
-              raise Func_failed_typecheck
-            end
+        if check_func_def context fd then funchelper fds
+        else print_endline fd.func_name; raise Func_failed_typecheck
     in 
     funchelper func_defs
-  end;
-  begin
     let rec structhelper structs = match structs with
     | [] -> ()
     | st :: sts -> 
-        if check_struct_def context st;
-        then structhelper sts
+        if check_struct_def context st then structhelper sts
         else raise Struct_failed_typecheck
     in
     structhelper structs
-  end
 ;;
