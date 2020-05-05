@@ -13,7 +13,7 @@ let check (globals, functions, structs) =
   in
 
   (* TODO: Check for duplicate global variables *)
-  let check_dups = ()
+  let check_dups = () in
 
   let globalvars = List.fold_left add_identifier StringMap.empty globals in
   
@@ -29,12 +29,30 @@ let check (globals, functions, structs) =
 
   let check_func func = 
 
+    (* Initial symbol table only contains globally defined variables *)
     let symbol_table = [globalvars] in
 
-    let lookup_identifier str = 
-      if StringMap.mem str localvars then StringMap.find str localvars
-      else if StringMap.mem str globalvars then StringMap.find str globalvars
-      else raise (UnrecognizedIdentifier str)
+    (* Adds a new (current) scope to symbol_table list to the beginning of the list *)
+    let add_scope table = StringMap.empty :: table
+    in
+
+    (* Remove scope once you exit a block *)
+    let remove_scope table = List.tl table
+    in
+
+    (* Add the variable to the current scope. Takes in symbol_table, name of identifier, and type of identifier *)
+    let add_to_current_scope table name ty =
+      List.mapi (fun idx map -> if idx = 0 then StringMap.add name ty map else map) table
+    in
+
+    (* Looks for identifier starting from current scope --> global scope. Takes in name of identifier and symbol_table *)
+    let rec lookup_identifier name =  function
+      | [] -> raise (UnrecognizedIdentifier "TODO: ERROR MESSAGE")
+      | current_scope :: tl -> 
+        try
+          StringMap.find name current_scope
+        with Not_found ->
+          lookup_identifier name tl
     in
 
     let rec check_expr = function 
@@ -110,7 +128,7 @@ let check (globals, functions, structs) =
     and check_stmt = function 
       | Return e -> 
         let (ty, e') = check_expr symbol_table e in
-        if ty = f.return_type then SReturn(ty, e')
+        if ty = func.return_type then SReturn(ty, e')
         else raise (InvalidReturnType "TODO: FILL IN INFO")
       | If (expr, stmt) -> SIf(check_bool_expr expr, check_stmt stmt)
       | Block lst -> SBlock(check_stmt_list lst)
