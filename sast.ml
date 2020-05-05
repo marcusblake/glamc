@@ -36,17 +36,17 @@ type sstmt =
 
 (* Define the type of a funcion *)
 type sfunc_def = {
-  func_name: string;
-  parameters: bind list;
-  return_type: ty;
-  body: sstmt list;
+  sfunc_name: string;
+  sparameters: bind list;
+  sreturn_type: ty;
+  sbody: sstmt list;
 }
 
 (* A struct has a name, data fields, and functions *)
 type sstruct_def = {
-  struct_name: string;
-  fields: bind list;
-  methods: sfunc_def list;
+  sstruct_name: string;
+  sfields: bind list;
+  smethods: sfunc_def list;
 }
 
 (* Our program consists of global variables, funtion definitions, and struct definitions *)

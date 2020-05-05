@@ -7,20 +7,16 @@ open Exceptions
 module StringMap = Map.Make(String)
 
 
-let type_signature (func_def: func_def)  = 
-  Arrow(List.map fst func_def.parameters, func_def.return_type)
-
-(* let lookup_in_context context str = 
-  try StringMap.find str context 
-  with Not_found -> raise (UnrecognizedIdentifier str)
-;; *)
-
-let lookup_identifier str = 
-  try StringMap.find str symbols
-  with Not_found -> raise (UnrecognizedIdentifier str)
-
 let check (globals, functions, structs) =
+  let add_identifier map (ty, str) = 
+    StringMap.add str ty map
+  in
 
+  (* TODO: Check for duplicate global variables *)
+  let check_dups = ()
+
+  let globalvars = List.fold_left add_identifier StringMap.empty globals in
+  
   let add_func map f = 
     (* Check to see if name already exists --> NOTE: May need to add more for built in function *)
     if StringMap.mem f.name map then raise FunctionAlreadyExists
@@ -32,6 +28,15 @@ let check (globals, functions, structs) =
   in 
 
   let check_func func = 
+
+    let localvars = StringMap.empty in
+
+    let lookup_identifier str = 
+      if StringMap.mem str localvars then StringMap.find str localvars
+      else if StringMap.mem str globalvars then StringMap.find str globalvars
+      else raise (UnrecognizedIdentifier str)
+    in
+
     let rec check_expr = function 
       | IntLit l -> (Int, SIntLit l)
       | BoolLit l -> (Bool, SBoolLit l)
@@ -39,7 +44,7 @@ let check (globals, functions, structs) =
       | CharLit l -> (Char, SFloatLit l)
       | StringLit l -> (String, SStringLit l)
       | Seq lst -> raise Unimplemented (* Ignore for now *)
-      | Id name -> raise Unimplemented (* Ignore for now *)
+      | Id name -> (lookup_identifier name, SId name)
       | Binop (lhs, op, rhs) ->
         let (t1, lhs') = check_expr lhs in
         let (t2, rhs') = check_expr rhs in
@@ -111,11 +116,11 @@ let check (globals, functions, structs) =
       | If (expr, stmt) -> SIf(check_bool_expr expr, check_stmt stmt)
       | Block lst -> SBlock(check_stmt_list lst)
       | Expr expr -> SExpr(check_expr expr)
-      | Explicit ((ty, name),expr)->
+      | Explicit ((ty, name),expr)-> (* TODO: Will need to add variable to symbol table *)
         let (expr_ty, e') = check_expr expr in
         if expr_ty = ty then SExplicit((ty, name), (expr_ty, e'))
         else raise InvalidAssignment
-      | Define (name, expr) -> SDefine(name, check_expr context expr)
+      | Define (name, expr) -> SDefine(name, check_expr context expr) (* TODO: Will need to add variable to symbol table *)
       | IfElse (expr, stmt1, stmt2) -> SIfElse(check_bool_expr, check_stmt stmt1, check_stmt stmt2)
       | Iterate (x, e, stmt) ->
         let (ty, e') = check_expr e in
@@ -124,28 +129,13 @@ let check (globals, functions, structs) =
         | _ -> false
       | While (e, stmt) -> SWhile(check_bool_expr expr, check_stmt stmt)
     in
+    {
+      sfunc_name = func.name;
+      sparameters = func.parameters;
+      sreturn_type = func.return_type;
+      sbody = check_stmt_list func
+    }
   in
-
-
-let check_func_def  (context : (ty * string) list) (f : func_def) : bool = 
-  let parameters = f.parameters in
-  let local_context = parameters @ context in
-  let body = f.body in
-  in 
-    check_stmts context body
-;;
-
-
-let bind_of_func_def f =
-  let name = f.func_name in
-  let typ = type_signature f in
-  (typ, name)
-  ;;
-
-let bind_of_struct_def sd = 
-  let struct_name = sd.struct_name in
-  let fields = sd.fields in
-  let methods = sd.methods in
-  let method_signatures = List.map bind_of_func_def methods in
-  StructShape (struct_name, fields @ method_signatures), struct_name
-;;
+  let check_struct stuct_ = raise Unimplemented (* ignore for now *) in
+  (globals, List.map check_func functions, List.map check_struct structs)
+  
