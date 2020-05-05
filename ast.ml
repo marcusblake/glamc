@@ -147,9 +147,8 @@ let rec string_of_stmt = function
 let string_of_fdecl func =
   "func " ^ func.func_name ^ "(" ^ 
   String.concat ", " (List.map string_of_bind func.parameters) ^ ") " ^
-  string_of_typ func.return_type ^ " {\n" ^
-  String.concat "" (List.map string_of_stmt func.body) ^
-  "\n}\n"
+  string_of_typ func.return_type ^
+  String.concat "" (List.map string_of_stmt func.body)
 
 let string_of_struct struct_type = 
   "struct " ^ struct_type.struct_name ^ "{\n" ^

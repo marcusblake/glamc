@@ -29,7 +29,7 @@ let check (globals, functions, structs) =
 
   let check_func func = 
 
-    let localvars = StringMap.empty in
+    let symbol_table = [globalvars] in
 
     let lookup_identifier str = 
       if StringMap.mem str localvars then StringMap.find str localvars
@@ -106,7 +106,6 @@ let check (globals, functions, structs) =
 
     let rec check_stmt_list = function
         [] -> []
-        | Block head :: tail -> check_stmt_list (head @ tail)
         | head :: tail -> check_stmt head :: check_stmt_list tail
     and check_stmt = function 
       | Return e -> 
@@ -121,7 +120,7 @@ let check (globals, functions, structs) =
         if expr_ty = ty then SExplicit((ty, name), (expr_ty, e'))
         else raise InvalidAssignment
       | Define (name, expr) -> SDefine(name, check_expr context expr) (* TODO: Will need to add variable to symbol table *)
-      | IfElse (expr, stmt1, stmt2) -> SIfElse(check_bool_expr, check_stmt stmt1, check_stmt stmt2)
+      | IfElse (expr, stmt1, stmt2) -> SIfElse(check_bool_expr expr, check_stmt stmt1, check_stmt stmt2)
       | Iterate (x, e, stmt) ->
         let (ty, e') = check_expr e in
         match ty with

@@ -45,13 +45,13 @@ decls:
 
 /* Need to define func keyword in scanner */
 func_decl:
-  FUNC ID LPAREN vardecl_parms RPAREN type_ LBRACE stmt_list RBRACE
+  FUNC ID LPAREN vardecl_parms RPAREN type_ block
   {
     {
       func_name = $2;
       parameters = $4;
       return_type = $6;
-      body = $8
+      body = [$7]
     }
   }
 
