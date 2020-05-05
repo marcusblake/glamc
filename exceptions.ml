@@ -7,8 +7,11 @@ exception IncorrectArgumentType of string
 exception IllegalBinOp of string
 exception IllegalUnOp of string * string * string
 exception IncorrectType of string
+exception InvalidReturnType of string
 exception UnrecognizedIdentifier of string
 exception NonAccessibleProp of string
+exception Unimplemented (* for development purposes *)
+exception FunctionAlreadyExists
 exception IllegalArgument
 exception IllegalCondition
 exception Invalid_struct_access
