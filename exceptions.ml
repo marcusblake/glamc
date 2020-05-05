@@ -12,6 +12,7 @@ exception UnrecognizedIdentifier of string
 exception NonAccessibleProp of string
 exception Unimplemented (* for development purposes *)
 exception FunctionAlreadyExists
+exception FunctionDoesntExist
 exception IllegalArgument
 exception IllegalCondition
 exception Invalid_struct_access
