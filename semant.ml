@@ -141,11 +141,14 @@ let check (globals, functions, structs) =
       | If (expr, stmt) -> SIf(check_bool_expr expr, check_stmt stmt)
       | Block lst -> SBlock(check_stmt_list lst)
       | Expr expr -> SExpr(check_expr expr)
-      | Explicit ((ty, name),expr)-> (* TODO: Will need to add variable to symbol table *)
+      | Explicit ((ty, name),expr)->
         let (expr_ty, e') = check_expr expr in
-        if expr_ty = ty then SExplicit((ty, name), (expr_ty, e'))
+        if expr_ty = ty then let add_to_current_scope symbol_table name ty in 
+        SExplicit((ty, name), (expr_ty, e'))
         else raise InvalidAssignment
-      | Define (name, expr) -> SDefine(name, check_expr expr) (* TODO: Will need to add variable to symbol table *)
+      | Define (name, expr) -> 
+        let add_to_current_scope symbol_table name in 
+        SDefine(name, check_expr expr)
       | IfElse (expr, stmt1, stmt2) -> SIfElse(check_bool_expr expr, check_stmt stmt1, check_stmt stmt2)
       | Iterate (x, e, stmt) ->
         let (ty, e') = check_expr e in
