@@ -61,6 +61,10 @@ let check (globals, functions, structs) =
           lookup_identifier name tl
     in
 
+    (* Checks if variable already exists in the current scope. Takes in symbol_table and name of identifier *)
+    let check_variable_in_scope table name = function
+      StringMap.find name List.hd table
+
     let rec check_expr = function 
       | IntLit l -> (Int, SIntLit l)
       | BoolLit l -> (Bool, SBoolLit l)
@@ -139,7 +143,9 @@ let check (globals, functions, structs) =
         if ty = func.return_type then SReturn(ty, e')
         else raise (InvalidReturnType "TODO: FILL IN INFO")
       | If (expr, stmt) -> SIf(check_bool_expr expr, check_stmt stmt)
-      | Block lst -> SBlock(check_stmt_list lst)
+      | Block lst -> 
+        let table = add_scope table in 
+        SBlock(check_stmt_list lst)
       | Expr expr -> SExpr(check_expr expr)
       | Explicit ((ty, name),expr)->
         let (expr_ty, e') = check_expr expr in
@@ -147,7 +153,7 @@ let check (globals, functions, structs) =
         SExplicit((ty, name), (expr_ty, e'))
         else raise InvalidAssignment
       | Define (name, expr) -> 
-        let add_to_current_scope symbol_table name in 
+        let add_to_current_scope table name in 
         SDefine(name, check_expr expr)
       | IfElse (expr, stmt1, stmt2) -> SIfElse(check_bool_expr expr, check_stmt stmt1, check_stmt stmt2)
       | Iterate (x, e, stmt) ->
