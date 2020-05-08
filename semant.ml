@@ -11,7 +11,7 @@ let check (globals, functions, structs) =
   let add_identifier map (ty, str) = 
     StringMap.add str ty map
   in
-
+  (* TODO: Check for nonetypes in bindings? *)
   (* TODO: Check for duplicate global variables *)
   let check_dups = () in
 
@@ -29,6 +29,8 @@ let check (globals, functions, structs) =
     with Not_found -> raise FunctionDoesntExist
   in
 
+  (* let _ = find_func "main" in Ensure "main" is defined *)
+
   (* Add all functions to map to create symbol table --> NOTE: May need to change empty map to built_in_functions *)
   let function_decls = List.fold_left add_func StringMap.empty functions 
   in 
@@ -42,7 +44,8 @@ let check (globals, functions, structs) =
     let add_scope table = StringMap.empty :: table
     in
 
-    (* Add the variable to the current scope. Takes in symbol_table, name of identifier, and type of identifier *)
+    (* Add the variable to the current scope. 
+    Takes in symbol_table, name of identifier, and type of identifier *)
     let add_to_current_scope table name ty =
       if StringMap.mem name (List.hd table) then raise VariableAlreadyExists
       else List.mapi (fun idx map -> if idx = 0 then StringMap.add name ty map else map) table
@@ -59,6 +62,7 @@ let check (globals, functions, structs) =
     in
 
     let rec check_expr table = function 
+    (* Todo: Nonetype *)
       | IntLit l -> (Int, SIntLit l)
       | BoolLit l -> (Bool, SBoolLit l)
       | FloatLit l -> (Float, SFloatLit l)
@@ -100,16 +104,22 @@ let check (globals, functions, structs) =
         let (ty, e') = check_expr table e in
         (* TODO: Need to make sure that variable already exists in symbol table *)
         (ty, SAssign(name, (ty, e')))
-      (* | Call (name, arguments) -> 
-        (* TODO: Make sure that function is declared in find_func *)
+      | Call (name, arguments) as call -> 
         let f = find_func function_decls name in
         let len = List.length arguments in
-        if len == List.length f.parameters then
-            (* TODO: check_call function *)
-            let sargs = List.map2 check_call arguments f.parameters in
-            let ty = f.return_type in
-            (ty, SCall(name, sargs))
-        else raise WrongNumberOfArugments *)
+        if List.length args != len then
+          raise (Failure ("expecting " ^ string_of_int len ^
+                          " arguments in " ^ string_of_expr call))
+        else let check_call (ft, _) e =
+          let (et, e') = check_expr e in
+          (* can change this to wrongnumberarguments error if needed *)
+          let err = "illegal argument found " ^ string_of_typ et ^
+                    " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
+          in (check_assign ft et err, e')
+        in
+          let sargs = List.map2 check_call arguments f.parameters in
+          let ty = f.return_type in
+          (ty, SCall(name, sargs))
       | SeqAccess (var_name, inside_bracket) -> raise Unimplemented (* Ignore for now *)
       | StructCall (var_name, method_name, args) -> raise Unimplemented (* Ignore for now *)
       | StructAccess (var_name, instance_var) -> raise Unimplemented (* Ignore for now *)
