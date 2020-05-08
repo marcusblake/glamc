@@ -12,8 +12,15 @@ let check (globals, functions, structs) =
     StringMap.add str ty map
   in
 
-  (* TODO: Check for duplicate global variables *)
-  let check_dups = () in
+  
+  let check_dups =
+    let rec dups = function
+        [] -> ()
+      | ((_,n1) :: (_,n2) :: _) when n1 = n2 ->
+        raise (Failure (n1 ^ " declared more than once"))
+      | _ :: t -> dups t
+    in dups (List.sort (fun (_,a) (_,b) -> compare a b) globals)
+  in
 
   let globalvars = List.fold_left add_identifier StringMap.empty globals in
   
