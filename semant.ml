@@ -62,20 +62,23 @@ let check (globals, functions, structs) =
     in
 
     (* Checks if variable already exists in the current scope. Takes in symbol_table and name of identifier *)
-    let check_variable_in_scope table name = function
-      StringMap.find name List.hd table
+    let check_and_add_variable_in_scope table name ty =
+      if StringMap.mem f.name List.hd table then raise VariableAlreadyExists
+      else add_to_current_scope table name ty
 
-    let rec check_expr = function 
+    in
+
+    let rec check_expr table = function 
       | IntLit l -> (Int, SIntLit l)
       | BoolLit l -> (Bool, SBoolLit l)
       | FloatLit l -> (Float, SFloatLit l)
       | CharLit l -> (Char, SCharLit l)
       | StringLit l -> (String, SStringLit l)
       | Seq lst -> raise Unimplemented (* Ignore for now *)
-      | Id name -> (lookup_identifier name symbol_table, SId name)
+      | Id name -> (lookup_identifier name table, SId name)
       | Binop (lhs, op, rhs) ->
-        let (t1, lhs') = check_expr lhs in
-        let (t2, rhs') = check_expr rhs in
+        let (t1, lhs') = check_expr table lhs in
+        let (t2, rhs') = check_expr table rhs in
         if t1 = t2 then
           let ty = match op with
           | Add | Sub | Mult | Div -> 
@@ -104,7 +107,7 @@ let check (globals, functions, structs) =
         else raise (IllegalBinOp "TODO: INSERT EXPRESSION")
       
       | Assign (name, e) -> 
-        let (ty, e') = check_expr e in
+        let (ty, e') = check_expr table e in
         (* TODO: Need to make sure that variable already exists in symbol table *)
         (ty, SAssign(name, (ty, e')))
       (* | Call (name, arguments) -> 
@@ -125,8 +128,8 @@ let check (globals, functions, structs) =
       | _ -> raise Unimplemented (* Ignore for now *)
     in
 
-    let check_bool_expr expr = 
-      let (ty, e') = check_expr expr in
+    let check_bool_expr table expr = 
+      let (ty, e') = check_expr table expr in
       (* type of this expression must be a boolean *)
       match ty with
       | Bool -> (ty, e')
@@ -134,40 +137,43 @@ let check (globals, functions, structs) =
     in
 
 
-    let rec check_stmt_list = function
+    let rec check_stmt_list table = function
         [] -> []
-        | head :: tail -> check_stmt head :: check_stmt_list tail
-    and check_stmt = function 
+        | head :: tail -> check_stmt table head :: check_stmt_list table tail
+    and check_stmt table = function 
       | Return e -> 
-        let (ty, e') = check_expr e in
+        let (ty, e') = check_expr table e in
         if ty = func.return_type then SReturn(ty, e')
         else raise (InvalidReturnType "TODO: FILL IN INFO")
-      | If (expr, stmt) -> SIf(check_bool_expr expr, check_stmt stmt)
+      | If (expr, stmt) -> SIf(check_bool_expr table expr, check_stmt table stmt)
       | Block lst -> 
         let table = add_scope table in 
-        SBlock(check_stmt_list lst)
-      | Expr expr -> SExpr(check_expr expr)
+        SBlock(check_stmt_list table lst)
+      | Expr expr -> SExpr(check_expr table expr)
       | Explicit ((ty, name),expr)->
-        let (expr_ty, e') = check_expr expr in
-        if expr_ty = ty then let add_to_current_scope symbol_table name ty in 
+        let (expr_ty, e') = check_expr table expr in
+        if expr_ty = ty then 
+        let check_and_add_variable_in_scope table name expr_ty in  in 
         SExplicit((ty, name), (expr_ty, e'))
         else raise InvalidAssignment
       | Define (name, expr) -> 
-        let add_to_current_scope table name in 
-        SDefine(name, check_expr expr)
-      | IfElse (expr, stmt1, stmt2) -> SIfElse(check_bool_expr expr, check_stmt stmt1, check_stmt stmt2)
+      //cehck expr might need symbol table
+        let (expr_ty, e') = check_expr table expr in
+        let check_and_add_variable_in_scope table name expr_ty in 
+        SDefine(name, (expr_ty, e'))
+      | IfElse (expr, stmt1, stmt2) -> SIfElse(check_bool_expr table expr, check_stmt table stmt1, check_stmt table stmt2)
       | Iterate (x, e, stmt) ->
-        let (ty, e') = check_expr e in
+        let (ty, e') = check_expr table e in
         (match ty with
-        | List _ | String -> SIterate(x, (ty, e'), check_stmt stmt)
+        | List _ | String -> SIterate(x, (ty, e'), check_stmt table stmt)
         | _ -> raise Invalid)
-      | While (e, stmt) -> SWhile(check_bool_expr e, check_stmt stmt)
+      | While (e, stmt) -> SWhile(check_bool_expr table e, check_stmt table stmt)
     in
     {
       sfunc_name = func.func_name;
       sparameters = func.parameters;
       sreturn_type = func.return_type;
-      sbody = check_stmt_list func.body
+      sbody = check_stmt_list table func.body
     }
   in
   let check_struct stuct_ = raise Unimplemented (* ignore for now *) in
