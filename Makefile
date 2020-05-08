@@ -17,6 +17,9 @@ scanner:
 parser:
 	$(OCAMLBUILD) -use-ocamlfind parser.native
 
+semant:
+	$(OCAMLBUILD) -use-ocamlfind semant.native
+
 custom:
 	$(OCAMLBUILD) -use-ocamlfind $(FILENAME).native
 
