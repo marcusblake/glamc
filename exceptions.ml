@@ -32,3 +32,4 @@ exception Invalid_struct_lit
 exception Func_failed_typecheck
 exception Struct_failed_typecheck
 exception Seq_type_error
+exception VariableAlreadyExists
