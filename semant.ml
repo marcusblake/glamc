@@ -157,7 +157,6 @@ let check (globals, functions, structs) =
         SExplicit((ty, name), (expr_ty, e'))
         else raise InvalidAssignment
       | Define (name, expr) -> 
-      //cehck expr might need symbol table
         let (expr_ty, e') = check_expr table expr in
         let check_and_add_variable_in_scope table name expr_ty in 
         SDefine(name, (expr_ty, e'))
