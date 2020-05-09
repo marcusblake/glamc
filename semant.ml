@@ -55,6 +55,10 @@ let check (globals, functions, structs) =
     let add_scope table = StringMap.empty :: table
     in
 
+    let check_assign lvaluet rvaluet err =
+       if lvaluet = rvaluet then lvaluet else raise (Failure err)
+    in
+
     (* Add the variable to the current scope. 
     Takes in symbol_table, name of identifier, and type of identifier *)
     let add_to_current_scope table name ty =
@@ -118,19 +122,18 @@ let check (globals, functions, structs) =
       | Call (name, arguments) as call -> 
         let f = find_func function_decls name in
         let len = List.length arguments in
-        if List.length args != len then
+        if List.length arguments != len then
           raise (Failure ("expecting " ^ string_of_int len ^
                           " arguments in " ^ string_of_expr call))
         else let check_call (ft, _) e =
-          let (et, e') = check_expr e in
+          let (ty, e') = check_expr table e in
           (* can change this to wrongnumberarguments error if needed *)
-          let err = "illegal argument found " ^ string_of_typ et ^
+          let err = "illegal argument found " ^ string_of_typ ty ^
                     " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
-          in (check_assign ft et err, e')
+          in (check_assign ft ty err, e')
         in
-          let sargs = List.map2 check_call arguments f.parameters in
-          let ty = f.return_type in
-          (ty, SCall(name, sargs))
+        let sargs = List.map2 check_call arguments f.parameters 
+        in (f.rtyp, SCall(name, sargs))
       | SeqAccess (var_name, inside_bracket) -> raise Unimplemented (* Ignore for now *)
       | StructCall (var_name, method_name, args) -> raise Unimplemented (* Ignore for now *)
       | StructAccess (var_name, instance_var) -> raise Unimplemented (* Ignore for now *)
