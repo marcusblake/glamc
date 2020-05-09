@@ -2,3 +2,4 @@
 *.cmo
 *.o
 _build/
+.DS_Store/
