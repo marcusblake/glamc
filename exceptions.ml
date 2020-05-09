@@ -11,6 +11,7 @@ exception InvalidReturnType of string
 exception UnrecognizedIdentifier of string
 exception NonAccessibleProp of string
 exception Unimplemented (* for development purposes *)
+exception MainEntrypointUndefined
 exception FunctionAlreadyExists
 exception FunctionDoesntExist
 exception IllegalArgument

@@ -11,10 +11,6 @@ let check (globals, functions, structs) =
   let add_identifier map (ty, str) = 
     StringMap.add str ty map
   in
-  (* TODO: Check for nonetypes in bindings? *)
-  (* TODO: Check for duplicate global variables *)
-  let check_dups = () in
-
   
   let check_dups =
     let rec dups = function
@@ -24,7 +20,8 @@ let check (globals, functions, structs) =
       | _ :: t -> dups t
     in dups (List.sort (fun (_,a) (_,b) -> compare a b) globals)
   in
-
+  
+  check_dups;
 
   let globalvars = List.fold_left add_identifier StringMap.empty globals in
   
@@ -40,11 +37,15 @@ let check (globals, functions, structs) =
     with Not_found -> raise FunctionDoesntExist
   in
 
-  (* let _ = find_func "main" in Ensure "main" is defined *)
-
   (* Add all functions to map to create symbol table --> NOTE: May need to change empty map to built_in_functions *)
   let function_decls = List.fold_left add_func StringMap.empty functions 
-  in 
+  in
+  
+  let _ = 
+    try 
+      find_func function_decls "main"
+    with FunctionDoesntExist -> raise MainEntrypointUndefined
+  in
 
   let check_func func = 
 
@@ -117,8 +118,9 @@ let check (globals, functions, structs) =
       
       | Assign (name, e) -> 
         let (ty, e') = check_expr table e in
-        (* TODO: Need to make sure that variable already exists in symbol table *)
-        (ty, SAssign(name, (ty, e')))
+        let vartype = lookup_identifier name table in
+        let ty = check_assign vartype ty "" in
+          (ty, SAssign(name, (ty, e')))
       | Call (name, arguments) as call -> 
         let f = find_func function_decls name in
         let len = List.length arguments in
@@ -132,14 +134,13 @@ let check (globals, functions, structs) =
                     " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
           in (check_assign ft ty err, e')
         in
-        let sargs = List.map2 check_call arguments f.parameters 
-        in (f.rtyp, SCall(name, sargs))
+        let sargs = List.map2 check_call f.parameters arguments 
+        in (f.return_type, SCall(name, sargs))
       | SeqAccess (var_name, inside_bracket) -> raise Unimplemented (* Ignore for now *)
       | StructCall (var_name, method_name, args) -> raise Unimplemented (* Ignore for now *)
       | StructAccess (var_name, instance_var) -> raise Unimplemented (* Ignore for now *)
       | StructAssign (var_name, instance_var, expr) -> raise Unimplemented (* Ignore for now *)
       | StructLit (struct_name, values) -> raise Unimplemented (* Ignore for now *)
-      | _ -> raise Unimplemented (* Ignore for now *)
     in
 
     let check_bool_expr table expr = 

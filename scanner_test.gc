@@ -1,38 +1,25 @@
 int global;
 int my_var;
 
-struct Point {
-    int x;
-    int y;
+func float_to_int(float a) int {
+    b := 2.0;
+    b = 2.0 / 1.0;
+    return 0;
+}
 
-    func getSum() int {
-        return x + y;
-    }
-
-    func toString() string {
-        return int_to_string(x) + " " + int_to_string(y);
-    }
+func println(int d) int {
+    return 0;
 }
 
 func main() int {
    id := 2.22;
-   list<int> arr = [1,0.2e-2,3.0e2,4,5];
-   Point my_point = Point{x: 1};
-
-   global = my_point.x;
-   my_point.x = 2 * 3 + 16 - 4;
-   for (var in arr) {
-       print(var);
+   int x = 2;
+   if (x + float_to_int(id) > 10) {
+       println(x);
    }
 
-   if ("hello" == "world") {
-       println("true");
-   } else {
-       if (id >= int_to_float(2)) {
-           println("greater than two");
-       }
+   while (x < 2) {
+       x = x + 1;
    }
-
-   list<list<Point>> my_list = [[Point{x:1, y:2}],[Point{}]];
    return 0;
 }
