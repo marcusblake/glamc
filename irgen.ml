@@ -49,13 +49,28 @@ let translate (globals, functions, structs) =
     (* | A.List(t) -> L.pointer_type (ltype_of_typ t) *)
   in
 
-  let add_identifier map (ty, str) = 
-    StringMap.add str ty map
+  (* Return an initialized value of a given type *)
+  let initialized_value = function 
+    | A.Int -> L.const_int i32_t 0
+    | A.Bool -> L.const_int i1_t 0 (* Initialize to false *)
+    | A.Float -> L.const_float float_t 0.0
+    | A.Char -> L.const_int i8_t 0
+    | _ -> raise Unimplemented
   in
 
-  let globalvars = List.fold_left add_identifier StringMap.empty globals in
+  let add_identifier map (ty, str) = 
+    let lltype = ltype_of_ty ty in
+    let var = L.define_global str (initialized_value ty) the_module in 
+      StringMap.add str var map
+  in
+
+  let globalvars : L.lltype StringMap.t = List.fold_left add_identifier StringMap.empty globals in
 
   let add_scope table = StringMap.empty :: table in
+
+  let add_to_current_scope table name ty =
+    List.mapi (fun idx map -> if idx = 0 then StringMap.add name ty map else map) table
+  in
 
   let build_function_body builder = 
 
@@ -68,7 +83,8 @@ let translate (globals, functions, structs) =
         Some _ -> ()
       | None -> ignore (instr builder) in
     
-    let symbol_table = [globalvars] in
+
+    let symbol_table : L.lltype StringMap.t list = [globalvars] in
 
     (* TODO: IMPLEMENT BUILD_EXPR -> Needs to return llvalue for expression *)
     let build_expr table builder = function
@@ -84,27 +100,25 @@ let translate (globals, functions, structs) =
           let new_table = add_scope table in
             (build_stmt_list new_table builder lst, table)
       | SExpr sexpr -> ignore(build_expr table builder sexpr); (builder, table)
-      (* TODO: NEED TO ADD TO SYMBOL TABLE *)
       | SExplicit ((ty, name), sexpr) ->
         let e' = build_expr table builder sexpr in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
+        let table = add_to_current_scope table name var in
           ignore (L.build_store e' var builder);
           (builder, table)
-      (* TODO: NEED TO ADD TO SYMBOL TABLE *)
       | SDefine (name, sexpr) -> 
         let e' = build_expr table builder sexpr in
         let var = L.build_alloca (ltype_of_typ (fst sepxr)) name builder in
+        let table = add_to_current_scope table name var in
           ignore (L.build_store e' var builder);
           (builder, table)
-
-        
         (* This won't support nested if statements. Will need to figure out a way to support nested if statements.
             Not terribly important so we can try to fix it later *)
       | SIf (sexpr, stmt) -> 
         (*
           EXPR
           bz label_end, expr
-        if_block
+        if_block:
           Code
           br label if_end
         if_end:
@@ -115,7 +129,7 @@ let translate (globals, functions, structs) =
         ignore(build_stmt table (L.builder_at_end context if_block) builder stmt);
         let if_end = L.append_block context "if_end" current_function in
         let build_break = L.build_br if_end in
-        add_terminator (L.builder_at_end context if_block) build_break;
+        add_terminal (L.builder_at_end context if_block) build_break;
 
         ignore(L.build_cond_br llvalue if_block if_end builder);
         (L.builder_at_end context if_end, table)
@@ -139,28 +153,39 @@ let translate (globals, functions, structs) =
         ignore (build_stmt table (L.builder_at_end context else_block) builder stmt2);
         let if_end  = L.append_block context "if_end" current_function in
         let build_break = L.build_br if_end in
-        add_terminator (L.builder_at_end if_block) build_break;
-        add_terminator (L.builder_at_end context else_block) build_break;
+        add_terminal (L.builder_at_end if_block) build_break;
+        add_terminal (L.builder_at_end context else_block) build_break;
 
         ignore (L.build_cond_br llvalue if_block else_block builder);
         (L.builder_at_end context if_end, table)
       | SIterate (var, sexpr, stmt) -> raise Unimplemented (* ignore for now *)
       | SWhile (sexpr, stmt) -> 
         (*
-        br label %while
-        while:
-          bz while_end expr
-        while_body:
-          Code
           br label %while
-        while_end:
-
+          while:
+            expr
+            bz while_end expr
+          while_body:
+            Code
+            br label %while
+          while_end:
         *)
         let while_begin = L.append_block context "while" current_function in
-        let build_br = L.build_br while_begin in (* partial function *)
-        ignore (build_br builder);
-        let llvalue = build_expr table builder sexpr in
-          
+
+        let start_while = L.build_br while_begin in (* partial function *)
+        ignore (start_while builder);
+
+        let while_builder = L.builder_at_end context while_begin in
+
+        let llvalue = build_expr table while_builder sexpr in
+        let while_body = L.append_block context "while_body" current_function in
+        ignore (build_stmt table (L.builder_at_end context while_body) stmt);
+        add_terminal (L.builder_at_end context while_body) start_while;
+
+        let while_end = L.append_block context "while_end" current_function in
+
+        ignore (L.build_cond_br llvalue while_begin while_end while_builder);
+        (L.builder_at_end context while_end, table)
         
       | SReturn (sexpr) -> ignore (L.build_ret (build_expr table builder sexpr) builder); (builder, table)
         
