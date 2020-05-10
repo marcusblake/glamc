@@ -37,8 +37,16 @@ let check (globals, functions, structs) =
     with Not_found -> raise FunctionDoesntExist
   in
 
+  let built_in_decls =
+    StringMap.add "print" {
+      return_type = Int;
+      func_name = "print";
+      parameters = [(Int, "x")];
+      body = Block [] } StringMap.empty
+  in
+
   (* Add all functions to map to create symbol table --> NOTE: May need to change empty map to built_in_functions *)
-  let function_decls = List.fold_left add_func StringMap.empty functions 
+  let function_decls = List.fold_left add_func built_in_decls functions 
   in
   
   let _ = 

@@ -72,6 +72,11 @@ let translate (globals, functions, _) =
     List.mapi (fun idx map -> if idx = 0 then StringMap.add name ty map else map) table
   in
 
+  let printf_t : L.lltype =
+    L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
+  let printf_func : L.llvalue =
+    L.declare_function "printf" printf_t the_module in
+
   (* Function that takes in the name of a variable, and symbol_table. It returns the LLVM representation of the variable *)
   let rec lookup_identifier name = function
       | [] -> raise (UnrecognizedIdentifier "TODO: ERROR MESSAGE")
@@ -105,6 +110,8 @@ let translate (globals, functions, _) =
     let (current_function, _) = StringMap.find fdecl.sfunc_name function_decls in 
     
     let builder : L.llbuilder = L.builder_at_end context (L.entry_block current_function) in
+
+    let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
 
     let formals : L.llvalue StringMap.t =
       let add_formal map (ty, name) param =
@@ -144,9 +151,9 @@ let translate (globals, functions, _) =
         | A.Greater -> L.build_icmp L.Icmp.Sgt
         | A.Geq -> L.build_icmp L.Icmp.Sge
         ) e1' e2' "tmp" builder
-      (* | SCall ("print", [e]) ->
+      | SCall ("print", [e]) ->
         L.build_call printf_func [| int_format_str ; (build_expr table builder e) |]
-        "printf" builder *)
+        "printf" builder
       | SCall (f, args) ->
         let (fdef, fdecl) = StringMap.find f function_decls in
         let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in

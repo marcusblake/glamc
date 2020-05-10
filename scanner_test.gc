@@ -12,13 +12,17 @@ func gcd(int a, int b) int {
     return a;
 }
 
-func println(int d) int {
-    return 0;
-}
-
 func main() int {
    x := 2;
    y := 14;
-   gcd(x,y);
+   ans := gcd(x,y);
+   print(ans);
+   j = 0;
+   while (j <= 10) {
+       if (j > 2 && j < 7) {
+           print(j);
+       }
+       j = j + 1;
+   }
    return 0;
 }

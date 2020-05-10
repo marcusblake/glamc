@@ -3,6 +3,10 @@ source_filename = "GlamC"
 
 @j = global i32 0
 @l = global i32 0
+@fmt = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+@fmt.1 = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+declare i32 @printf(i8*, ...)
 
 define i32 @gcd(i32 %a, i32 %b) {
 entry:
@@ -46,13 +50,6 @@ while_end:                                        ; preds = %while
   ret i32 %a14
 }
 
-define i32 @println(i32 %d) {
-entry:
-  %d1 = alloca i32
-  store i32 %d, i32* %d1
-  ret i32 0
-}
-
 define i32 @main() {
 entry:
   %x = alloca i32
@@ -62,5 +59,37 @@ entry:
   %y1 = load i32, i32* %y
   %x2 = load i32, i32* %x
   %gcd_result = call i32 @gcd(i32 %x2, i32 %y1)
+  %ans = alloca i32
+  store i32 %gcd_result, i32* %ans
+  %ans3 = load i32, i32* %ans
+  %printf = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt.1, i32 0, i32 0), i32 %ans3)
+  store i32 0, i32* @j
+  br label %while
+
+while:                                            ; preds = %if_end, %entry
+  %j = load i32, i32* @j
+  %tmp = icmp sle i32 %j, 10
+  br i1 %tmp, label %while_body, label %while_end
+
+while_body:                                       ; preds = %while
+  %j4 = load i32, i32* @j
+  %tmp5 = icmp sgt i32 %j4, 2
+  %j6 = load i32, i32* @j
+  %tmp7 = icmp slt i32 %j6, 7
+  %tmp8 = and i1 %tmp5, %tmp7
+  br i1 %tmp8, label %if_block, label %if_end
+
+if_block:                                         ; preds = %while_body
+  %j9 = load i32, i32* @j
+  %printf10 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt.1, i32 0, i32 0), i32 %j9)
+  br label %if_end
+
+if_end:                                           ; preds = %while_body, %if_block
+  %j11 = load i32, i32* @j
+  %tmp12 = add i32 %j11, 1
+  store i32 %tmp12, i32* @j
+  br label %while
+
+while_end:                                        ; preds = %while
   ret i32 0
 }
