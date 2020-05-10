@@ -12,16 +12,16 @@ let check (globals, functions, structs) =
     StringMap.add str ty map
   in
   
-  let check_dups =
+  let check_dups variables =
     let rec dups = function
         [] -> ()
       | ((_,n1) :: (_,n2) :: _) when n1 = n2 ->
         raise (Failure (n1 ^ " declared more than once"))
       | _ :: t -> dups t
-    in dups (List.sort (fun (_,a) (_,b) -> compare a b) globals)
+    in dups (List.sort (fun (_,a) (_,b) -> compare a b) variables)
   in
   
-  check_dups;
+  check_dups globals;
 
   let globalvars = List.fold_left add_identifier StringMap.empty globals in
   
@@ -49,8 +49,12 @@ let check (globals, functions, structs) =
 
   let check_func func = 
 
+    check_dups func.parameters;
+
+    let parameters = List.fold_left add_identifier StringMap.empty func.parameters in
+
     (* Initial symbol table only contains globally defined variables *)
-    let symbol_table = [globalvars] in
+    let symbol_table = [parameters; globalvars] in
 
     (* Adds a new (current) scope to symbol_table list to the beginning of the list *)
     let add_scope table = StringMap.empty :: table
@@ -185,11 +189,15 @@ let check (globals, functions, structs) =
         | _ -> raise Invalid)
       | While (e, stmt) -> (SWhile(check_bool_expr table e, fst (check_stmt table stmt)), table)
     in
+    let sast_func = SBlock (match func.body with
+      Block lst -> check_stmt_list symbol_table lst (* flatten block to list *)
+      | _ ->  raise Invalid
+    ) in
     {
       sfunc_name = func.func_name;
       sparameters = func.parameters;
       sreturn_type = func.return_type;
-      sbody = check_stmt_list symbol_table func.body
+      sbody = sast_func
     }
   in
   let check_struct stuct_ = raise Unimplemented (* ignore for now *) in

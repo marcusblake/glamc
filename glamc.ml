@@ -1,21 +1,24 @@
-let _ = 
-  let input = open_in "scanner_test.gc" in
-  let lexbuf = Lexing.from_channel input in
-  let prog = Parser.program Scanner.token lexbuf in
-  check_program prog
-  (* print_endline (string_of_program prog) *)
+type action = Ast | Sast | LLVM_IR
 
+let () =
+  let action = ref LLVM_IR in
+  let set_action a () = action := a in
+  let speclist = [
+    ("-a", Arg.Unit (set_action Ast), "Print the AST");
+    ("-s", Arg.Unit (set_action Sast), "Print the SAST");
+    ("-l", Arg.Unit (set_action LLVM_IR), "Print the generated LLVM IR");
+  ] in
+  let usage_msg = "usage: ./microc.native [-a|-s|-l] [file.mc]" in
+  let channel = ref stdin in
+  Arg.parse speclist (fun filename -> channel := open_in filename) usage_msg;
 
-  (*let newContext = add_to_context context func_name (Arrow (List.map fst) )*)
-(* A struct has a name, data fields, and functions *)
+  let lexbuf = Lexing.from_channel !channel in
 
-(* 
-  struct Point {
-    int x;
-    int y;
-
-    func getSum() int {
-      return x + y;
-    }
-  }
-*)
+  let ast = Parser.program Scanner.token lexbuf in
+  match !action with
+    Ast -> print_string (Ast.string_of_program ast)
+  | _ -> let sast = Semant.check ast in
+    match !action with
+      Ast     -> ()
+    | Sast    -> ()
+    | LLVM_IR -> print_string (Llvm.string_of_llmodule (Irgen.translate sast))

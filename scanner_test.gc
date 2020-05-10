@@ -1,10 +1,15 @@
-int global;
-int my_var;
+int j;
+int l;
 
-func float_to_int(float a) int {
-    b := 2.0;
-    b = 2.0 / 1.0;
-    return 0;
+func gcd(int a, int b) int {
+    while (a != b) {
+        if (b < a) {
+            a = a - b;
+        } else {
+            b = b - a;
+        }
+    }
+    return a;
 }
 
 func println(int d) int {
@@ -12,14 +17,8 @@ func println(int d) int {
 }
 
 func main() int {
-   id := 2.22;
-   int x = 2;
-   if (x + float_to_int(id) > 10) {
-       println(x);
-   }
-
-   while (x < 2) {
-       x = x + 1;
-   }
+   x := 2;
+   y := 14;
+   gcd(x,y);
    return 0;
 }

@@ -9,7 +9,7 @@ FILENAME?=glamc
 main: glamc.native 
 
 glamc.native:
-	$(OCAMLBUILD) -use-ocamlfind glamc.native
+	$(OCAMLBUILD) -use-ocamlfind -pkgs llvm glamc.native
 
 scanner:
 	$(OCAMLBUILD) -use-ocamlfind scanner.native

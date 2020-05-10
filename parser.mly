@@ -51,7 +51,7 @@ func_decl:
       func_name = $2;
       parameters = $4;
       return_type = $6;
-      body = [$7]
+      body = $7
     }
   }
 

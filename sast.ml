@@ -39,7 +39,7 @@ type sfunc_def = {
   sfunc_name: string;
   sparameters: bind list;
   sreturn_type: ty;
-  sbody: sstmt list;
+  sbody: sstmt;
 }
 
 (* A struct has a name, data fields, and functions *)
@@ -50,5 +50,5 @@ type sstruct_def = {
 }
 
 (* Our program consists of global variables, funtion definitions, and struct definitions *)
-type program = bind list * sfunc_def list * sstruct_def list
+type sprogram = bind list * sfunc_def list * sstruct_def list
 

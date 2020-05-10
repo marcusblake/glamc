@@ -45,7 +45,7 @@ type func_def = {
   func_name: string;
   parameters: bind list;
   return_type: ty;
-  body: stmt list;
+  body: stmt;
 }
 
 (* A struct has a name, data fields, and functions *)
@@ -148,7 +148,7 @@ let string_of_fdecl func =
   "func " ^ func.func_name ^ "(" ^ 
   String.concat ", " (List.map string_of_bind func.parameters) ^ ") " ^
   string_of_typ func.return_type ^
-  String.concat "" (List.map string_of_stmt func.body)
+  string_of_stmt func.body
 
 let string_of_struct struct_type = 
   "struct " ^ struct_type.struct_name ^ "{\n" ^

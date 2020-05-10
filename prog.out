@@ -1,0 +1,66 @@
+; ModuleID = 'GlamC'
+source_filename = "GlamC"
+
+@j = global i32 0
+@l = global i32 0
+
+define i32 @gcd(i32 %a, i32 %b) {
+entry:
+  %a1 = alloca i32
+  store i32 %a, i32* %a1
+  %b2 = alloca i32
+  store i32 %b, i32* %b2
+  br label %while
+
+while:                                            ; preds = %if_end, %entry
+  %a3 = load i32, i32* %a1
+  %b4 = load i32, i32* %b2
+  %tmp = icmp ne i32 %a3, %b4
+  br i1 %tmp, label %while_body, label %while_end
+
+while_body:                                       ; preds = %while
+  %b5 = load i32, i32* %b2
+  %a6 = load i32, i32* %a1
+  %tmp7 = icmp slt i32 %b5, %a6
+  br i1 %tmp7, label %if_block, label %else_block
+
+if_block:                                         ; preds = %while_body
+  %a8 = load i32, i32* %a1
+  %b9 = load i32, i32* %b2
+  %tmp10 = sub i32 %a8, %b9
+  store i32 %tmp10, i32* %a1
+  br label %if_end
+
+else_block:                                       ; preds = %while_body
+  %b11 = load i32, i32* %b2
+  %a12 = load i32, i32* %a1
+  %tmp13 = sub i32 %b11, %a12
+  store i32 %tmp13, i32* %b2
+  br label %if_end
+
+if_end:                                           ; preds = %else_block, %if_block
+  br label %while
+
+while_end:                                        ; preds = %while
+  %a14 = load i32, i32* %a1
+  ret i32 %a14
+}
+
+define i32 @println(i32 %d) {
+entry:
+  %d1 = alloca i32
+  store i32 %d, i32* %d1
+  ret i32 0
+}
+
+define i32 @main() {
+entry:
+  %x = alloca i32
+  store i32 2, i32* %x
+  %y = alloca i32
+  store i32 14, i32* %y
+  %y1 = load i32, i32* %y
+  %x2 = load i32, i32* %x
+  %gcd_result = call i32 @gcd(i32 %x2, i32 %y1)
+  ret i32 0
+}

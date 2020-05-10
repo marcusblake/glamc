@@ -71,7 +71,7 @@ and comment = parse
   "*/" { token lexbuf }
 | _    { comment lexbuf }
 
-{
+(* {
    let to_string = function
     | LPAREN -> "LPAREN"
     | RPAREN -> "RPAREN"
@@ -125,4 +125,4 @@ and comment = parse
     | x -> loop (to_string x :: prog) (token lexbuf)) in
   let prog = String.concat " " (loop [] (token lexbuf)) in
   print_endline prog
-}
+} *)
