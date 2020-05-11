@@ -81,7 +81,7 @@ let check (globals, functions, structs) =
 
     (* Looks for identifier starting from current scope --> global scope. Takes in name of identifier and symbol_table *)
     let rec lookup_identifier name = function
-      | [] -> raise (UnrecognizedIdentifier "TODO: ERROR MESSAGE")
+      | [] -> raise (UnrecognizedIdentifier (Printf.sprintf "%s: Unrecognized Identifier" name))
       | current_scope :: tl -> 
         try
           StringMap.find name current_scope
@@ -126,7 +126,7 @@ let check (globals, functions, structs) =
             | _ -> raise Bad_compare)
           in
           (ty, SBinop((t1,lhs'), op, (t2, rhs')))
-        else raise (IllegalBinOp "TODO: INSERT EXPRESSION")
+        else raise (IllegalBinOp (Printf.sprintf "Illegal operation"))
       
       | Assign (name, e) -> 
         let (ty, e') = check_expr table e in
@@ -173,7 +173,7 @@ let check (globals, functions, structs) =
       | Return e -> 
         let (ty, e') = check_expr table e in
         if ty = func.return_type then (SReturn(ty, e'), table)
-        else raise (InvalidReturnType "TODO: FILL IN INFO")
+        else raise (InvalidReturnType (Printf.sprintf "Returned %s must be of type %s" (string_of_expr e) (string_of_typ ty)))
       | If (expr, stmt) -> (SIf(check_bool_expr table expr, fst (check_stmt table stmt)), table)
       | Block lst -> 
         let new_table = add_scope table in 
