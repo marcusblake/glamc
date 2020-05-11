@@ -173,7 +173,7 @@ let check (globals, functions, structs) =
       | Return e -> 
         let (ty, e') = check_expr table e in
         if ty = func.return_type then (SReturn(ty, e'), table)
-        else raise (InvalidReturnType (Printf.sprintf "%s: Invalid return type" (string_of_expr e)))
+        else raise (InvalidReturnType (Printf.sprintf "Returned %s must be of type %s" (string_of_expr e) (string_of_typ ty)))
       | If (expr, stmt) -> (SIf(check_bool_expr table expr, fst (check_stmt table stmt)), table)
       | Block lst -> 
         let new_table = add_scope table in 
