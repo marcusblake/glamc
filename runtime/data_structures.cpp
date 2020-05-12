@@ -10,16 +10,16 @@ extern "C" void initString(struct String *str, char *elements) {
     memcpy(str->elements, elements, n);
 }
 
-extern "C" char getChar(struct String *str, int index) {
-    if (index < 0 || index >= str->length) {
+extern "C" char getChar(struct String str, int index) {
+    if (index < 0 || index >= str.length) {
         fprintf(stderr, "Fatal Error: Index Out Of Bounds");
         exit(1);
     }
-    return str->elements[index];
+    return str.elements[index];
 }
 
-extern "C" void prints(struct String *str) {
-    printf("%s\n", str->elements);
+extern "C" void prints(struct String str) {
+    printf("%s\n", str.elements);
 }
 
 extern "C" void concat(struct String *l, struct String *r, struct String *n_str);

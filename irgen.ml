@@ -87,8 +87,8 @@ let translate (globals, functions, _) =
   (* BEGIN: Definitions for String library functions *)
   let initString_t = L.function_type void_t [| L.pointer_type string_t; L.pointer_type i8_t |] in
   (* let strLength_t = L.function_type i32_t [| L.pointer_type string_t |] in *)
-  (* let getChar_t = L.function_type i8_t [| L.pointer_type string_t; i32_t |] in *)
-  let prints_t = L.function_type void_t [| L.pointer_type string_t |] in
+  (* let getChar_t = L.function_type i8_t [| string_t; i32_t |] in *)
+  let prints_t = L.function_type void_t [| string_t |] in
 
   let initString = L.declare_function "initString" initString_t the_module in
   (* let strLength = L.declare_function "strlen" strLength_t the_module in *)
@@ -168,11 +168,7 @@ let translate (globals, functions, _) =
           let temp = L.build_alloca string_t "" builder in
             ignore(L.build_call initString [|temp; strptr|] "" builder);
             L.build_load temp "temp_string" builder;
-      | SId s -> 
-          let (llv, ty) = (lookup_identifier s table) in
-          (match ty with
-          | Ast.String -> llv
-          | _ -> L.build_load llv s builder)
+      | SId s -> L.build_load (fst (lookup_identifier s table)) s builder
       | SAssign (s, e) -> let e' = build_expr table builder e in
         ignore(L.build_store e' (fst (lookup_identifier s table)) builder); e'
       | SBinop (e1, op, e2) ->

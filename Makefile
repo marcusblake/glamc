@@ -41,4 +41,4 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
 
 clean:
 	ocamlbuild -clean
-	rm -f $(SRC_DIR)/*.o *.native $(OBJ_DIR)/*.a a.out
+	rm -f $(SRC_DIR)/*.o *.native $(OBJ_DIR)/*.a a.out llvm.out*

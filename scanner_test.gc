@@ -1,6 +1,10 @@
 int j;
 int l;
 
+func can_you_print(string k) int {
+    prints(k);
+}
+
 func main() int {
    x := 2;
    y := 14;
@@ -13,6 +17,8 @@ func main() int {
        }
        j = j + 1;
    }
+   d := s;
+   can_you_print("Say whats up");
    prints(s);
    return 0;
 }
