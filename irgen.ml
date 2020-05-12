@@ -34,9 +34,19 @@ let translate (globals, functions, _) =
   and i8_t       = L.i8_type     context
   and i1_t       = L.i1_type     context
   and float_t    = L.float_type  context
-  (* and string_t   = L.pointer_type (L.i8_type context) ignore for now *)
+  and void_t     = L.void_type   context
+  and string_t   = L.named_struct_type context "string"
   (* and none_t     = L.void_type   context *)
   in
+
+  (* 
+  struct String {
+    int length;
+    char *elements;
+  }
+  *)
+  let _ =
+    L.struct_set_body string_t [| i32_t ; L.pointer_type i8_t |] false in
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
@@ -44,6 +54,7 @@ let translate (globals, functions, _) =
     | A.Bool  -> i1_t
     | A.Float -> float_t
     | A.Char -> i8_t
+    | A.String -> string_t
     | _ -> raise Unimplemented
     (* | A.None  -> none_t *)
     (* | A.String -> string_t ignore for now *)
@@ -71,6 +82,23 @@ let translate (globals, functions, _) =
   let add_to_current_scope table name ty =
     List.mapi (fun idx map -> if idx = 0 then StringMap.add name ty map else map) table
   in
+
+  (* BEGIN: Definitions for String library functions *)
+  let initString_t = L.function_type void_t [| L.pointer_type string_t; L.pointer_type i8_t |] in
+  (* let strLength_t = L.function_type i32_t [| L.pointer_type string_t |] in *)
+  (* let getChar_t = L.function_type i8_t [| L.pointer_type string_t; i32_t |] in *)
+  let prints_t = L.function_type void_t [| L.pointer_type string_t |] in
+
+  let initString = L.declare_function "initString" initString_t the_module in
+  (* let strLength = L.declare_function "strlen" strLength_t the_module in *)
+  (* let getChar = L.declare_function "getChar" getChar_t the_module in *)
+  let prints = L.declare_function "prints" prints_t the_module in
+  (* END: Definitions for String library functions *)
+  
+
+  (* print boolean *)
+  let printb = L.declare_function "printb" (L.function_type void_t [| i1_t |]) the_module in
+
 
   let printf_t : L.lltype =
     L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
@@ -111,7 +139,9 @@ let translate (globals, functions, _) =
     
     let builder : L.llbuilder = L.builder_at_end context (L.entry_block current_function) in
 
-    let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
+    let int_format_str = L.build_global_stringptr "%d\n" "fmt_int" builder in
+    let float_format_str = L.build_global_stringptr "%f\n" "fmt_float" builder in
+    let char_format_str = L.build_global_stringptr "%c\n" "fmt_char" builder in
 
     let formals : L.llvalue StringMap.t =
       let add_formal map (ty, name) param =
@@ -123,6 +153,7 @@ let translate (globals, functions, _) =
       List.fold_left2 add_formal StringMap.empty fdecl.sparameters (Array.to_list (L.params current_function))
     in
 
+
     let symbol_table : L.llvalue StringMap.t list = [formals; globalvars] in
 
     (* TODO: IMPLEMENT BUILD_EXPR -> Needs to return llvalue for expression *)
@@ -131,6 +162,11 @@ let translate (globals, functions, _) =
       | SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
       | SFloatLit f -> L.const_float float_t f
       | SCharLit c -> L.const_int i8_t (int_of_char c)
+      | SStringLit s -> 
+          let strptr = L.build_global_string s "string_const" builder in
+          let temp = L.build_alloca string_t "temp_string" builder in
+            ignore(L.build_call initString [|temp; strptr|] "" builder);
+            temp;
       | SId s -> L.build_load (lookup_identifier s table) s builder
       | SAssign (s, e) -> let e' = build_expr table builder e in
         ignore(L.build_store e' (lookup_identifier s table) builder); e'
@@ -151,19 +187,35 @@ let translate (globals, functions, _) =
         | A.Greater -> L.build_icmp L.Icmp.Sgt
         | A.Geq -> L.build_icmp L.Icmp.Sge
         ) e1' e2' "tmp" builder
-      | SCall ("print", [e]) ->
-        L.build_call printf_func [| int_format_str ; (build_expr table builder e) |]
-        "printf" builder
       | SCall (f, args) ->
-        let (fdef, fdecl) = StringMap.find f function_decls in
-        let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
-        let result = f ^ "_result" in
-        L.build_call fdef (Array.of_list llargs) result builder
+        (try (* try to see if it's a built in function first *)
+          (match args with
+          [e] -> check_built_in f e table builder
+          | _ -> raise Not_found)
+        with Not_found ->
+          let (fdef, fdecl) = StringMap.find f function_decls in
+          let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
+          let result = f ^ "_result" in
+          L.build_call fdef (Array.of_list llargs) result builder)
       (* | SeqAccess -> raise Unimplemented
       | StructCall -> raise Unimplemented
       | StructAccess -> raise Unimplemented
       | StructAssign -> raise Unimplemented *)
       | _ -> raise Unimplemented
+    and check_built_in name e table builder =
+      if name == "printi" then
+        L.build_call printf_func [| int_format_str ; (build_expr table builder e) |] "printf" builder
+      else if name == "printfl" then 
+        L.build_call printf_func [| float_format_str ; (build_expr table builder e) |] "printf" builder
+      else if name == "printc" then 
+        L.build_call printf_func [| char_format_str ; (build_expr table builder e) |] "printf" builder
+      else if name == "printb" then
+        let v = build_expr table builder e in
+        L.build_call printb [| v |] "printb" builder
+      else if name == "prints" then 
+        let v = build_expr table builder e in
+        L.build_call prints [| v |] "prints" builder
+      else raise Not_found
     in
 
     let rec build_stmt_list table builder = function

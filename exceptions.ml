@@ -15,6 +15,7 @@ exception MainEntrypointUndefined
 exception FunctionAlreadyExists
 exception FunctionDoesntExist
 exception IllegalArgument
+exception IllegalAccess of string
 exception IllegalCondition
 exception Invalid_struct_access
 exception Empty_sequence
