@@ -1,28 +1,18 @@
 int j;
 int l;
 
-func gcd(int a, int b) int {
-    while (a != b) {
-        if (b < a) {
-            a = a - b;
-        } else {
-            b = b - a;
-        }
-    }
-    return a;
-}
-
 func main() int {
    x := 2;
    y := 14;
-   ans := gcd(x,y);
-   print(ans);
    j = 0;
+   bool a = true;
+   string s = "hello world";
    while (j <= 10) {
        if (j > 2 && j < 7) {
-           print(j);
+           printi(j);
        }
        j = j + 1;
    }
+   prints(s);
    return 0;
 }

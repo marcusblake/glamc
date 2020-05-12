@@ -70,17 +70,18 @@ let translate (globals, functions, _) =
     | _ -> raise Unimplemented
   in
 
+
   let add_identifier map (ty, str) = 
     let var = L.define_global str (initialized_value ty) the_module in 
-      StringMap.add str var map
+      StringMap.add str (var, ty) map
   in
 
-  let globalvars : L.llvalue StringMap.t = List.fold_left add_identifier StringMap.empty globals in
+  let globalvars : (L.llvalue * Ast.ty) StringMap.t = List.fold_left add_identifier StringMap.empty globals in
 
   let add_scope table = StringMap.empty :: table in
 
-  let add_to_current_scope table name ty =
-    List.mapi (fun idx map -> if idx = 0 then StringMap.add name ty map else map) table
+  let add_to_current_scope table name llval ty =
+    List.mapi (fun idx map -> if idx = 0 then StringMap.add name (llval, ty) map else map) table
   in
 
   (* BEGIN: Definitions for String library functions *)
@@ -143,18 +144,18 @@ let translate (globals, functions, _) =
     let float_format_str = L.build_global_stringptr "%f\n" "fmt_float" builder in
     let char_format_str = L.build_global_stringptr "%c\n" "fmt_char" builder in
 
-    let formals : L.llvalue StringMap.t =
+    let formals : (L.llvalue * Ast.ty) StringMap.t =
       let add_formal map (ty, name) param =
         L.set_value_name name param;
         let local = L.build_alloca (ltype_of_typ ty) name builder in
         ignore (L.build_store param local builder);
-        StringMap.add name local map
+        StringMap.add name (local, ty) map
       in
       List.fold_left2 add_formal StringMap.empty fdecl.sparameters (Array.to_list (L.params current_function))
     in
 
 
-    let symbol_table : L.llvalue StringMap.t list = [formals; globalvars] in
+    let symbol_table : (L.llvalue * Ast.ty) StringMap.t list = [formals; globalvars] in
 
     (* TODO: IMPLEMENT BUILD_EXPR -> Needs to return llvalue for expression *)
     let rec build_expr table builder ((_, e) : sexpr) = match e with
@@ -163,13 +164,17 @@ let translate (globals, functions, _) =
       | SFloatLit f -> L.const_float float_t f
       | SCharLit c -> L.const_int i8_t (int_of_char c)
       | SStringLit s -> 
-          let strptr = L.build_global_string s "string_const" builder in
-          let temp = L.build_alloca string_t "temp_string" builder in
+          let strptr = L.build_global_stringptr s "string_const" builder in
+          let temp = L.build_alloca string_t "" builder in
             ignore(L.build_call initString [|temp; strptr|] "" builder);
-            temp;
-      | SId s -> L.build_load (lookup_identifier s table) s builder
+            L.build_load temp "temp_string" builder;
+      | SId s -> 
+          let (llv, ty) = (lookup_identifier s table) in
+          (match ty with
+          | Ast.String -> llv
+          | _ -> L.build_load llv s builder)
       | SAssign (s, e) -> let e' = build_expr table builder e in
-        ignore(L.build_store e' (lookup_identifier s table) builder); e'
+        ignore(L.build_store e' (fst (lookup_identifier s table)) builder); e'
       | SBinop (e1, op, e2) ->
         let e1' = build_expr table builder e1
         and e2' = build_expr table builder e2 in
@@ -189,10 +194,11 @@ let translate (globals, functions, _) =
         ) e1' e2' "tmp" builder
       | SCall (f, args) ->
         (try (* try to see if it's a built in function first *)
-          (match args with
+          match args with
           [e] -> check_built_in f e table builder
-          | _ -> raise Not_found)
+          | _ -> raise Not_found
         with Not_found ->
+          ignore (print_endline ("inside " ^ f));
           let (fdef, fdecl) = StringMap.find f function_decls in
           let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
           let result = f ^ "_result" in
@@ -203,18 +209,18 @@ let translate (globals, functions, _) =
       | StructAssign -> raise Unimplemented *)
       | _ -> raise Unimplemented
     and check_built_in name e table builder =
-      if name == "printi" then
+      if name = "printi" then
         L.build_call printf_func [| int_format_str ; (build_expr table builder e) |] "printf" builder
-      else if name == "printfl" then 
+      else if name = "printfl" then 
         L.build_call printf_func [| float_format_str ; (build_expr table builder e) |] "printf" builder
-      else if name == "printc" then 
+      else if name = "printc" then 
         L.build_call printf_func [| char_format_str ; (build_expr table builder e) |] "printf" builder
-      else if name == "printb" then
+      else if name = "printb" then
         let v = build_expr table builder e in
-        L.build_call printb [| v |] "printb" builder
-      else if name == "prints" then 
+        L.build_call printb [| v |] "" builder
+      else if name = "prints" then 
         let v = build_expr table builder e in
-        L.build_call prints [| v |] "prints" builder
+        L.build_call prints [| v |] "" builder
       else raise Not_found
     in
 
@@ -231,13 +237,13 @@ let translate (globals, functions, _) =
       | SExplicit ((ty, name), sexpr) ->
         let e' = build_expr table builder sexpr in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
-        let table = add_to_current_scope table name var in
+        let table = add_to_current_scope table name var ty in
           ignore (L.build_store e' var builder);
           (builder, table)
       | SDefine (name, sexpr) -> 
         let e' = build_expr table builder sexpr in
         let var = L.build_alloca (ltype_of_typ (fst sexpr)) name builder in
-        let table = add_to_current_scope table name var in
+        let table = add_to_current_scope table name var (fst sexpr) in
           ignore (L.build_store e' var builder);
           (builder, table)
         (* This won't support nested if statements. Will need to figure out a way to support nested if statements.

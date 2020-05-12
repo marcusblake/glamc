@@ -8,11 +8,11 @@ SRC_DIR := ./runtime
 OBJ_DIR := ./
 
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
-OBJ := $(SRC:$(SRC_DIR)/%.c=$(SRC_DIR)/%.o)
+OBJ := $(SRC:$(SRC_DIR)/%.cpp=$(SRC_DIR)/%.o)
 
 FILENAME?=glamc
 
-main: glamc.native $(OBJ_DIR)/glamclib.a
+main: glamc.native $(OBJ_DIR)/libglamc.a
 
 glamc.native:
 	$(OCAMLBUILD) -use-ocamlfind -pkgs llvm glamc.native
@@ -29,11 +29,11 @@ semant:
 custom:
 	$(OCAMLBUILD) -use-ocamlfind $(FILENAME).native
 
-$(OBJ_DIR)/glamclib.a: $(OBJ)
+$(OBJ_DIR)/libglamc.a: $(OBJ)
 	ar -crs $@ $(OBJ)
 	ranlib $@
 
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.h $(SRC_DIR)/%.cpp
+$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
 	$(CPP) -c $(CFLAGS) $< -o $@
 
 
