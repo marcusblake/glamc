@@ -1,25 +1,24 @@
-int j;
-int l;
 
-func can_you_print(string k) int {
-    prints(k);
+func is_palindrome(string k) bool {
+    j := lenstr(k) - 1;
+    i := 0;
+    bool is_palindrome = true;
+    while (i <= j) {
+        if (k[i] != k[j]) {
+            is_palindrome = false;
+        }
+        i = i + 1;
+        j = j - 1;
+    }
+    return is_palindrome;
 }
 
 func main() int {
-   x := 2;
-   y := 14;
-   j = 0;
-   bool a = true;
-   string s = "hello world";
-   while (j <= 10) {
-       if (j > 2 && j < 7) {
-           printi(j);
-       }
-       j = j + 1;
-   }
-   d := s;
-   can_you_print("Say whats up");
-   printc(z);
-   prints(s);
+   string s = "Marcus Blake";
+   p := "racecar";
+   printb(is_palindrome(s));
+   printb(is_palindrome(p));
+   printb(is_palindrome("dogeeseseegod"));
+   printb(is_palindrome("datyayyay"));
    return 0;
 }

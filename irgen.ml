@@ -86,12 +86,12 @@ let translate (globals, functions, _) =
 
   (* BEGIN: Definitions for String library functions *)
   let initString_t = L.function_type void_t [| L.pointer_type string_t; L.pointer_type i8_t |] in
-  (* let strLength_t = L.function_type i32_t [| L.pointer_type string_t |] in *)
+  let strLength_t = L.function_type i32_t [| string_t |] in
   let getChar_t = L.function_type i8_t [| string_t; i32_t |] in
   let prints_t = L.function_type void_t [| string_t |] in
 
   let initString = L.declare_function "initString" initString_t the_module in
-  (* let strLength = L.declare_function "strlen" strLength_t the_module in *)
+  let strLength = L.declare_function "lenstr" strLength_t the_module in
   let getChar = L.declare_function "getChar" getChar_t the_module in
   let prints = L.declare_function "prints" prints_t the_module in
   (* END: Definitions for String library functions *)
@@ -194,7 +194,6 @@ let translate (globals, functions, _) =
           [e] -> check_built_in f e table builder
           | _ -> raise Not_found
         with Not_found ->
-          ignore (print_endline ("inside " ^ f));
           let (fdef, fdecl) = StringMap.find f function_decls in
           let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
           let result = f ^ "_result" in
@@ -221,6 +220,9 @@ let translate (globals, functions, _) =
       else if name = "prints" then 
         let v = build_expr table builder e in
         L.build_call prints [| v |] "" builder
+      else if name = "lenstr" then
+        let v = build_expr table builder e in
+        L.build_call strLength [| v |] "length" builder
       else raise Not_found
     in
 

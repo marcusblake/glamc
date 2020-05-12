@@ -12,14 +12,18 @@ extern "C" void initString(struct String *str, char *elements) {
 
 extern "C" char getChar(struct String str, int index) {
     if (index < 0 || index >= str.length) {
-        fprintf(stderr, "Fatal Error: Index Out Of Bounds");
+        fprintf(stderr, "Fatal Error: Index Out Of Bounds\n");
         exit(1);
     }
     return str.elements[index];
 }
 
+extern "C" int lenstr(struct String str) {
+    return str.length;
+}
+
 extern "C" void prints(struct String str) {
-    printf("%s\n", str.elements);
+    printf("\"%s\"\n", str.elements);
 }
 
 extern "C" void concat(struct String *l, struct String *r, struct String *n_str);
