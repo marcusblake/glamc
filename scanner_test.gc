@@ -19,6 +19,7 @@ func main() int {
    }
    d := s;
    can_you_print("Say whats up");
+   printc(z);
    prints(s);
    return 0;
 }

@@ -128,7 +128,7 @@ let check (globals, functions, structs) =
       | BoolLit l -> (Bool, SBoolLit l)
       | FloatLit l -> (Float, SFloatLit l)
       | CharLit l -> (Char, SCharLit l)
-      | StringLit l -> (String, SStringLit l)
+      | StringLit l -> ignore(print_endline l);(String, SStringLit l)
       | Seq lst -> raise Unimplemented (* Ignore for now *)
       | Id name -> (lookup_identifier name table, SId name)
       | Binop (lhs, op, rhs) ->

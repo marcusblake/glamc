@@ -87,12 +87,12 @@ let translate (globals, functions, _) =
   (* BEGIN: Definitions for String library functions *)
   let initString_t = L.function_type void_t [| L.pointer_type string_t; L.pointer_type i8_t |] in
   (* let strLength_t = L.function_type i32_t [| L.pointer_type string_t |] in *)
-  (* let getChar_t = L.function_type i8_t [| string_t; i32_t |] in *)
+  let getChar_t = L.function_type i8_t [| string_t; i32_t |] in
   let prints_t = L.function_type void_t [| string_t |] in
 
   let initString = L.declare_function "initString" initString_t the_module in
   (* let strLength = L.declare_function "strlen" strLength_t the_module in *)
-  (* let getChar = L.declare_function "getChar" getChar_t the_module in *)
+  let getChar = L.declare_function "getChar" getChar_t the_module in
   let prints = L.declare_function "prints" prints_t the_module in
   (* END: Definitions for String library functions *)
   
@@ -142,7 +142,7 @@ let translate (globals, functions, _) =
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt_int" builder in
     let float_format_str = L.build_global_stringptr "%f\n" "fmt_float" builder in
-    let char_format_str = L.build_global_stringptr "%c\n" "fmt_char" builder in
+    let char_format_str = L.build_global_stringptr "\'%c\'\n" "fmt_char" builder in
 
     let formals : (L.llvalue * Ast.ty) StringMap.t =
       let add_formal map (ty, name) param =
@@ -199,8 +199,12 @@ let translate (globals, functions, _) =
           let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
           let result = f ^ "_result" in
           L.build_call fdef (Array.of_list llargs) result builder)
-      (* | SeqAccess -> raise Unimplemented
-      | StructCall -> raise Unimplemented
+      | SSeqAccess(name, e) -> 
+        let ellv = build_expr table builder e in
+        let (strllv, _) = lookup_identifier name table in
+        let value = L.build_load strllv "" builder in
+        L.build_call getChar [| value; ellv |] "idx" builder 
+      (*| StructCall -> raise Unimplemented
       | StructAccess -> raise Unimplemented
       | StructAssign -> raise Unimplemented *)
       | _ -> raise Unimplemented

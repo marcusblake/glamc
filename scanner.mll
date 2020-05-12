@@ -9,6 +9,8 @@
     else if input.[2] == 'n' then '\n'
     else if input.[2] == 'r' then '\r'
     else '\t'
+
+  let get_str input = List.nth (String.split_on_char '\"' input) 1
 }
 
 let digit = ['0'-'9']
@@ -62,7 +64,7 @@ rule token = parse
 | digit+ as lem  { LITERAL(int_of_string lem) }
 | letter (digit | letter | '_')* as lem { ID(lem) }
 | ''' (escaped_char | letter | digit) ''' as lem { CHARLIT(get_char lem) }
-| '"' (letter | digit | escaped_char | ' ' | '_')* '"' as lem { STRLIT(lem) }
+| '"' (letter | digit | escaped_char | ' ' | '_')* '"' as lem { STRLIT(get_str lem) }
 | (digit+ '.' digit+ exponent?) | (digit+ exponent) | ('.' digit+ exponent?) as lem { FLOATLIT(float_of_string lem) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
