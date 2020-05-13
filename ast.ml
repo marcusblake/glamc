@@ -1,6 +1,7 @@
 (* The following defines the following operations +, -, *, / , && , ||, ==, !=, <, >, <=, >= *)
 type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq | Geq | Mod
 
+type uop = Neg | Not
 
 (* TODO: How to define the type of a struct *)
 type ty = Int | Bool | Float | Char | String | Struct of string | List of ty
@@ -19,6 +20,7 @@ and expr =
   | Seq of expr list
   | Id of string
   | Binop of expr * op * expr
+  | Unop of uop * expr
   | Assign of string * expr
   | Call of string * expr list
   | SeqAccess of string * expr
@@ -97,6 +99,10 @@ let string_of_op = function
   | Greater -> ">"
   | Geq -> ">="
 
+let string_of_uop = function
+    Neg -> "-"
+  | Not -> "!"
+
 let rec string_of_typ = function
     Int -> "int"
   | Bool -> "bool"
@@ -114,6 +120,7 @@ let rec string_of_expr = function
   | Id(s) -> s
   | Binop(e1, o, e2) ->
     string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+  | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"

@@ -161,6 +161,15 @@ let check (globals, functions, structs) =
           (ty, SBinop((t1,lhs'), op, (t2, rhs')))
         else raise (IllegalBinOp (Printf.sprintf "Illegal operation"))
       
+      | Unop(op, e) as ex -> 
+        let (t, e') = check_expr table e in
+          let ty = match op with
+            Neg when t = Int || t = Float -> t
+          | Not when t = Bool -> Bool
+          | _ -> raise (Failure ("illegal unary operator " ^
+                                 string_of_uop op ^ string_of_typ t ^
+                                 " in " ^ string_of_expr ex))
+          in (ty, SUop(op, (t, e')))
       | Assign (name, e) -> 
         let (ty, e') = check_expr table e in
         let vartype = lookup_identifier name table in

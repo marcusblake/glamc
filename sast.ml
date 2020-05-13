@@ -13,6 +13,7 @@ and sex =
   | SSeq of sexpr list
   | SId of string
   | SBinop of sexpr * op * sexpr
+  | SUop of uop * sexpr
   | SAssign of string * sexpr
   | SCall of string * sexpr list
   | SSeqAccess of string * sexpr
