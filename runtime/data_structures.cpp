@@ -26,4 +26,26 @@ extern "C" void prints(struct String str) {
     printf("\"%s\"\n", str.elements);
 }
 
-extern "C" void concat(struct String *l, struct String *r, struct String *n_str);
+extern "C" void initList(struct List *list, int element_size) {
+    list->length = 0;
+    list->element_size = element_size;
+    list->list = reinterpret_cast<char *>(new std::vector<char *>());
+}
+
+extern "C" void getElement(struct List list, int index, void *ret) {
+    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list.list);
+    int n = (int)current_list->size();
+    if (index < 0 || index >= n) {
+        fprintf(stderr, "Fatal Error: Index Out Of Bounds\n");
+        exit(1);
+    }
+    char *element = current_list->at(index);
+    memcpy(ret, element, list.element_size);
+}
+
+extern "C" void addElement(struct List list, void *element) {
+    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list.list);
+    char *copy = new char[list.element_size];
+    memcpy(copy, element, list.element_size);
+    current_list->push_back(copy);
+}
