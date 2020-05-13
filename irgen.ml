@@ -36,7 +36,7 @@ let translate (globals, functions, _) =
   and float_t    = L.float_type  context
   and void_t     = L.void_type   context
   and string_t   = L.named_struct_type context "string"
-  (* and none_t     = L.void_type   context *)
+  (* and array_t	= L.array_type *)
   in
 
   (* 
@@ -56,7 +56,7 @@ let translate (globals, functions, _) =
     | A.Char -> i8_t
     | A.String -> string_t
     | _ -> raise Unimplemented
-    (* | A.None  -> none_t *)
+    (* | A.Void  -> void_t *)
     (* | A.String -> string_t ignore for now *)
     (* | A.List(t) -> L.pointer_type (ltype_of_typ t) *)
   in
@@ -108,7 +108,7 @@ let translate (globals, functions, _) =
 
   (* Function that takes in the name of a variable, and symbol_table. It returns the LLVM representation of the variable *)
   let rec lookup_identifier name = function
-      | [] -> raise (UnrecognizedIdentifier "TODO: ERROR MESSAGE")
+      | [] -> raise (UnrecognizedIdentifier "Unrecognized Identifier Error")
       | current_scope :: tl -> 
         try
           StringMap.find name current_scope

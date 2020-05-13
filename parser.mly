@@ -156,7 +156,6 @@ stmt_list:
 block:
   LBRACE stmt_list RBRACE { Block $2 }
 
-
 if_stmt:
   | IF LPAREN expr RPAREN block             { If($3,$5) }
 
