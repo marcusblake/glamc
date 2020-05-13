@@ -189,6 +189,20 @@ let translate (globals, functions, _) =
         | A.Greater -> L.build_icmp L.Icmp.Sgt
         | A.Geq     -> L.build_icmp L.Icmp.Sge
         ) e1' e2' "tmp" builder
+        (* Float operations *)
+        (*   A.Add	-> L.build_fadd
+					| A.Sub		-> L.build_fsub
+					| A.Mult	-> L.build_fmul
+					| A.Div		-> L.build_fdiv
+					| A.Mod		-> L.build_frem
+					| A.Equal	-> L.build_fcmp L.Fcmp.Oeq
+					| A.Neq		-> L.build_fcmp L.Fcmp.One
+					| A.Less	-> L.build_fcmp L.Fcmp.Olt
+					| A.Leq		-> L.build_fcmp L.Fcmp.Ole
+					| A.Greater	-> L.build_fcmp L.Fcmp.Ogt
+          | A.Geq		-> L.build_fcmp L.Fcmp.Oge 
+          | _         -> raise (Foo "Invalid Float Operator")
+					) e1' e2' "tmp" builder in *)
       | SCall (f, args) ->
         (try (* try to see if it's a built in function first *)
           match args with
