@@ -1,5 +1,5 @@
 (* The following defines the following operations +, -, *, / , && , ||, ==, !=, <, >, <=, >= *)
-type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq | Geq
+type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq | Geq | Mod
 
 
 (* TODO: How to define the type of a struct *)
@@ -87,6 +87,7 @@ let string_of_op = function
   | Sub -> "-"
   | Mult -> "*"
   | Div -> "/"
+  | Mod -> "%"
   | Equal -> "=="
   | Neq -> "!="
   | And -> "&&"

@@ -136,7 +136,7 @@ let check (globals, functions, structs) =
         let (t2, rhs') = check_expr table rhs in
         if t1 = t2 then
           let ty = match op with
-          | Add | Sub | Mult | Div -> 
+          | Add | Sub | Mult | Div | Mod -> 
             (* Should only be able to perform these operations with integers, floats, and chars *)
             (match t1 with
             | Int -> Int

@@ -3,7 +3,7 @@ open Ast
 %}
 
 /* Need to coordinate naming for tokens */
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET PLUS MINUS MULT DIV ASSIGN DEFINE
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET PLUS MINUS MULT DIV ASSIGN DEFINE MODULUS
 %token EQ NEQ LT GT LTEQ GTEQ AND OR
 %token IF ELSE WHILE FOR IN INT BOOL FLOAT CHAR STRING STRUCT LIST
 %token RETURN COMMA COLON DOT FUNC
@@ -27,7 +27,7 @@ open Ast
 %left EQ NEQ
 %left LT LTEQ GT GTEQ
 %left PLUS MINUS
-%left MULT DIV
+%left MULT DIV MODULUS
 
 
 
@@ -129,6 +129,7 @@ expr:
   | expr MINUS expr                      { Binop($1, Sub, $3) } /* 5 - 2 */
   | expr MULT expr                       { Binop($1, Mult, $3) } /* 6 * 3 */
   | expr DIV expr                        { Binop($1, Div, $3) } /* 9 / 3 */
+  | expr MODULUS expr                    { Binop($1, Mod, $3) } /* 9 % 3 */
   | expr EQ expr                         { Binop($1, Equal, $3) } /* 2 == 4 */
   | expr NEQ expr                        { Binop($1, Neq, $3) } /* 9 != 9 */
   | expr LT expr                         { Binop($1, Less, $3) } /* 2 < 3 */
