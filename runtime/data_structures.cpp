@@ -26,13 +26,20 @@ extern "C" void prints(struct String str) {
     printf("\"%s\"\n", str.elements);
 }
 
-extern "C" void initList(struct List *list, int element_size) {
+extern "C" void initList(struct List *list, int element_size, int num, char *elements) {
     list->length = 0;
     list->element_size = element_size;
-    list->list = reinterpret_cast<char *>(new std::vector<char *>());
+    std::vector<char *>* array = new std::vector<char *>();
+    for (int count = 0; count < num; count++) {
+        char *element = new char[element_size];
+        char *curr = elements + element_size * count;
+        memcpy(element, curr, element_size);
+        array->push_back(element);
+    }
+    list->list = reinterpret_cast<char *>(array);
 }
 
-extern "C" void getElement(struct List list, int index, void *ret) {
+extern "C" void getElement(struct List list, int index, char *ret) {
     std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list.list);
     int n = (int)current_list->size();
     if (index < 0 || index >= n) {
@@ -43,7 +50,7 @@ extern "C" void getElement(struct List list, int index, void *ret) {
     memcpy(ret, element, list.element_size);
 }
 
-extern "C" void addElement(struct List list, void *element) {
+extern "C" void addElement(struct List list, char *element) {
     std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list.list);
     char *copy = new char[list.element_size];
     memcpy(copy, element, list.element_size);

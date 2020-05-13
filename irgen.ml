@@ -31,6 +31,7 @@ let translate (globals, functions, _) =
   
   (* Get types from the context *)
   let i32_t      = L.i32_type    context
+  and i64_t      = L.i64_type    context
   and i8_t       = L.i8_type     context
   and i1_t       = L.i1_type     context
   and float_t    = L.float_type  context
@@ -107,7 +108,7 @@ let translate (globals, functions, _) =
 
 
   (* BEGIN: Definition for List library function *)
-  let initList_t = L.function_type void_t [| L.pointer_type list_t; i32_t |] in
+  let initList_t = L.function_type void_t [| L.pointer_type list_t; i64_t; i32_t; L.pointer_type i8_t |] in
   let getEl_t = L.function_type void_t [| L.pointer_type list_t; i32_t; L.pointer_type i8_t |] in 
   let addEl_t = L.function_type void_t [| L.pointer_type list_t; L.pointer_type i8_t |] in
 
@@ -177,7 +178,7 @@ let translate (globals, functions, _) =
     let symbol_table : (L.llvalue * Ast.ty) StringMap.t list = [formals; globalvars] in
 
     (* TODO: IMPLEMENT BUILD_EXPR -> Needs to return llvalue for expression *)
-    let rec build_expr table builder ((_, e) : sexpr) = match e with
+    let rec build_expr table builder ((type_, e) : sexpr) = match e with
       SIntLit i -> L.const_int i32_t i
       | SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
       | SFloatLit f -> L.const_float float_t f
@@ -187,6 +188,16 @@ let translate (globals, functions, _) =
           let temp = L.build_alloca string_t "" builder in
             ignore(L.build_call initString [|temp; strptr|] "" builder);
             L.build_load temp "temp_string" builder;
+      | SSeq lst -> 
+          let len = List.length lst in (* Get length of list *)
+          let llvlen = L.const_int i32_t len in (* llvm const of length *)
+          let llvty = (ltype_of_typ type_) in (* type of list elements *)
+          let llvarray = Array.of_list (List.map (build_expr table builder) lst) in (* array of llvm values *)
+          let buffer = L.define_global "tmparr" (L.const_array llvty llvarray) the_module in (* Set as global variable *)
+          let list_struct = L.build_alloca list_t "list_const" builder in
+          let ptr = L.build_bitcast buffer (L.pointer_type i8_t) "buff_ptr" builder in
+            ignore(L.build_call initList [| list_struct; L.size_of llvty; llvlen; ptr |] "" builder);
+            L.build_load list_struct "temp_list" builder
       | SId s -> L.build_load (fst (lookup_identifier s table)) s builder
       | SAssign (s, e) -> let e' = build_expr table builder e in
         ignore(L.build_store e' (fst (lookup_identifier s table)) builder); e'
@@ -218,10 +229,17 @@ let translate (globals, functions, _) =
           let result = f ^ "_result" in
           L.build_call fdef (Array.of_list llargs) result builder)
       | SSeqAccess(name, e) -> 
-        let ellv = build_expr table builder e in
-        let (strllv, _) = lookup_identifier name table in
-        let value = L.build_load strllv "" builder in
-        L.build_call getChar [| value; ellv |] "idx" builder 
+        let index_llval = build_expr table builder e in
+        let (llval, iden_ty) = lookup_identifier name table in
+        (match iden_ty with
+        A.String -> let value = L.build_load llval "" builder in
+            L.build_call getChar [| value; index_llval |] "idx" builder
+        | A.List ty -> let value = L.build_load llval "" builder in (* Load the struct into a register *)
+            let temp = L.build_alloca (ltype_of_typ ty) "tmp_store" builder in
+            let generic_ptr = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
+              ignore (L.build_call getElement [| value; index_llval; generic_ptr |]);
+              L.build_load temp "list_item" builder
+        | _ -> raise Invalid)
       (*| StructCall -> raise Unimplemented
       | StructAccess -> raise Unimplemented
       | StructAssign -> raise Unimplemented *)
