@@ -1,28 +1,24 @@
-int j;
-int l;
 
-func gcd(int a, int b) int {
-    while (a != b) {
-        if (b < a) {
-            a = a - b;
-        } else {
-            b = b - a;
+func is_palindrome(string k) bool {
+    j := lenstr(k) - 1;
+    i := 0;
+    bool is_palindrome = true;
+    while (i <= j) {
+        if (k[i] != k[j]) {
+            is_palindrome = false;
         }
+        i = i + 1;
+        j = j - 1;
     }
-    return a;
+    return is_palindrome;
 }
 
 func main() int {
-   x := 2;
-   y := 14;
-   ans := gcd(x,y);
-   print(ans);
-   j = 0;
-   while (j <= 10) {
-       if (j > 2 && j < 7) {
-           print(j);
-       }
-       j = j + 1;
-   }
+   string s = "Marcus Blake";
+   p := "racecar";
+   printb(is_palindrome(s));
+   printb(is_palindrome(p));
+   printb(is_palindrome("dogeeseseegod"));
+   printb(is_palindrome("datyayyay"));
    return 0;
 }

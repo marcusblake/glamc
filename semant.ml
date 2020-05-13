@@ -37,16 +37,49 @@ let check (globals, functions, structs) =
     with Not_found -> raise FunctionDoesntExist
   in
 
-  let built_in_decls =
-    StringMap.add "print" {
+  let built_in_functions = [
+    {
       return_type = Int;
-      func_name = "print";
+      func_name = "printi";
       parameters = [(Int, "x")];
-      body = Block [] } StringMap.empty
+      body = Block []
+    };
+    {
+      return_type = Int;
+      func_name = "printc";
+      parameters = [(Char, "x")];
+      body = Block []
+    };
+    {
+      return_type = Int;
+      func_name = "printfl";
+      parameters = [(Float, "x")];
+      body = Block []
+    };
+    {
+      return_type = Int;
+      func_name = "prints";
+      parameters = [(String, "x")];
+      body = Block []
+    };
+    {
+      return_type = Int;
+      func_name = "printb";
+      parameters = [(Bool, "x")];
+      body = Block []
+    };
+    {
+      return_type = Int;
+      func_name = "lenstr";
+      parameters = [(String, "x")];
+      body = Block []
+    };
+
+  ]
   in
 
   (* Add all functions to map to create symbol table --> NOTE: May need to change empty map to built_in_functions *)
-  let function_decls = List.fold_left add_func built_in_decls functions 
+  let function_decls = List.fold_left add_func StringMap.empty (functions @ built_in_functions)
   in
   
   let _ = 
@@ -148,7 +181,14 @@ let check (globals, functions, structs) =
         in
         let sargs = List.map2 check_call f.parameters arguments 
         in (f.return_type, SCall(name, sargs))
-      | SeqAccess (var_name, inside_bracket) -> raise Unimplemented (* Ignore for now *)
+      | SeqAccess (var_name, inside_bracket) -> 
+        let (ty, e') = check_expr table inside_bracket in
+        let type_ = lookup_identifier var_name table in
+        (match ty with
+        | Int -> (match type_ with
+          | String -> (Char, SSeqAccess(var_name, (ty, e')))
+          | _ -> raise (IllegalAccess ((string_of_typ type_) ^ " is not a sequential type")))
+        | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty)))
       | StructCall (var_name, method_name, args) -> raise Unimplemented (* Ignore for now *)
       | StructAccess (var_name, instance_var) -> raise Unimplemented (* Ignore for now *)
       | StructAssign (var_name, instance_var, expr) -> raise Unimplemented (* Ignore for now *)

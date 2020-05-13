@@ -1,7 +1,10 @@
-type action = Ast | Sast | LLVM_IR
+open Sys
+open Printf
+
+type action = Ast | Sast | LLVM_IR | Exec
 
 let () =
-  let action = ref LLVM_IR in
+  let action = ref Exec in
   let set_action a () = action := a in
   let speclist = [
     ("-a", Arg.Unit (set_action Ast), "Print the AST");
@@ -18,7 +21,16 @@ let () =
   match !action with
     Ast -> print_string (Ast.string_of_program ast)
   | _ -> let sast = Semant.check ast in
+  let llvm_module = Llvm.string_of_llmodule (Irgen.translate sast) in
     match !action with
       Ast     -> ()
     | Sast    -> ()
     | LLVM_IR -> print_string (Llvm.string_of_llmodule (Irgen.translate sast))
+    | Exec -> let out = open_out "llvm.out" in
+        fprintf out "%s\n" llvm_module; close_out out;
+        if (command "llc -relocation-model=pic llvm.out" != 0)
+        then raise (Failure "llc: non-zero exit code")
+        else if 
+          ((command "g++ llvm.out.s -L./ -lglamc -o a.out" )!= 0)
+        then raise (Failure "gcc: non-zero exit code")
+        else ()
