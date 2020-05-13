@@ -3,7 +3,7 @@ type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq
 
 
 (* TODO: How to define the type of a struct *)
-type ty = Int | Bool | Float | Char | String | Struct of string | List of ty
+type ty = AnyType | Int | Bool | Float | Char | String | Struct of string | List of ty
 
 type bind = ty * string
 
@@ -104,6 +104,7 @@ let rec string_of_typ = function
   | String -> "string"
   | Struct d -> d
   | List d -> Printf.sprintf "list<%s>" (string_of_typ d)
+  | AnyType -> raise ("Usage of AnyType is not allowed")
 
 
 let rec string_of_expr = function

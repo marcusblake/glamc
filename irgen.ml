@@ -36,6 +36,7 @@ let translate (globals, functions, _) =
   and float_t    = L.float_type  context
   and void_t     = L.void_type   context
   and string_t   = L.named_struct_type context "string"
+  and list_t     = L.named_struct_type context "list"
   (* and none_t     = L.void_type   context *)
   in
 
@@ -44,9 +45,16 @@ let translate (globals, functions, _) =
     int length;
     char *elements;
   }
+
+  struct List {
+		int length;
+		int element_size;
+		char *list;
+	};
   *)
   let _ =
-    L.struct_set_body string_t [| i32_t ; L.pointer_type i8_t |] false in
+    ignore(L.struct_set_body string_t [| i32_t ; L.pointer_type i8_t |] false);
+    L.struct_set_body list_t   [| i32_t ; i32_t ; L.pointer_type i8_t |] false in
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
@@ -55,6 +63,7 @@ let translate (globals, functions, _) =
     | A.Float -> float_t
     | A.Char -> i8_t
     | A.String -> string_t
+    | A.List _ -> list_t
     | _ -> raise Unimplemented
     (* | A.None  -> none_t *)
     (* | A.String -> string_t ignore for now *)
@@ -95,6 +104,16 @@ let translate (globals, functions, _) =
   let getChar = L.declare_function "getChar" getChar_t the_module in
   let prints = L.declare_function "prints" prints_t the_module in
   (* END: Definitions for String library functions *)
+
+
+  (* BEGIN: Definition for List library function *)
+  let initList_t = L.function_type void_t [| L.pointer_type list_t; i32_t |] in
+  let getEl_t = L.function_type void_t [| L.pointer_type list_t; i32_t; L.pointer_type i8_t |] in 
+  let addEl_t = L.function_type void_t [| L.pointer_type list_t; L.pointer_type i8_t |] in
+
+  let initList = L.declare_function "initList" initList_t the_module in
+  let getElement= L.declare_function "getElement" getEl_t  the_module in
+  let addElement = L.declare_function "addElement" addEl_t the_module in
   
 
   (* print boolean *)

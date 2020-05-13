@@ -74,6 +74,12 @@ let check (globals, functions, structs) =
       parameters = [(String, "x")];
       body = Block []
     };
+    {
+      return_type = Int;
+      func_name = "append";
+      parameters = [(List AnyType, "x"); (AnyType, "y")];
+      body = Block []
+    }
 
   ]
   in
@@ -129,7 +135,15 @@ let check (globals, functions, structs) =
       | FloatLit l -> (Float, SFloatLit l)
       | CharLit l -> (Char, SCharLit l)
       | StringLit l -> (String, SStringLit l)
-      | Seq lst -> raise Unimplemented (* Ignore for now *)
+      | Seq lst -> 
+          let new_list = List.map (check_expr table) lst in
+          let rec infer_type lst = 
+            if List.length lst == 1 then fst (List.hd lst)
+            else (match lst with
+            | [] -> raise Seq_type_error
+            | hd :: tl -> let (ty, _) = hd in if ty = infer_type tl then ty else raise Seq_type_error)
+          in
+          (List (infer_type new_list), SSeq new_list)
       | Id name -> (lookup_identifier name table, SId name)
       | Binop (lhs, op, rhs) ->
         let (t1, lhs') = check_expr table lhs in
@@ -174,12 +188,17 @@ let check (globals, functions, structs) =
                           " arguments in " ^ string_of_expr call))
         else let check_call (ft, _) e =
           let (ty, e') = check_expr table e in
-          (* can change this to wrongnumberarguments error if needed *)
           let err = "illegal argument found " ^ string_of_typ ty ^
-                    " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
-          in (check_assign ft ty err, e')
+          " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e in
+          (check_assign ft ty err, e')
         in
-        let sargs = List.map2 check_call f.parameters arguments 
+        if name = "append" then (* a special function which needs special care :) *)
+            let (ty, e1) = check_expr table (List.hd arguments) in
+            let (el_ty, e2) =  check_expr table (List.nth arguments 1) in
+            (match ty with
+            List rest -> if rest = el_ty then (f.return_type, SCall(name, [(ty, e1); (el_ty, e2)])) else raise Seq_type_error
+            | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append")))
+        else let sargs = List.map2 check_call f.parameters arguments
         in (f.return_type, SCall(name, sargs))
       | SeqAccess (var_name, inside_bracket) -> 
         let (ty, e') = check_expr table inside_bracket in
@@ -189,10 +208,10 @@ let check (globals, functions, structs) =
           | String -> (Char, SSeqAccess(var_name, (ty, e')))
           | _ -> raise (IllegalAccess ((string_of_typ type_) ^ " is not a sequential type")))
         | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty)))
-      | StructCall (var_name, method_name, args) -> raise Unimplemented (* Ignore for now *)
-      | StructAccess (var_name, instance_var) -> raise Unimplemented (* Ignore for now *)
-      | StructAssign (var_name, instance_var, expr) -> raise Unimplemented (* Ignore for now *)
-      | StructLit (struct_name, values) -> raise Unimplemented (* Ignore for now *)
+      | StructCall (var_name, method_name, args) -> ignore(print_endline "structcall"); raise Unimplemented (* Ignore for now *)
+      | StructAccess (var_name, instance_var) -> ignore(print_endline "structacess"); raise Unimplemented (* Ignore for now *)
+      | StructAssign (var_name, instance_var, expr) -> ignore(print_endline "structassign"); raise Unimplemented (* Ignore for now *)
+      | StructLit (struct_name, values) -> ignore(print_endline "structlit"); raise Unimplemented (* Ignore for now *)
     in
 
     let check_bool_expr table expr = 
@@ -248,5 +267,5 @@ let check (globals, functions, structs) =
       sbody = sast_func
     }
   in
-  let check_struct stuct_ = raise Unimplemented (* ignore for now *) in
+  let check_struct stuct_ = ignore(print_endline "check_struct"); raise Unimplemented (* ignore for now *) in
   (globals, List.map check_func functions, List.map check_struct structs)
