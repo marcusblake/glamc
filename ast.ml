@@ -169,6 +169,3 @@ let string_of_program (vars, funcs, structs) =
   String.concat ";\n" (List.map string_of_bind vars) ^ ";\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs) ^ "\n" ^
   String.concat "\n" (List.map string_of_struct structs)
-
-
-

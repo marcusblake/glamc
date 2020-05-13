@@ -5,7 +5,7 @@ exception InvalidAssignment
 exception WrongNumberOfArguments
 exception IncorrectArgumentType of string
 exception IllegalBinOp of string
-exception IllegalUnOp of string * string * string
+exception IllegalUnOp of string
 exception IncorrectType of string
 exception InvalidReturnType of string
 exception UnrecognizedIdentifier of string
