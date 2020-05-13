@@ -168,8 +168,8 @@ let check (globals, functions, structs) =
           (ty, SAssign(name, (ty, e')))
       | Call (name, arguments) as call -> 
         let f = find_func function_decls name in
-        let len = List.length arguments in
-        if List.length f.parameters != len then
+        let len = List.length f.parameters in
+        if List.length arguments != len then
           raise (Failure ("expecting " ^ string_of_int len ^
                           " arguments in " ^ string_of_expr call))
         else let check_call (ft, _) e =
