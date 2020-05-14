@@ -15,6 +15,9 @@
 	extern "C" void initList(struct List *list, int element_size, int num, char *elements);
 	extern "C" void getElement(struct List *list, int index, char *ret);
 	extern "C" void addElement(struct List *list, char *element);
+	extern "C" void setElement(struct List *list, int index, char *element);
+	extern "C" void popElement(struct List *list);
+	extern "C" int lenlist(struct List *list);
 	extern "C" void initString(struct String *str, char *elements);
 	extern "C" int strlength(struct String *str);
 	extern "C" char getChar(struct String *str, int index);

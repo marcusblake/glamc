@@ -12,6 +12,19 @@ func is_palindrome(string k) bool {
     return is_palindrome;
 }
 
+
+func printStringList(list<string> my_list) int {
+    put(my_list, 0, "Start");
+    id := lenlist(my_list);
+    counter := 0;
+    while (counter < id) {
+        prints(my_list[counter]);
+        counter = counter + 1;
+    }
+    pop(my_list);
+}
+
+
 func main() int {
     list<string> words = ["Marcus Blake", "racecar", "dogeeseseegod", "datyayyay"];
     count := 0;
@@ -23,11 +36,13 @@ func main() int {
         }
         count = count + 1;
     }
-
-    id := 0;
-    while (id < 3) {
-        prints(palindromes[id]);
-        id = id + 1;
+    printStringList(palindromes);
+    
+    id := lenlist(palindromes);
+    count = 0;
+    while (count < id) {
+        prints(palindromes[count]);
+        count = count + 1;
     }
     return 0;
 }

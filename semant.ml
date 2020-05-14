@@ -79,8 +79,25 @@ let check (globals, functions, structs) =
       func_name = "append";
       parameters = [(List AnyType, "x"); (AnyType, "y")];
       body = Block []
+    };
+    {
+      return_type = Int;
+      func_name = "put";
+      parameters = [(List AnyType, "x"); (Int, "y") ;(AnyType, "z")];
+      body = Block []
+    };
+    {
+      return_type = Int;
+      func_name = "lenlist";
+      parameters = [(List AnyType, "x")];
+      body = Block []
+    };
+    {
+      return_type = Int;
+      func_name = "pop";
+      parameters = [(List AnyType, "x")];
+      body = Block []
     }
-
   ]
   in
 
@@ -196,8 +213,19 @@ let check (globals, functions, structs) =
             let (ty, e1) = check_expr table (List.hd arguments) in
             let (el_ty, e2) =  check_expr table (List.nth arguments 1) in
             (match ty with
-            List rest -> if rest = el_ty then (f.return_type, SCall(name, [(ty, e1); (el_ty, e2)])) else raise Seq_type_error
+            List rest -> if rest = el_ty then (f.return_type, SCall(name, [(ty, e1); (el_ty, e2)])) else raise Func_failed_typecheck
             | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append")))
+        else if name = "lenlist" || name = "pop" then
+        let (ty, e1) = check_expr table (List.hd arguments) in
+          (match ty with List _ -> (f.return_type, SCall(name, [(ty, e1)])) | _ -> raise Func_failed_typecheck)
+        else if name = "put" then
+          let sargs = List.map (check_expr table) arguments in
+          let (ty, e1) = List.hd sargs in
+          (match ty with
+          | List rest -> 
+            if rest = fst (List.nth sargs 2) && fst (List.nth sargs 1) = Int then (f.return_type, SCall(name, sargs))
+            else raise Func_failed_typecheck
+          | _ -> raise Func_failed_typecheck)
         else let sargs = List.map2 check_call f.parameters arguments
         in (f.return_type, SCall(name, sargs))
       | SeqAccess (var_name, inside_bracket) -> 

@@ -106,15 +106,22 @@ let translate (globals, functions, _) =
   let prints = L.declare_function "prints" prints_t the_module in
   (* END: Definitions for String library functions *)
 
-
+  
   (* BEGIN: Definition for List library function *)
   let initList_t = L.function_type void_t [| L.pointer_type list_t; i64_t; i32_t; L.pointer_type i8_t |] in
   let getEl_t = L.function_type void_t [| L.pointer_type list_t; i32_t; L.pointer_type i8_t |] in 
   let addEl_t = L.function_type void_t [| L.pointer_type list_t; L.pointer_type i8_t |] in
+  let setEl_t = L.function_type void_t [| L.pointer_type list_t; i32_t; L.pointer_type i8_t |] in
+  let popEl_t = L.function_type void_t [| L.pointer_type list_t |] in 
+  let lenlist_t = L.function_type i32_t [| L.pointer_type list_t |] in
 
   let initList = L.declare_function "initList" initList_t the_module in
   let getElement= L.declare_function "getElement" getEl_t  the_module in
   let addElement = L.declare_function "addElement" addEl_t the_module in
+  let setElement = L.declare_function "setElement" setEl_t  the_module in
+  let popElement= L.declare_function "popElement" popEl_t  the_module in
+  let lenlist = L.declare_function "lenlist" lenlist_t the_module in
+  (* END: Definition for List library function *)
   
 
   (* print boolean *)
@@ -288,7 +295,22 @@ let translate (globals, functions, _) =
             | _ -> L.build_store el temp builder);
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
           L.build_call addElement [| lst; generic |] "" builder
-        else raise Not_found
+      else if name = "lenlist"  then
+        L.build_call lenlist (Array.of_list args) "" builder
+      else if  name = "pop" then
+        L.build_call popElement (Array.of_list args) "" builder
+      else if name = "put" then
+        let el = List.nth args 2 in
+        let (ty, _) = List.nth e 2 in
+        let idx = List.nth args 1 in
+        let lst = List.hd args in
+        let temp = L.build_alloca (ltype_of_typ ty) "" builder in
+            ignore (match ty with
+            | String | List _ -> let v = L.build_load el "" builder in L.build_store v temp builder
+            | _ -> L.build_store el temp builder);
+        let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
+          L.build_call setElement [| lst; idx; generic |] "" builder
+      else raise Not_found
     in
 
     let rec build_stmt_list table builder = function
