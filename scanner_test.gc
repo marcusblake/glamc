@@ -25,10 +25,24 @@ func printStringList(list<string> my_list) int {
 }
 
 
+func createList(int low, int high) list<int> {
+    list<int> temp;
+    while (low <= high) {
+        append(temp, low);
+        low = low + 1;
+    }
+    return temp;
+}
+
+
 func main() int {
     list<string> words = ["Marcus Blake", "racecar", "dogeeseseegod", "datyayyay"];
     count := 0;
-    list<string> palindromes = [" "];
+    list<string> palindromes;
+    int x;
+    bool y;
+    printi(x);
+    printb(y);
     while (count < 4) {
         str := words[count];
         if (is_palindrome(str)) {
@@ -37,11 +51,10 @@ func main() int {
         count = count + 1;
     }
     printStringList(palindromes);
-    
-    id := lenlist(palindromes);
+    a := createList(1,10);
     count = 0;
-    while (count < id) {
-        prints(palindromes[count]);
+    while (count < lenlist(a)) {
+        printi(a[count]);
         count = count + 1;
     }
     return 0;

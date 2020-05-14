@@ -30,7 +30,7 @@ and expr =
 type stmt =
   Block of stmt list
   | Expr of expr
-  (* | Declare of bind *)
+  | Declare of bind
   | Explicit of bind * expr
   | Define of string * expr (* Will be used for := *)
   | If of expr * stmt
@@ -140,6 +140,7 @@ let rec string_of_stmt = function
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Explicit(b, e) -> string_of_bind b ^ " = " ^ string_of_expr e ^ ";\n"
   | Iterate(v, e, s) -> "for (" ^ v ^ " in " ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  | Declare(b) -> string_of_bind b ^ ";\n"
 
 (* let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n" *)
 

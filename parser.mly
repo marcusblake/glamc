@@ -162,6 +162,7 @@ ifelse_stmt:
 stmt:
     expr SEMI                             { Expr $1 } /* For any standalone expression */
   | block                                 { $1 } /*  */
+  | vardecl SEMI                          { Declare($1) }
   | vardecl ASSIGN expr SEMI              { Explicit($1, $3) } /* int x = 2; */
   | ID DEFINE  expr SEMI                  { Define($1, $3) } /* id := 2 */
   | RETURN expr SEMI                      { Return $2 } /* return 2; */

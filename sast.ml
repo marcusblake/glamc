@@ -25,7 +25,7 @@ and sex =
 type sstmt =
   SBlock of sstmt list
   | SExpr of sexpr
-  (* | Declare of bind *)
+  | SDeclare of bind
   | SExplicit of bind * sexpr
   | SDefine of string * sexpr (* Will be used for := *)
   | SIf of sexpr * sstmt

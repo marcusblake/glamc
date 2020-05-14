@@ -71,28 +71,6 @@ let translate (globals, functions, _) =
     (* | A.List(t) -> L.pointer_type (ltype_of_typ t) *)
   in
 
-  (* Return an initialized value of a given type *)
-  let initialized_value = function 
-    | A.Int -> L.const_int i32_t 0
-    | A.Bool -> L.const_int i1_t 0 (* Initialize to false *)
-    | A.Float -> L.const_float float_t 0.0
-    | A.Char -> L.const_int i8_t 0
-    | _ -> raise Unimplemented
-  in
-
-
-  let add_identifier map (ty, str) = 
-    let var = L.define_global str (initialized_value ty) the_module in 
-      StringMap.add str (var, ty) map
-  in
-
-  let globalvars : (L.llvalue * Ast.ty) StringMap.t = List.fold_left add_identifier StringMap.empty globals in
-
-  let add_scope table = StringMap.empty :: table in
-
-  let add_to_current_scope table name llval ty =
-    List.mapi (fun idx map -> if idx = 0 then StringMap.add name (llval, ty) map else map) table
-  in
 
   (* BEGIN: Definitions for String library functions *)
   let initString_t = L.function_type void_t [| L.pointer_type string_t; L.pointer_type i8_t |] in
@@ -145,16 +123,16 @@ let translate (globals, functions, _) =
 
   let function_decls : (L.llvalue * sfunc_def) StringMap.t = 
     let function_decl map fdecl = 
+      let get_type ty = 
+        let llty = ltype_of_typ ty in
+        match ty with
+        | String | List _ -> L.pointer_type llty
+        | _ -> llty
+      in
       let name = fdecl.sfunc_name 
       and formal_types = 
-        let get_type ty = 
-          let llty = ltype_of_typ ty in
-          match ty with
-          | String | List _ -> L.pointer_type llty
-          | _ -> llty
-        in
         Array.of_list (List.map (fun (ty, _) -> get_type ty) fdecl.sparameters) in
-      let llvalue = L.function_type (ltype_of_typ fdecl.sreturn_type) formal_types in
+      let llvalue = L.function_type (get_type fdecl.sreturn_type) formal_types in
       StringMap.add name (L.define_function name llvalue the_module, fdecl) map in
       List.fold_left function_decl StringMap.empty functions in
 
@@ -176,6 +154,39 @@ let translate (globals, functions, _) =
     let int_format_str = L.build_global_stringptr "%d\n" "fmt_int" builder in
     let float_format_str = L.build_global_stringptr "%f\n" "fmt_float" builder in
     let char_format_str = L.build_global_stringptr "\'%c\'\n" "fmt_char" builder in
+    let empty_str = L.build_global_stringptr "" "empty_str" builder in
+
+    (* Return an initialized value of a given type *)
+    let initialized_value = function 
+        | A.Int -> L.const_int i32_t 0
+        | A.Bool -> L.const_int i1_t 0 (* Initialize to false *)
+        | A.Float -> L.const_float float_t 0.0
+        | A.Char -> L.const_int i8_t 0
+        | A.String ->  L.const_named_struct string_t [| L.const_int i32_t 0; L.const_pointer_null i8_t |]
+        | A.List _ -> L.const_named_struct list_t [| L.const_int i32_t 0; L.const_int i32_t 0; L.const_pointer_null i8_t |]
+        | _ -> raise Unimplemented
+    in
+
+    let add_identifier map (ty, str) = 
+      let var = L.define_global str (initialized_value ty) the_module in 
+      let _ = match ty with
+      | A.String -> ignore(L.build_call initString [|var; empty_str|] "" builder)
+      | A.List el_ty -> 
+        let ptr = L.build_load (L.build_struct_gep var 2 "" builder) "" builder in
+        ignore(L.build_call initList [| var; L.size_of (ltype_of_typ el_ty); L.const_int i32_t 0; ptr |] "" builder)
+      | _ -> ()
+      in
+      StringMap.add str (var, ty) map
+    in
+  
+    let globalvars : (L.llvalue * Ast.ty) StringMap.t = List.fold_left add_identifier StringMap.empty globals in
+  
+    let add_scope table = StringMap.empty :: table in
+  
+    let add_to_current_scope table name llval ty =
+      List.mapi (fun idx map -> if idx = 0 then StringMap.add name (llval, ty) map else map) table
+    in
+  
 
     let formals : (L.llvalue * Ast.ty) StringMap.t =
       let add_formal map (ty, name) param =
@@ -332,6 +343,17 @@ let translate (globals, functions, _) =
               | _ -> L.build_store e' var builder
         in
         (builder, table)
+      | SDeclare(ty, name) -> 
+        let var = L.build_alloca (ltype_of_typ ty) name builder in
+        let _ = match ty with
+              | String -> L.build_call initString [|var; empty_str|] "" builder
+              | List el_ty -> 
+                let ptr = L.build_load (L.build_struct_gep var 2 "" builder) "" builder in
+                L.build_call initList [| var; L.size_of (ltype_of_typ el_ty); L.const_int i32_t 0; ptr |] "" builder
+              | _ -> L.build_store (initialized_value ty) var builder
+        in
+        let table = add_to_current_scope table name var ty in
+        (builder, table)
       | SDefine (name, sexpr) -> 
         let e' = build_expr table builder sexpr in
         let ty = fst sexpr in
@@ -417,7 +439,16 @@ let translate (globals, functions, _) =
         ignore (L.build_cond_br llvalue while_body while_end while_builder);
         (L.builder_at_end context while_end, table)
         
-      | SReturn (sexpr) -> ignore (L.build_ret (build_expr table builder sexpr) builder); (builder, table)
+      | SReturn (sexpr) -> 
+        let ty = fst sexpr in
+        let e = build_expr table builder sexpr in
+        let return_val = (match ty with
+        | A.List _ | A.String -> 
+          let mem = L.build_malloc (ltype_of_typ ty) "return" builder in (* need to malloc so that object one roll back in stack*)
+          ignore(L.build_store (L.build_load e "" builder) mem builder); mem
+        | _ -> e)
+        in
+        ignore(L.build_ret return_val builder); (builder, table)
     in
     
     let funcbuilder = (match fdecl.sbody with

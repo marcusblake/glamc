@@ -267,6 +267,9 @@ let check (globals, functions, structs) =
         let new_table = add_scope table in 
         (SBlock(check_stmt_list new_table lst), table)
       | Expr expr -> (SExpr(check_expr table expr), table)
+      | Declare (ty, name) -> 
+        let table = add_to_current_scope table name ty in 
+          (SDeclare(ty, name), table)
       | Explicit ((ty, name),expr)->
         let (expr_ty, e') = check_expr table expr in
         if expr_ty = ty then 
