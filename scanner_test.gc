@@ -1,10 +1,34 @@
-func main() int {
-    list<float> a = [1,2,3,4];
-    append(a, 69);
+func is_palindrome(string k) bool {
+    j := lenstr(k) - 1;
     i := 0;
-    while (i < 5) {
-        printi(a[i]);
+    bool is_palindrome = true;
+    while (i <= j) {
+        if (k[i] != k[j]) {
+            is_palindrome = false;
+        }
         i = i + 1;
+        j = j - 1;
+    }
+    return is_palindrome;
+}
+
+func main() int {
+    list<string> words = ["Marcus Blake", "racecar", "dogeeseseegod", "datyayyay"];
+    
+    count := 0;
+    list<string> palindromes = [" "];
+    while (count < 4) {
+        str := words[count];
+        if (is_palindrome(str)) {
+            append(palindromes, str);
+        }
+        count = count + 1;
+    }
+
+    id := 0;
+    while (id < 3) {
+        prints(palindromes[id]);
+        id = id + 1;
     }
     return 0;
 }

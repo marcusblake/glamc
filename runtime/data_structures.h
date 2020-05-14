@@ -16,8 +16,8 @@
 	extern "C" void getElement(struct List *list, int index, char *ret);
 	extern "C" void addElement(struct List *list, char *element);
 	extern "C" void initString(struct String *str, char *elements);
-	extern "C" int strlength(struct String str);
-	extern "C" char getChar(struct String str, int index);
+	extern "C" int strlength(struct String *str);
+	extern "C" char getChar(struct String *str, int index);
 	extern "C" void concat(struct String *l, struct String *r, struct String *n_str);
-	extern "C" void prints(struct String str);
+	extern "C" void prints(struct String *str);
 #endif

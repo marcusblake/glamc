@@ -96,9 +96,9 @@ let translate (globals, functions, _) =
 
   (* BEGIN: Definitions for String library functions *)
   let initString_t = L.function_type void_t [| L.pointer_type string_t; L.pointer_type i8_t |] in
-  let strLength_t = L.function_type i32_t [| string_t |] in
-  let getChar_t = L.function_type i8_t [| string_t; i32_t |] in
-  let prints_t = L.function_type void_t [| string_t |] in
+  let strLength_t = L.function_type i32_t [| L.pointer_type string_t |] in
+  let getChar_t = L.function_type i8_t [| L.pointer_type string_t; i32_t |] in
+  let prints_t = L.function_type void_t [| L.pointer_type string_t |] in
 
   let initString = L.declare_function "initString" initString_t the_module in
   let strLength = L.declare_function "lenstr" strLength_t the_module in
@@ -140,7 +140,13 @@ let translate (globals, functions, _) =
     let function_decl map fdecl = 
       let name = fdecl.sfunc_name 
       and formal_types = 
-        Array.of_list (List.map (fun (ty, _) -> ltype_of_typ ty) fdecl.sparameters) in
+        let get_type ty = 
+          let llty = ltype_of_typ ty in
+          match ty with
+          | String | List _ -> L.pointer_type llty
+          | _ -> llty
+        in
+        Array.of_list (List.map (fun (ty, _) -> get_type ty) fdecl.sparameters) in
       let llvalue = L.function_type (ltype_of_typ fdecl.sreturn_type) formal_types in
       StringMap.add name (L.define_function name llvalue the_module, fdecl) map in
       List.fold_left function_decl StringMap.empty functions in
@@ -168,7 +174,9 @@ let translate (globals, functions, _) =
       let add_formal map (ty, name) param =
         L.set_value_name name param;
         let local = L.build_alloca (ltype_of_typ ty) name builder in
-        ignore (L.build_store param local builder);
+        ignore (match ty with
+        | String | List _ -> let copy = L.build_load param "" builder in L.build_store copy local builder;
+        | _ -> L.build_store param local builder;);
         StringMap.add name (local, ty) map
       in
       List.fold_left2 add_formal StringMap.empty fdecl.sparameters (Array.to_list (L.params current_function))
@@ -185,27 +193,35 @@ let translate (globals, functions, _) =
       | SCharLit c -> L.const_int i8_t (int_of_char c)
       | SStringLit s -> 
           let strptr = L.build_global_stringptr s "string_const" builder in
-          let temp = L.build_alloca string_t "" builder in
-            ignore(L.build_call initString [|temp; strptr|] "" builder);
-            L.build_load temp "temp_string" builder;
+          let strct = L.const_named_struct string_t [| L.const_int i32_t 0; strptr |] in 
+          let global = L.define_global "tmp_string" strct the_module in
+            ignore(L.build_call initString [|global; strptr|] "" builder); global
       | SSeq lst -> 
           let ty = (match type_ with A.List ty -> ty | _ -> raise Invalid) in
           let len = List.length lst in (* Get length of list *)
           let llvlen = L.const_int i32_t len in (* llvm const of length *)
           let llvty = (ltype_of_typ ty) in (* type of list elements *)
-          let build_list (ty, sexpr) = 
-            let llvexpr = build_expr table builder (ty, sexpr) in
-            match ty with
-            | A.String | A.List _ -> raise Unimplemented
-            | _ -> llvexpr
+          let llvlst = List.map (build_expr table builder) lst in
+          let strct = L.const_named_struct list_t [| L.const_int i32_t 0; L.const_int i32_t 0; L.const_pointer_null i8_t |] in 
+          let global = L.define_global "lst" strct the_module in
+          let add_to_lst a = let generic = L.build_bitcast a (L.pointer_type i8_t) "" builder in
+            L.build_call addElement [| global; generic |] "" builder
           in
-          let llvarray = Array.of_list (List.map build_list lst) in (* array of llvm values *)
-          let buffer = L.define_global "tmparr" (L.const_array llvty llvarray) the_module in (* Set as global variable *)
-          let list_struct = L.build_alloca list_t "list_const" builder in
-          let ptr = L.build_bitcast buffer (L.pointer_type i8_t) "buff_ptr" builder in
-            ignore(L.build_call initList [| list_struct; L.size_of llvty; llvlen; ptr |] "" builder);
-            L.build_load list_struct "temp_list" builder
-      | SId s -> L.build_load (fst (lookup_identifier s table)) s builder
+          let _ = match ty with 
+              A.String | A.List _ -> 
+                let ptr = L.build_load (L.build_struct_gep global 2 "" builder) "" builder in
+                ignore(L.build_call initList [| global; L.size_of llvty; L.const_int i32_t 0; ptr |] "" builder);
+                ignore(List.map add_to_lst llvlst)
+              | _ -> let llvarray = Array.of_list (List.map (build_expr table builder) lst) in (* array of llvm values *)
+                    let buffer = L.define_global "tmparr" (L.const_array llvty llvarray) the_module in (* Set as global variable *)
+                     let ptr = L.build_bitcast buffer (L.pointer_type i8_t) "buff_ptr" builder in
+                    ignore(L.build_call initList [| global; L.size_of llvty; llvlen; ptr |] "" builder)
+            in
+            global
+      | SId s -> 
+            (match type_ with
+            | String | List _ -> fst (lookup_identifier s table)
+            | _ -> L.build_load (fst (lookup_identifier s table)) s builder)
       | SAssign (s, e) -> let e' = build_expr table builder e in
         ignore(L.build_store e' (fst (lookup_identifier s table)) builder); e'
       | SBinop (e1, op, e2) ->
@@ -237,12 +253,13 @@ let translate (globals, functions, _) =
         let index_llval = build_expr table builder e in
         let (llval, iden_ty) = lookup_identifier name table in
         (match iden_ty with
-        A.String -> let value = L.build_load llval "" builder in
-            L.build_call getChar [| value; index_llval |] "idx" builder
+        | A.String -> L.build_call getChar [| llval; index_llval |] "idx" builder
         | A.List ty -> let temp = L.build_alloca (ltype_of_typ ty) "tmp_store" builder in
             let generic_ptr = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
-              ignore (L.build_call getElement [| llval ; index_llval; generic_ptr |] "" builder);
-              L.build_load temp "list_item" builder
+              ignore (L.build_call getElement [| llval ; L.build_load index_llval "" builder ; generic_ptr |] "" builder);
+              (match ty with
+              | String | List _ -> temp
+              | _ -> L.build_load temp "list_item" builder)
         | _ -> raise Invalid)
       (*| StructCall -> raise Unimplemented
       | StructAccess -> raise Unimplemented
@@ -267,11 +284,11 @@ let translate (globals, functions, _) =
         let (ty, _) = List.nth e 1 in
         let lst = List.hd args in
         let temp = L.build_alloca (ltype_of_typ ty) "" builder in
-            ignore(L.build_store el temp builder);
-        let list_struct = L.build_alloca list_t "list_const" builder in
-          ignore(L.build_store lst list_struct builder);
+            ignore (match ty with
+            | String | List _ -> let v = L.build_load el "" builder in L.build_store v temp builder
+            | _ -> L.build_store el temp builder);
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
-          L.build_call addElement [| list_struct; generic |] "" builder
+          L.build_call addElement [| lst; generic |] "" builder
         else raise Not_found
     in
 
@@ -289,14 +306,21 @@ let translate (globals, functions, _) =
         let e' = build_expr table builder sexpr in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
         let table = add_to_current_scope table name var ty in
-          ignore (L.build_store e' var builder);
-          (builder, table)
+        let _ = match ty with
+              | String | List _ -> let v = L.build_load e' "temp" builder in L.build_store v var builder
+              | _ -> L.build_store e' var builder
+        in
+        (builder, table)
       | SDefine (name, sexpr) -> 
         let e' = build_expr table builder sexpr in
-        let var = L.build_alloca (ltype_of_typ (fst sexpr)) name builder in
-        let table = add_to_current_scope table name var (fst sexpr) in
-          ignore (L.build_store e' var builder);
-          (builder, table)
+        let ty = fst sexpr in
+        let var = L.build_alloca (ltype_of_typ ty) name builder in
+        let table = add_to_current_scope table name var ty in
+        let _ = match ty with
+              | String | List _ -> let v = L.build_load e' "temp" builder in L.build_store v var builder
+              | _ -> L.build_store e' var builder
+        in
+        (builder, table)
         (* This won't support nested if statements. Will need to figure out a way to support nested if statements.
             Not terribly important so we can try to fix it later *)
       | SIf (sexpr, stmt) -> 

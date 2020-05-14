@@ -10,20 +10,20 @@ extern "C" void initString(struct String *str, char *elements) {
     memcpy(str->elements, elements, n);
 }
 
-extern "C" char getChar(struct String str, int index) {
-    if (index < 0 || index >= str.length) {
+extern "C" char getChar(struct String *str, int index) {
+    if (index < 0 || index >= str->length) {
         fprintf(stderr, "Fatal Error: Index Out Of Bounds\n");
         exit(1);
     }
-    return str.elements[index];
+    return str->elements[index];
 }
 
-extern "C" int lenstr(struct String str) {
-    return str.length;
+extern "C" int lenstr(struct String *str) {
+    return str->length;
 }
 
-extern "C" void prints(struct String str) {
-    printf("\"%s\"\n", str.elements);
+extern "C" void prints(struct String *str) {
+    printf("\"%s\"\n", str->elements);
 }
 
 extern "C" void initList(struct List *list, int element_size, int num, char *elements) {
