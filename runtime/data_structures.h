@@ -13,8 +13,8 @@
 
 	extern "C" void emptyList(struct List *list, int element_size);
 	extern "C" void initList(struct List *list, int element_size, int num, char *elements);
-	extern "C" void getElement(struct List list, int index, char *ret);
-	extern "C" void addElement(struct List list, char *element);
+	extern "C" void getElement(struct List *list, int index, char *ret);
+	extern "C" void addElement(struct List *list, char *element);
 	extern "C" void initString(struct String *str, char *elements);
 	extern "C" int strlength(struct String str);
 	extern "C" char getChar(struct String str, int index);

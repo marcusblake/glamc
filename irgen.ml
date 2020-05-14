@@ -189,10 +189,17 @@ let translate (globals, functions, _) =
             ignore(L.build_call initString [|temp; strptr|] "" builder);
             L.build_load temp "temp_string" builder;
       | SSeq lst -> 
+          let ty = (match type_ with A.List ty -> ty | _ -> raise Invalid) in
           let len = List.length lst in (* Get length of list *)
           let llvlen = L.const_int i32_t len in (* llvm const of length *)
-          let llvty = (ltype_of_typ type_) in (* type of list elements *)
-          let llvarray = Array.of_list (List.map (build_expr table builder) lst) in (* array of llvm values *)
+          let llvty = (ltype_of_typ ty) in (* type of list elements *)
+          let build_list (ty, sexpr) = 
+            let llvexpr = build_expr table builder (ty, sexpr) in
+            match ty with
+            | A.String | A.List _ -> raise Unimplemented
+            | _ -> llvexpr
+          in
+          let llvarray = Array.of_list (List.map build_list lst) in (* array of llvm values *)
           let buffer = L.define_global "tmparr" (L.const_array llvty llvarray) the_module in (* Set as global variable *)
           let list_struct = L.build_alloca list_t "list_const" builder in
           let ptr = L.build_bitcast buffer (L.pointer_type i8_t) "buff_ptr" builder in
@@ -220,9 +227,7 @@ let translate (globals, functions, _) =
         ) e1' e2' "tmp" builder
       | SCall (f, args) ->
         (try (* try to see if it's a built in function first *)
-          match args with
-          [e] -> check_built_in f e table builder
-          | _ -> raise Not_found
+          check_built_in f args table builder
         with Not_found ->
           let (fdef, fdecl) = StringMap.find f function_decls in
           let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
@@ -234,10 +239,9 @@ let translate (globals, functions, _) =
         (match iden_ty with
         A.String -> let value = L.build_load llval "" builder in
             L.build_call getChar [| value; index_llval |] "idx" builder
-        | A.List ty -> let value = L.build_load llval "" builder in (* Load the struct into a register *)
-            let temp = L.build_alloca (ltype_of_typ ty) "tmp_store" builder in
+        | A.List ty -> let temp = L.build_alloca (ltype_of_typ ty) "tmp_store" builder in
             let generic_ptr = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
-              ignore (L.build_call getElement [| value; index_llval; generic_ptr |]);
+              ignore (L.build_call getElement [| llval ; index_llval; generic_ptr |] "" builder);
               L.build_load temp "list_item" builder
         | _ -> raise Invalid)
       (*| StructCall -> raise Unimplemented
@@ -245,22 +249,30 @@ let translate (globals, functions, _) =
       | StructAssign -> raise Unimplemented *)
       | _ -> raise Unimplemented
     and check_built_in name e table builder =
+      let args = List.map (build_expr table builder) e in
       if name = "printi" then
-        L.build_call printf_func [| int_format_str ; (build_expr table builder e) |] "printf" builder
+        L.build_call printf_func (Array.of_list ([int_format_str] @ args)) "printf" builder
       else if name = "printfl" then 
-        L.build_call printf_func [| float_format_str ; (build_expr table builder e) |] "printf" builder
+        L.build_call printf_func (Array.of_list ([float_format_str] @ args)) "printf" builder
       else if name = "printc" then 
-        L.build_call printf_func [| char_format_str ; (build_expr table builder e) |] "printf" builder
+        L.build_call printf_func (Array.of_list ([char_format_str] @ args)) "printf" builder
       else if name = "printb" then
-        let v = build_expr table builder e in
-        L.build_call printb [| v |] "" builder
+        L.build_call printb (Array.of_list args) "" builder
       else if name = "prints" then 
-        let v = build_expr table builder e in
-        L.build_call prints [| v |] "" builder
+        L.build_call prints (Array.of_list args) "" builder
       else if name = "lenstr" then
-        let v = build_expr table builder e in
-        L.build_call strLength [| v |] "length" builder
-      else raise Not_found
+        L.build_call strLength (Array.of_list args) "length" builder
+      else if name = "append" then
+        let el = List.nth args 1 in
+        let (ty, _) = List.nth e 1 in
+        let lst = List.hd args in
+        let temp = L.build_alloca (ltype_of_typ ty) "" builder in
+            ignore(L.build_store el temp builder);
+        let list_struct = L.build_alloca list_t "list_const" builder in
+          ignore(L.build_store lst list_struct builder);
+        let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
+          L.build_call addElement [| list_struct; generic |] "" builder
+        else raise Not_found
     in
 
     let rec build_stmt_list table builder = function

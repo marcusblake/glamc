@@ -39,20 +39,21 @@ extern "C" void initList(struct List *list, int element_size, int num, char *ele
     list->list = reinterpret_cast<char *>(array);
 }
 
-extern "C" void getElement(struct List list, int index, char *ret) {
-    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list.list);
+extern "C" void getElement(struct List *list, int index, char *ret) {
+    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
     int n = (int)current_list->size();
     if (index < 0 || index >= n) {
         fprintf(stderr, "Fatal Error: Index Out Of Bounds\n");
         exit(1);
     }
     char *element = current_list->at(index);
-    memcpy(ret, element, list.element_size);
+    memcpy(ret, element, list->element_size);
 }
 
-extern "C" void addElement(struct List list, char *element) {
-    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list.list);
-    char *copy = new char[list.element_size];
-    memcpy(copy, element, list.element_size);
+extern "C" void addElement(struct List *list, char *element) {
+    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
+    char *copy = new char[list->element_size];
+    memcpy(copy, element, list->element_size);
+    list->length++;
     current_list->push_back(copy);
 }

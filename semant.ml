@@ -206,6 +206,7 @@ let check (globals, functions, structs) =
         (match ty with
         | Int -> (match type_ with
           | String -> (Char, SSeqAccess(var_name, (ty, e')))
+          | List ty -> (ty, SSeqAccess(var_name, (ty, e')))
           | _ -> raise (IllegalAccess ((string_of_typ type_) ^ " is not a sequential type")))
         | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty)))
       | StructCall (var_name, method_name, args) -> ignore(print_endline "structcall"); raise Unimplemented (* Ignore for now *)
