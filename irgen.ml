@@ -202,7 +202,13 @@ let translate (globals, functions, _) =
 					| A.Greater	-> L.build_fcmp L.Fcmp.Ogt
           | A.Geq		-> L.build_fcmp L.Fcmp.Oge 
           | _         -> raise (Foo "Invalid Float Operator")
-					) e1' e2' "tmp" builder in *)
+          ) e1' e2' "tmp" builder in *)
+      | SUnop(op, ((t, _) as e)) ->
+        let e' = expr builder e in
+        (match op with
+            A.Neg when t = A.Float -> L.build_fneg
+          | A.Neg                  -> L.build_neg
+          | A.Not                  -> L.build_not) e' "tmp" builder
       | SCall (f, args) ->
         (try (* try to see if it's a built in function first *)
           match args with
