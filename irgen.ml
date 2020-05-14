@@ -219,9 +219,8 @@ let translate (globals, functions, _) =
             in
             global
       | SId s -> 
-            (match type_ with
-            | String | List _ -> fst (lookup_identifier s table)
-            | _ -> L.build_load (fst (lookup_identifier s table)) s builder)
+            let (llv, ty) = lookup_identifier s table in
+            (match ty with A.String | A.List _ -> llv | _ -> L.build_load llv s builder)
       | SAssign (s, e) -> let e' = build_expr table builder e in
         ignore(L.build_store e' (fst (lookup_identifier s table)) builder); e'
       | SBinop (e1, op, e2) ->
@@ -256,7 +255,7 @@ let translate (globals, functions, _) =
         | A.String -> L.build_call getChar [| llval; index_llval |] "idx" builder
         | A.List ty -> let temp = L.build_alloca (ltype_of_typ ty) "tmp_store" builder in
             let generic_ptr = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
-              ignore (L.build_call getElement [| llval ; L.build_load index_llval "" builder ; generic_ptr |] "" builder);
+              ignore (L.build_call getElement [| llval ; index_llval ; generic_ptr |] "" builder);
               (match ty with
               | String | List _ -> temp
               | _ -> L.build_load temp "list_item" builder)

@@ -14,7 +14,6 @@ func is_palindrome(string k) bool {
 
 func main() int {
     list<string> words = ["Marcus Blake", "racecar", "dogeeseseegod", "datyayyay"];
-    
     count := 0;
     list<string> palindromes = [" "];
     while (count < 4) {
