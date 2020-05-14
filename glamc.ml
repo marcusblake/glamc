@@ -32,5 +32,5 @@ let () =
         then raise (Failure "llc: non-zero exit code")
         else if 
           ((command "g++ llvm.out.s -L./ -lglamc -o a.out" )!= 0)
-        then raise (Failure "gcc: non-zero exit code")
+        then raise (Failure "g++: non-zero exit code")
         else ()
