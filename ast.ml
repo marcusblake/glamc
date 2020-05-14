@@ -1,6 +1,7 @@
 (* The following defines the following operations +, -, *, / , && , ||, ==, !=, <, >, <=, >= *)
-type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq | Geq
+type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq | Geq | Mod
 
+type uop = Neg | Not
 
 type ty = AnyType | Int | Bool | Float | Char | String | Struct of string | List of ty
 
@@ -18,6 +19,7 @@ and expr =
   | Seq of expr list
   | Id of string
   | Binop of expr * op * expr
+  | Unop of uop * expr
   | Assign of string * expr
   | Call of string * expr list
   | SeqAccess of string * expr
@@ -86,6 +88,7 @@ let string_of_op = function
   | Sub -> "-"
   | Mult -> "*"
   | Div -> "/"
+  | Mod -> "%"
   | Equal -> "=="
   | Neq -> "!="
   | And -> "&&"
@@ -94,6 +97,10 @@ let string_of_op = function
   | Leq -> "<="
   | Greater -> ">"
   | Geq -> ">="
+
+let string_of_uop = function
+    Neg -> "-"
+  | Not -> "!"
 
 let rec string_of_typ = function
     Int -> "int"
@@ -113,6 +120,7 @@ let rec string_of_expr = function
   | Id(s) -> s
   | Binop(e1, o, e2) ->
     string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+  | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
@@ -162,6 +170,3 @@ let string_of_program (vars, funcs, structs) =
   String.concat ";\n" (List.map string_of_bind vars) ^ ";\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs) ^ "\n" ^
   String.concat "\n" (List.map string_of_struct structs)
-
-
-

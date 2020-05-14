@@ -1,0 +1,30 @@
+func test_mod() int {
+    return 5%2;
+}
+
+func test_add() int {
+    return 5+2;
+}
+
+func test_sub() int {
+    return 5-2;
+}
+
+func test_div() float {
+    return 5%2;
+}
+
+func test_arithmetic_assignment() int {
+    int y := 5;
+    y += 5;
+    return y;
+}
+
+func main() int {
+   printb(test_mod());
+   printb(test_add());
+   printb(test_sub());
+   printb(test_div());
+   printb(test_arithmetic_assignment());
+   return 0;
+}

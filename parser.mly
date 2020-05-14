@@ -3,8 +3,8 @@ open Ast
 %}
 
 /* Need to coordinate naming for tokens */
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET PLUS MINUS MULT DIV ASSIGN DEFINE
-%token EQ NEQ LT GT LTEQ GTEQ AND OR
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET PLUS MINUS MULT DIV ASSIGN DEFINE MODULUS
+%token EQ NEQ LT GT LTEQ GTEQ AND OR NOT
 %token IF ELSE WHILE FOR IN INT BOOL FLOAT CHAR STRING STRUCT LIST
 %token RETURN COMMA COLON DOT FUNC
 %token <int> LITERAL
@@ -22,12 +22,13 @@ open Ast
 
 %right DEFINE
 %right ASSIGN
+%right NOT
 %left OR
 %left AND
 %left EQ NEQ
 %left LT LTEQ GT GTEQ
 %left PLUS MINUS
-%left MULT DIV
+%left MULT DIV MODULUS
 
 
 
@@ -83,10 +84,6 @@ vardecls_comma:
   | vardecl COMMA vardecls_comma { $1 :: $3 }
 
 
-/* CFG for defining a variable (for example int x;) */
-vardecl:
-  type_ ID { ($1, $2) }
-
 type_:
     INT               { Int }
   | BOOL              { Bool }
@@ -129,6 +126,7 @@ expr:
   | expr MINUS expr                      { Binop($1, Sub, $3) } /* 5 - 2 */
   | expr MULT expr                       { Binop($1, Mult, $3) } /* 6 * 3 */
   | expr DIV expr                        { Binop($1, Div, $3) } /* 9 / 3 */
+  | expr MODULUS expr                    { Binop($1, Mod, $3) } /* 9 % 3 */
   | expr EQ expr                         { Binop($1, Equal, $3) } /* 2 == 4 */
   | expr NEQ expr                        { Binop($1, Neq, $3) } /* 9 != 9 */
   | expr LT expr                         { Binop($1, Less, $3) } /* 2 < 3 */
@@ -143,7 +141,13 @@ expr:
   | ID DOT ID LPAREN expr_params RPAREN  { StructCall($1, $3, $5) } /* point.toString() */
   | ID DOT ID                            { StructAccess($1, $3) }
   | ID DOT ID ASSIGN expr                { StructAssign($1, $3, $5) }
+  | MINUS expr                           { Unop(Neg, $2) }
+  | NOT expr                             { Unop(Not, $2) }
 
+/* CFG for defining a variable (for example int x;) */
+vardecl:
+    type_ ID { ($1, $2) }
+  /* | type_ ID ASSIGN expr { Explicit(($1, $2), $4) } */
 
 stmt_list:
   /* nothing */     { [] }
@@ -166,7 +170,7 @@ stmt:
   | vardecl ASSIGN expr SEMI              { Explicit($1, $3) } /* int x = 2; */
   | ID DEFINE  expr SEMI                  { Define($1, $3) } /* id := 2 */
   | RETURN expr SEMI                      { Return $2 } /* return 2; */
-  | FOR LPAREN ID IN expr RPAREN block     { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
+  | FOR LPAREN ID IN expr RPAREN block    { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
   | WHILE LPAREN expr RPAREN block        { While($3, $5) }
   | if_stmt                               { $1 }
   | ifelse_stmt                           { $1 }

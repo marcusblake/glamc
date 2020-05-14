@@ -35,6 +35,7 @@ rule token = parse
 | '-'      { MINUS }
 | '*'      { MULT }
 | '/'      { DIV }
+| '%'      { MODULUS }
 | '='      { ASSIGN }
 | ":="     { DEFINE }
 | "=="     { EQ }
@@ -45,6 +46,7 @@ rule token = parse
 | ">="     { GTEQ }
 | "&&"     { AND }
 | "||"     { OR }
+| "!"      { NOT }
 | "if"     { IF }
 | "else"   { ELSE }
 | "while"  { WHILE }
