@@ -136,13 +136,16 @@ let check (globals, functions, structs) =
         let (t2, rhs') = check_expr table rhs in
         if t1 = t2 then
           let ty = match op with
-          | Add | Sub | Mult | Div | Mod -> 
+          | Add | Sub | Mult | Div -> 
             (* Should only be able to perform these operations with integers, floats, and chars *)
             (match t1 with
             | Int -> Int
             | Float -> Float
             | Char -> Char
             | _ -> raise Bad_arithmetic)
+          | Mod -> (match t1 with
+            | Int -> Int
+            | _ -> raise Unimplemented)
           | And | Or ->
             (match t1 with
             | Bool -> Bool
