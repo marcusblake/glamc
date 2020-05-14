@@ -10,13 +10,13 @@ extern "C" void printb(int d) {
     }
 }
 
-extern "C" int string_to_int(string s) {
-    return atoi(s);
-}
+// extern "C" int string_to_int(string s) {
+//     return atoi(s);
+// }
 
-extern "C" string int_to_string(int i) {
-    return to_string(i);
-}
+// extern "C" string int_to_string(int i) {
+//     return to_string(i);
+// }
 
 extern "C" int float_to_int(float f) {
     return (int)f;
