@@ -295,8 +295,15 @@ let check (globals, functions, structs) =
       | IfElse (expr, stmt1, stmt2) -> (SIfElse(check_bool_expr table expr, fst (check_stmt table stmt1), fst (check_stmt table stmt2)), table)
       | Iterate (x, e, stmt) ->
         let (ty, e') = check_expr table e in
+        let get_siterate el_ty = (function
+          Block lst -> (* flatten list *)
+            let new_table = add_to_current_scope (add_scope table) x el_ty in 
+            (SIterate(x, (ty, e'), SBlock(check_stmt_list new_table lst)), table)
+          | _ -> raise Invalid)
+        in
         (match ty with
-        | List _ | String -> (SIterate(x, (ty, e'), fst (check_stmt table stmt)), table)
+        | List el -> get_siterate el stmt
+        | String -> get_siterate Char stmt
         | _ -> raise Invalid)
       | While (e, stmt) -> (SWhile(check_bool_expr table e, fst (check_stmt table stmt)), table)
     in

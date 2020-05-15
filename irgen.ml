@@ -298,6 +298,8 @@ let translate (globals, functions, _) =
       | StructAssign -> raise Unimplemented *)
       | _ -> raise Unimplemented
     and check_built_in name e table builder =
+
+
       let args = List.map (build_expr table builder) e in
       if name = "printi" then
         L.build_call printf_func (Array.of_list ([int_format_str] @ args)) "printf" builder
@@ -425,7 +427,83 @@ let translate (globals, functions, _) =
 
         ignore (L.build_cond_br llvalue if_block else_block builder);
         (L.builder_at_end context if_end, table)
-      | SIterate (var, sexpr, stmt) -> raise Unimplemented (* ignore for now *)
+
+      | SIterate (name, sexpr, stmt) -> 
+        (*
+        setup
+        for:
+          bz count < len
+        for_body:
+          getElement
+
+        for_end:
+
+        *)
+        let get_element_type = (function | A.List ty -> ty | A.String -> Char | _ -> raise Invalid) in
+      
+        let e' = build_expr table builder sexpr in
+        let ty = fst sexpr in
+        let iterable = L.build_alloca (ltype_of_typ ty) "" builder in
+        let v = L.build_load e' "temp" builder in 
+          ignore(L.build_store v iterable builder);
+
+
+        (* Allocate temporary variable to store *)
+        let el_ty = get_element_type ty in
+        let temp = L.build_alloca (ltype_of_typ el_ty) name builder in
+
+
+        (* Get length *)
+        let len= L.build_alloca (ltype_of_typ A.Int) "" builder in
+        let _ =  match ty with
+          | List _ -> L.build_store ( L.build_call lenlist [|iterable|] "" builder) len builder
+          | String -> L.build_store ( L.build_call strLength [|iterable|] "" builder) len builder
+          | _ -> raise Invalid
+        in
+
+
+        let add_res = L.build_sub (L.build_load len "" builder) (L.const_int i32_t 0) "" builder in
+          ignore(L.build_store add_res len builder);
+
+
+        (* Set counter *)
+        let counter = L.build_alloca (ltype_of_typ A.Int) "" builder in
+          ignore(L.build_store (initialized_value A.Int) counter builder);
+
+        let new_table = add_scope table in
+        let new_table = add_to_current_scope new_table name temp el_ty in
+      
+
+        let for_loop = L.append_block context "for" current_function in
+
+        let start_for = L.build_br for_loop in (* partial function *)
+        ignore (start_for builder);
+
+        let for_builder = L.builder_at_end context for_loop in
+
+        let llvalue = L.build_icmp L.Icmp.Slt (L.build_load counter "" for_builder) (L.build_load len "" for_builder) "" for_builder in
+        let for_body = L.append_block context "for_body" current_function in
+        let body_builder = L.builder_at_end context for_body in
+        let index = L.build_load counter "" body_builder in
+        let _ =  match ty with
+          | List _ -> L.build_call getElement [|iterable; index; L.build_bitcast temp (L.pointer_type i8_t) "" body_builder|] "" body_builder
+          | String -> L.build_store (L.build_call getChar [|iterable; index|] "" body_builder) temp body_builder
+          | _ -> raise Invalid
+        in
+        let flatten_body = (function
+          | SBlock lst -> build_stmt_list new_table body_builder lst
+          | _ -> raise Invalid)
+        in
+        let updated_builder = flatten_body stmt in
+        let add_res = L.build_add (L.build_load counter "" updated_builder) (L.const_int i32_t 1) "" updated_builder in
+          ignore(L.build_store add_res counter updated_builder);
+        add_terminal updated_builder start_for;
+
+        let for_end = L.append_block context "for_end" current_function in
+
+        ignore (L.build_cond_br llvalue for_body for_end for_builder);
+        
+        (L.builder_at_end context for_end, table)
       | SWhile (sexpr, stmt) -> 
         (*
           br label %while
