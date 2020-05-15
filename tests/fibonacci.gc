@@ -1,0 +1,24 @@
+func fib(int n) int {
+    list<int> lst = [0, 1];
+    i := 2;
+    while (i <= n) {
+        append(lst, lst[i-1] + lst[i-2]);
+        i = i + 1;
+    }
+    return lst[n];
+}
+
+
+func main() int {
+    id := 0;
+    list<int> fibs;
+    while (id <= 20) {
+        append(fibs, fib(id));
+        id = id + 1;
+    }
+
+    for (num in fibs) {
+        printi(num);
+    }
+    return 0;
+}
