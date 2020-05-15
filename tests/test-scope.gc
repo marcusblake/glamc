@@ -1,0 +1,20 @@
+int b;
+b = 5;
+
+func foo() int {
+	int a;
+	a = b+5;
+	return a;
+	}
+
+func bar() int {
+	int b;
+	b = 2;
+	return foo();
+	}
+
+func main() int {
+    println(foo());
+    println(bar());
+    return 0;
+}

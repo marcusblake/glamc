@@ -1,0 +1,18 @@
+int a;
+int b;
+a = 2;
+b = 4;
+
+func increment(int a int){
+	a = a + 1;
+	return a;
+}
+func main() int{
+    printi(a);
+    printi(b);
+    a = increment(a);
+    b = increment(b);
+    printi(a);
+    printi(b);
+    return 0;
+}
