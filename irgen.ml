@@ -239,8 +239,6 @@ let translate (globals, functions, _) =
       | SId s -> 
             let (llv, ty) = lookup_identifier s table in
             (match ty with A.String | A.List _ -> llv | _ -> L.build_load llv s builder)
-      | SAssign (s, e) -> let e' = build_expr table builder e in
-        ignore(L.build_store e' (fst (lookup_identifier s table)) builder); e'
       | SBinop (e1, op, e2) ->
         let e1' = build_expr table builder e1
         and e2' = build_expr table builder e2 in
@@ -274,25 +272,32 @@ let translate (globals, functions, _) =
           | _         -> raise (Foo "Invalid Float Operator")
 					) e1' e2' "tmp" builder in *)
       | SCall (f, args) ->
-        (try (* try to see if it's a built in function first *)
+        (
+        try (* try to see if it's a built in function first *)
           check_built_in f args table builder
         with Not_found ->
           let (fdef, fdecl) = StringMap.find f function_decls in
           let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
           let result = f ^ "_result" in
-          L.build_call fdef (Array.of_list llargs) result builder)
-      | SSeqAccess(name, e) -> 
+          L.build_call fdef (Array.of_list llargs) result builder
+        )
+      | SSeqAccess(s, e) -> 
+        let llval = build_expr table builder s in
         let index_llval = build_expr table builder e in
-        let (llval, iden_ty) = lookup_identifier name table in
-        (match iden_ty with
+        let (iden_ty, _) = s in
+        (
+        match iden_ty with
         | A.String -> L.build_call getChar [| llval; index_llval |] "idx" builder
         | A.List ty -> let temp = L.build_alloca (ltype_of_typ ty) "tmp_store" builder in
             let generic_ptr = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
-              ignore (L.build_call getElement [| llval ; index_llval ; generic_ptr |] "" builder);
-              (match ty with
-              | String | List _ -> temp
-              | _ -> L.build_load temp "list_item" builder)
-        | _ -> raise Invalid)
+            ignore (L.build_call getElement [| llval ; index_llval ; generic_ptr |] "" builder);
+            (
+            match ty with
+            | String | List _ -> temp
+            | _ -> L.build_load temp "list_item" builder
+            )
+        | _ -> raise Invalid
+        )
       (*| StructCall -> raise Unimplemented
       | StructAccess -> raise Unimplemented
       | StructAssign -> raise Unimplemented *)
@@ -427,7 +432,9 @@ let translate (globals, functions, _) =
 
         ignore (L.build_cond_br llvalue if_block else_block builder);
         (L.builder_at_end context if_end, table)
-
+      | SAssign (s, e) -> let e' = build_expr table builder e in
+        ignore(L.build_store e' (fst (lookup_identifier s table)) builder);
+        (builder, table)
       | SIterate (name, sexpr, stmt) -> 
         (*
         setup
@@ -542,6 +549,7 @@ let translate (globals, functions, _) =
         | _ -> e)
         in
         ignore(L.build_ret return_val builder); (builder, table)
+      | _ -> raise Unimplemented
     in
     
     let funcbuilder = (match fdecl.sbody with

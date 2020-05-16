@@ -1,6 +1,7 @@
 open Ast
 open Sast
 open Exceptions
+open Printing
 
 
 (* Map used for symbol table *)
@@ -204,11 +205,6 @@ let check (globals, functions, structs) =
                                  string_of_uop op ^ string_of_typ t ^
                                  " in " ^ string_of_expr ex))
           in (ty, SUop(op, (t, e')))
-      | Assign (name, e) -> 
-        let (ty, e') = check_expr table e in
-        let vartype = lookup_identifier name table in
-        let ty = check_assign vartype ty "" in
-          (ty, SAssign(name, (ty, e')))
       | Call (name, arguments) as call -> 
         let f = find_func function_decls name in
         let len = List.length f.parameters in
@@ -233,26 +229,29 @@ let check (globals, functions, structs) =
         else if name = "put" then
           let sargs = List.map (check_expr table) arguments in
           let (ty, e1) = List.hd sargs in
-          (match ty with
+          (
+          match ty with
           | List rest -> 
             if rest = fst (List.nth sargs 2) && fst (List.nth sargs 1) = Int then (f.return_type, SCall(name, sargs))
             else raise Func_failed_typecheck
-          | _ -> raise Func_failed_typecheck)
+          | _ -> raise Func_failed_typecheck
+          )
         else let sargs = List.map2 check_call f.parameters arguments
         in (f.return_type, SCall(name, sargs))
-      | SeqAccess (var_name, inside_bracket) -> 
+      | SeqAccess (var, inside_bracket) -> 
         let (ty, e') = check_expr table inside_bracket in
-        let type_ = lookup_identifier var_name table in
-        (match ty with
-        | Int -> (match type_ with
-          | String -> (Char, SSeqAccess(var_name, (ty, e')))
-          | List ty -> (ty, SSeqAccess(var_name, (ty, e')))
-          | _ -> raise (IllegalAccess ((string_of_typ type_) ^ " is not a sequential type")))
-        | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty)))
-      | StructCall (var_name, method_name, args) -> ignore(print_endline "structcall"); raise Unimplemented (* Ignore for now *)
-      | StructAccess (var_name, instance_var) -> ignore(print_endline "structacess"); raise Unimplemented (* Ignore for now *)
-      | StructAssign (var_name, instance_var, expr) -> ignore(print_endline "structassign"); raise Unimplemented (* Ignore for now *)
-      | StructLit (struct_name, values) -> ignore(print_endline "structlit"); raise Unimplemented (* Ignore for now *)
+        let (type_, e1) = check_expr table var in
+        (
+        match ty with
+        | Int -> (
+          match type_ with
+          | String -> (Char, SSeqAccess((type_, e1), (ty, e')))
+          | List ty -> (ty, SSeqAccess((type_, e1), (ty, e')))
+          | _ -> raise (IllegalAccess ((string_of_typ type_) ^ " is not a sequential type"))
+          )
+        | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty))
+        )
+      | _ -> raise Unimplemented (* Ignore for now *)
     in
 
     let check_bool_expr table expr = 
@@ -284,10 +283,18 @@ let check (globals, functions, structs) =
           (SDeclare(ty, name), table)
       | Explicit ((ty, name),expr)->
         let (expr_ty, e') = check_expr table expr in
-        if expr_ty = ty then 
-        let table = add_to_current_scope table name expr_ty in 
-        (SExplicit((ty, name), (expr_ty, e')), table)
-        else raise InvalidAssignment
+        if expr_ty = ty then (
+          let table = add_to_current_scope table name expr_ty in 
+          (SExplicit((ty, name), (expr_ty, e')), table)
+        )
+        else (
+          raise InvalidAssignment
+        )
+      | Assign (name, e) -> 
+        let (ty, e') = check_expr table e in
+        let vartype = lookup_identifier name table in
+        let ty = check_assign vartype ty "" in
+        (SAssign(name, (ty, e')), table)
       | Define (name, expr) -> 
         let (expr_ty, e') = check_expr table expr in
         let table = add_to_current_scope table name expr_ty in 
@@ -306,6 +313,7 @@ let check (globals, functions, structs) =
         | String -> get_siterate Char stmt
         | _ -> raise Invalid)
       | While (e, stmt) -> (SWhile(check_bool_expr table e, fst (check_stmt table stmt)), table)
+      | _ -> raise Unimplemented (* Ignore for now *)
     in
     let sast_func = SBlock (match func.body with
       Block lst -> check_stmt_list symbol_table lst (* flatten block to list *)

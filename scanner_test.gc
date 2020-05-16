@@ -1,0 +1,9 @@
+
+
+func add(a: int, b: list<int>) float {
+    return 0.0;
+}
+
+func main() int {
+    var a int;
+}

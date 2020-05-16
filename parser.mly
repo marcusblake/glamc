@@ -3,10 +3,48 @@ open Ast
 %}
 
 /* Need to coordinate naming for tokens */
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET PLUS MINUS MULT DIV ASSIGN DEFINE MODULUS
-%token EQ NEQ LT GT LTEQ GTEQ AND OR NOT
-%token IF ELSE WHILE FOR IN INT BOOL FLOAT CHAR STRING STRUCT LIST
-%token RETURN COMMA COLON DOT FUNC
+%token SEMI 
+%token LPAREN 
+%token RPAREN 
+%token LBRACE 
+%token RBRACE 
+%token LBRACKET 
+%token RBRACKET 
+%token PLUS 
+%token MINUS 
+%token MULT 
+%token DIV 
+%token ASSIGN 
+%token DEFINE 
+%token MODULUS
+%token EQ 
+%token NEQ 
+%token LT 
+%token GT 
+%token LTEQ 
+%token GTEQ 
+%token AND 
+%token OR 
+%token NOT
+%token IF
+%token ELSE
+%token WHILE
+%token FOR
+%token IN
+%token INT
+%token BOOL
+%token FLOAT
+%token CHAR
+%token STRING
+%token STRUCT
+%token LIST
+%token RETURN
+%token COMMA
+%token COLON
+%token DOT
+%token FUNC
+%token VAR
+%token NL
 %token <int> LITERAL
 %token <bool> BLIT
 %token <char> CHARLIT /* Need to recognize chars in lexer */
@@ -39,14 +77,14 @@ program:
 
 decls:
   /* nothing */ { ([], [], []) }
-  | vardecl SEMI decls { (($1 :: fir $3), sec $3, third $3) }
+  | vardecl NL decls { (($1 :: fir $3), sec $3, third $3) }
   | func_decl decls { (fir $2, ($1 :: sec $2), third $2)  }
   | struct_decl decls { (fir $2, sec $2, ($1 :: third $2)) }
 
 
 /* Need to define func keyword in scanner */
 func_decl:
-  FUNC ID LPAREN vardecl_parms RPAREN type_ block
+  FUNC ID LPAREN func_parms RPAREN type_ block
   {
     {
       func_name = $2;
@@ -57,7 +95,7 @@ func_decl:
   }
 
 struct_decl:
-  STRUCT ID LBRACE vardecls_semi func_decls RBRACE
+  STRUCT ID LBRACE vardecls_nl func_decls RBRACE
   {
     {
       struct_name = $2;
@@ -70,18 +108,21 @@ func_decls:
   /* NOTHING */ { [] }
   | func_decl func_decls { $1 :: $2 }
 
-vardecls_semi:
+vardecls_nl:
   /* NOTHING */ { [] }
-  | vardecl SEMI vardecls_semi { $1 :: $3 }
+  | vardecl NL vardecls_nl { $1 :: $3 }
 
 
-vardecl_parms:
+func_parms:
     /* NOTHING */ { [] }
-  | vardecls_comma { $1 }
+  | funcparam_comma { $1 }
 
-vardecls_comma:
-  | vardecl { [$1] }
-  | vardecl COMMA vardecls_comma { $1 :: $3 }
+funcparam_comma:
+  | funcparam { [$1] }
+  | funcparam COMMA funcparam_comma { $1 :: $3 }
+
+funcparam:
+  | ID COLON type_ { ($3, $1) }
 
 
 type_:
@@ -113,8 +154,9 @@ field_list:
   anon_decl { [$1] }
   | anon_decl COMMA field_list { $1 :: $3 }
 
-expr:
-    ID                                   { Id($1) } /* varName */
+
+literal:
+  ID                                     { Id($1) } /* varName */
   | LITERAL                              { IntLit($1) } /* 2 */
   | BLIT                                 { BoolLit($1) } /* true */
   | FLOATLIT                             { FloatLit($1) } /* 3.22 */
@@ -122,31 +164,38 @@ expr:
   | STRLIT                               { StringLit($1) } /*  "helloworld" */
   | ID LBRACE struct_fields RBRACE       { StructLit($1, $3) } /* Point{x: 2, y: 3}  */
   | LBRACKET expr_params RBRACKET        { Seq($2) } /* [2,3,4,5] */
+  | ID DOT ID                            { StructAccess($1, $3) }
+
+bexpr:
+  | expr LT expr                       { Binop($1, Less, $3) } /* 2 < 3 */
+  | expr GT expr                       { Binop($1, Greater, $3) } /* 6 > 0 */
+  | expr GTEQ expr                     { Binop($1, Geq, $3) } /* 2 >= 3 */
+  | expr LTEQ expr                     { Binop($1, Leq, $3) } /* 2 <= 3 */
+  | expr AND expr                      { Binop($1, And, $3) } /* true && false */
+  | expr OR expr                       { Binop($1, Or, $3) } /* true || false */
+  | expr EQ expr                       { Binop($1, Equal, $3) } /* 2 == 4 */
+  | expr NEQ expr                      { Binop($1, Neq, $3) } /* 9 != 9 */
+  | NOT expr                           { Unop(Not, $2) }
+
+nexpr:
   | expr PLUS expr                       { Binop($1, Add, $3) } /* 2 + 3 */
   | expr MINUS expr                      { Binop($1, Sub, $3) } /* 5 - 2 */
   | expr MULT expr                       { Binop($1, Mult, $3) } /* 6 * 3 */
   | expr DIV expr                        { Binop($1, Div, $3) } /* 9 / 3 */
   | expr MODULUS expr                    { Binop($1, Mod, $3) } /* 9 % 3 */
-  | expr EQ expr                         { Binop($1, Equal, $3) } /* 2 == 4 */
-  | expr NEQ expr                        { Binop($1, Neq, $3) } /* 9 != 9 */
-  | expr LT expr                         { Binop($1, Less, $3) } /* 2 < 3 */
-  | expr GT expr                         { Binop($1, Greater, $3) } /* 6 > 0 */
-  | expr GTEQ expr                       { Binop($1, Geq, $3) } /* 2 >= 3 */
-  | expr LTEQ expr                       { Binop($1, Leq, $3) } /* 2 <= 3 */
-  | expr AND expr                        { Binop($1, And, $3) } /* true && false */
-  | expr OR expr                         { Binop($1, Or, $3) } /* true || false */
-  | ID ASSIGN expr                       { Assign($1, $3) } /* x = 2 */
-  | ID LBRACKET expr RBRACKET            { SeqAccess($1, $3) }
+  | MINUS expr                           { Unop(Neg, $2) }
+
+expr:
+  literal                                { $1 }
+  | nexpr                                { $1 }
+  | bexpr                                { $1 } 
+  | literal LBRACKET expr RBRACKET       { SeqAccess($1, $3) }
   | ID LPAREN expr_params RPAREN         { Call($1, $3) }
   | ID DOT ID LPAREN expr_params RPAREN  { StructCall($1, $3, $5) } /* point.toString() */
-  | ID DOT ID                            { StructAccess($1, $3) }
-  | ID DOT ID ASSIGN expr                { StructAssign($1, $3, $5) }
-  | MINUS expr                           { Unop(Neg, $2) }
-  | NOT expr                             { Unop(Not, $2) }
 
 /* CFG for defining a variable (for example int x;) */
 vardecl:
-    type_ ID { ($1, $2) }
+    VAR ID type_ { ($3, $2) }
   /* | type_ ID ASSIGN expr { Explicit(($1, $2), $4) } */
 
 stmt_list:
@@ -164,12 +213,14 @@ ifelse_stmt:
    IF LPAREN expr RPAREN block ELSE block  { IfElse($3,$5,$7) } /* if (d > 3) { } else { } */
 
 stmt:
-    expr SEMI                             { Expr $1 } /* For any standalone expression */
+    expr SEMI                               { Expr $1 } /* For any standalone expression */
   | block                                 { $1 } /*  */
-  | vardecl SEMI                          { Declare($1) }
-  | vardecl ASSIGN expr SEMI              { Explicit($1, $3) } /* int x = 2; */
-  | ID DEFINE  expr SEMI                  { Define($1, $3) } /* id := 2 */
-  | RETURN expr SEMI                      { Return $2 } /* return 2; */
+  | vardecl SEMI                            { Declare($1) }
+  | vardecl ASSIGN expr SEMI                { Explicit($1, $3) } /* int x = 2; */
+  | ID DEFINE  expr SEMI                    { Define($1, $3) } /* id := 2 */
+  | ID ASSIGN expr SEMI                     { Assign($1, $3) } /* x = 2 */
+  | ID DOT ID ASSIGN expr SEMI              { StructAssign($1, $3, $5) }
+  | RETURN expr SEMI                        { Return $2 } /* return 2; */
   | FOR LPAREN ID IN expr RPAREN block    { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
   | WHILE LPAREN expr RPAREN block        { While($3, $5) }
   | if_stmt                               { $1 }

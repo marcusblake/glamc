@@ -14,12 +14,10 @@ and sex =
   | SId of string
   | SBinop of sexpr * op * sexpr
   | SUop of uop * sexpr
-  | SAssign of string * sexpr
   | SCall of string * sexpr list
-  | SSeqAccess of string * sexpr
+  | SSeqAccess of sexpr * sexpr
   | SStructCall of string * string * sexpr list (* name of identifier along with function call and list of arguments *)
   | SStructAccess of string * string (* name of identifier and name of variable being accessed *)
-  | SStructAssign of string * string * sexpr
 
   
 (* A statement is something that controls how the program is executed *)
@@ -34,6 +32,8 @@ type sstmt =
   | SIterate of string * sexpr * sstmt
   | SWhile of sexpr * sstmt
   | SReturn of sexpr
+  | SAssign of string * sexpr
+  | SStructAssign of string * string * sexpr
 
 (* Define the type of a funcion *)
 type sfunc_def = {

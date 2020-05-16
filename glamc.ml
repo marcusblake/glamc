@@ -19,7 +19,7 @@ let () =
 
   let ast = Parser.program Scanner.token lexbuf in
   match !action with
-    Ast -> print_string (Ast.string_of_program ast)
+    Ast -> print_string (Printing.string_of_program ast)
   | _ -> let sast = Semant.check ast in
   let llvm_module = Llvm.string_of_llmodule (Irgen.translate sast) in
     match !action with

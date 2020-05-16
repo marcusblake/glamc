@@ -61,6 +61,7 @@ rule token = parse
 | "true"   { BLIT(true)  }
 | "false"  { BLIT(false) }
 | "list"   { LIST }
+| "var"    { VAR }
 | "struct" { STRUCT }
 | "func"   { FUNC }
 | digit+ as lem  { LITERAL(int_of_string lem) }
@@ -75,7 +76,7 @@ and comment = parse
   "*/" { token lexbuf }
 | _    { comment lexbuf }
 
-(* {
+{
    let to_string = function
     | LPAREN -> "LPAREN"
     | RPAREN -> "RPAREN"
@@ -111,6 +112,10 @@ and comment = parse
     | FLOAT -> "FLOAT"
     | CHAR -> "CHAR"
     | BOOL -> "BOOL"
+    | NL -> "NL"
+    | MODULUS -> "MODULUS"
+    | NOT -> "NOT"
+    | VAR -> "VAR"
     | BLIT(b)  -> Printf.sprintf "BLIT(%B)" b
     | LIST -> "LIST"
     | STRUCT -> "STRUCT"
@@ -129,4 +134,4 @@ and comment = parse
     | x -> loop (to_string x :: prog) (token lexbuf)) in
   let prog = String.concat " " (loop [] (token lexbuf)) in
   print_endline prog
-} *)
+}
