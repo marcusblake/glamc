@@ -1,14 +1,16 @@
 
 
-func add(a: int, b: list<int>) float {
-    return 0.0;
+func getFunc() func(int) int {
+    return func (a: float) int -> {
+        return 1;
+    };
 }
 
-func main() int {
-    for (id in "Marcus Blake") {
-        printc(id);
-    }
 
-    a := ["Marcus", "Hello"][0][3];
-    printc(a);
+
+func main() int {
+
+    a := getFunc();
+  
+    return 0;
 }

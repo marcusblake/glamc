@@ -16,7 +16,7 @@ and expr =
   | CharLit of char
   | StringLit of string
   | StructLit of string * anon_decl list (* Name of struct and list of fields *)
-  | FunctionLit of lambda_def
+  | FunctionLit of func_def
   | Seq of expr list
   | Id of string
   | Binop of expr * op * expr
@@ -39,15 +39,7 @@ and stmt =
   | Range of string * expr * expr * stmt
   | While of expr * stmt
   | Return of expr
-and lambda_def = {
-  parameters: bind list;
-  return_type: ty;
-  body: stmt;
-}
-
-
-(* Define the type of a funcion *)
-type func_def = {
+and func_def = {
   func_name: string;
   parameters: bind list;
   return_type: ty;

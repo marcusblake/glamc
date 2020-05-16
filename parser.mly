@@ -174,6 +174,7 @@ anon_func:
   FUNC LPAREN func_params RPAREN type_ ARROW block 
   {
     {
+      func_name = "";
       parameters = $3;
       return_type = $5;
       body = $7

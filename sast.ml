@@ -10,6 +10,7 @@ and sex =
   | SCharLit of char
   | SStringLit of string
   | SStructLit of string * sanon_decl list (* Name of struct and list of fields *)
+  | SFunctionLit of sfunc_def
   | SSeq of sexpr list
   | SId of string
   | SBinop of sexpr * op * sexpr
@@ -18,10 +19,7 @@ and sex =
   | SSeqAccess of sexpr * sexpr
   | SStructCall of string * string * sexpr list (* name of identifier along with function call and list of arguments *)
   | SStructAccess of string * string (* name of identifier and name of variable being accessed *)
-
-  
-(* A statement is something that controls how the program is executed *)
-type sstmt =
+and sstmt =
   SBlock of sstmt list
   | SExpr of sexpr
   | SDeclare of bind
@@ -35,9 +33,7 @@ type sstmt =
   | SReturn of sexpr
   | SAssign of string * sexpr
   | SStructAssign of string * string * sexpr
-
-(* Define the type of a funcion *)
-type sfunc_def = {
+and sfunc_def = {
   sfunc_name: string;
   sparameters: bind list;
   sreturn_type: ty;

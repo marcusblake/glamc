@@ -25,6 +25,8 @@ let check (globals, functions, structs) =
   check_dups globals;
 
   let globalvars = List.fold_left add_identifier StringMap.empty globals in
+
+  let symbol_table = [globalvars] in
   
   let add_func map f = 
     (* Check to see if name already exists --> NOTE: May need to add more for built in function *)
@@ -112,14 +114,14 @@ let check (globals, functions, structs) =
     with FunctionDoesntExist -> raise MainEntrypointUndefined
   in
 
-  let check_func func = 
+  let rec check_func symbol_table func = 
 
     check_dups func.parameters;
 
     let parameters = List.fold_left add_identifier StringMap.empty func.parameters in
 
     (* Initial symbol table only contains globally defined variables *)
-    let symbol_table = [parameters; globalvars] in
+    let symbol_table = parameters :: symbol_table in
 
     (* Adds a new (current) scope to symbol_table list to the beginning of the list *)
     let add_scope table = StringMap.empty :: table
@@ -153,6 +155,11 @@ let check (globals, functions, structs) =
       | FloatLit l -> (Float, SFloatLit l)
       | CharLit l -> (Char, SCharLit l)
       | StringLit l -> (String, SStringLit l)
+      | FunctionLit lambda -> 
+        let new_table = add_scope table in
+        let sfunc = check_func new_table lambda in
+        let types = List.map (fun (ty, _) -> ty) sfunc.sparameters in
+        (Function (types, sfunc.sreturn_type), SFunctionLit sfunc)
       | Seq lst -> 
           let new_list = List.map (check_expr table) lst in
           let rec infer_type lst = 
@@ -211,33 +218,51 @@ let check (globals, functions, structs) =
         if List.length arguments != len then
           raise (Failure ("expecting " ^ string_of_int len ^
                           " arguments in " ^ string_of_expr call))
-        else let check_call (ft, _) e =
+        else 
+        let check_call (ft, _) e =
           let (ty, e') = check_expr table e in
           let err = "illegal argument found " ^ string_of_typ ty ^
           " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e in
           (check_assign ft ty err, e')
         in
-        if name = "append" then (* a special function which needs special care :) *)
-            let (ty, e1) = check_expr table (List.hd arguments) in
-            let (el_ty, e2) =  check_expr table (List.nth arguments 1) in
-            (match ty with
-            List rest -> if rest = el_ty then (f.return_type, SCall(name, [(ty, e1); (el_ty, e2)])) else raise Func_failed_typecheck
-            | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append")))
-        else if name = "lenlist" || name = "pop" then
-        let (ty, e1) = check_expr table (List.hd arguments) in
-          (match ty with List _ -> (f.return_type, SCall(name, [(ty, e1)])) | _ -> raise Func_failed_typecheck)
-        else if name = "put" then
+        if name = "append" then (
+          let (ty, e1) = check_expr table (List.hd arguments) in
+          let (el_ty, e2) =  check_expr table (List.nth arguments 1) in
+          begin match ty with
+          List rest -> 
+            if rest = el_ty then (
+              f.return_type, SCall(name, [(ty, e1); (el_ty, e2)])
+            ) else (
+              raise Func_failed_typecheck
+            )
+          | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append"))
+          end
+        )
+        else if name = "lenlist" || name = "pop" then (
+          let (ty, e1) = check_expr table (List.hd arguments) in
+          begin match ty with 
+          List _ -> (f.return_type, SCall(name, [(ty, e1)])) 
+          | _ -> raise Func_failed_typecheck
+          end
+        )
+        else if name = "put" then (
           let sargs = List.map (check_expr table) arguments in
           let (ty, e1) = List.hd sargs in
-          (
-          match ty with
+          begin match ty with
           | List rest -> 
-            if rest = fst (List.nth sargs 2) && fst (List.nth sargs 1) = Int then (f.return_type, SCall(name, sargs))
-            else raise Func_failed_typecheck
+            if rest = fst (List.nth sargs 2) && fst (List.nth sargs 1) = Int then (
+              f.return_type, SCall(name, sargs)
+            )
+            else (
+              raise Func_failed_typecheck
+            )
           | _ -> raise Func_failed_typecheck
-          )
-        else let sargs = List.map2 check_call f.parameters arguments
-        in (f.return_type, SCall(name, sargs))
+          end
+        )
+        else (
+          let sargs = List.map2 check_call f.parameters arguments in 
+          (f.return_type, SCall(name, sargs))
+        )
       | SeqAccess (var, inside_bracket) -> 
         let (ty, e') = check_expr table inside_bracket in
         let (type_, e1) = check_expr table var in
@@ -252,18 +277,13 @@ let check (globals, functions, structs) =
         | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty))
         )
       | _ -> raise Unimplemented (* Ignore for now *)
-    in
-
-    let check_bool_expr table expr = 
+    and check_bool_expr table expr = 
       let (ty, e') = check_expr table expr in
       (* type of this expression must be a boolean *)
       match ty with
       | Bool -> (ty, e')
       | _ -> raise Invalid (* Can come up with a better error message *)
-    in
-
-
-    let rec check_stmt_list table = function
+    and check_stmt_list table = function
         [] -> []
         | head :: tail -> 
           let (sast, table) = check_stmt table head in
@@ -341,4 +361,4 @@ let check (globals, functions, structs) =
     }
   in
   let check_struct stuct_ = ignore(print_endline "check_struct"); raise Unimplemented (* ignore for now *) in
-  (globals, List.map check_func functions, List.map check_struct structs)
+  (globals, List.map (check_func symbol_table) functions, List.map check_struct structs)

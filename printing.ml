@@ -28,7 +28,7 @@ let rec string_of_typ = function
   | String -> "string"
   | Struct d -> d
   | List d -> Printf.sprintf "list<%s>" (string_of_typ d)
-  | Function(args, rty) -> "func (" ^ String.concat ", " (List.map string_of_typ args) ^ ")" ^ string_of_typ rty
+  | Function(args, rty) -> "func (" ^ String.concat ", " (List.map string_of_typ args) ^ ") " ^ string_of_typ rty
   | AnyType -> "AnyType"
 
 let string_of_bind (t, id) = "var " ^  id ^ " " ^ string_of_typ t
