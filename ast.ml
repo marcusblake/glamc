@@ -3,7 +3,7 @@ type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq
 
 type uop = Neg | Not
 
-type ty = AnyType | Int | Bool | Float | Char | String | Struct of string | List of ty
+type ty = AnyType | Int | Bool | Float | Char | String | Struct of string | List of ty | Function of (ty list * ty)
 
 type bind = ty * string
 
@@ -16,6 +16,7 @@ and expr =
   | CharLit of char
   | StringLit of string
   | StructLit of string * anon_decl list (* Name of struct and list of fields *)
+  | FunctionLit of lambda_def
   | Seq of expr list
   | Id of string
   | Binop of expr * op * expr
@@ -24,10 +25,7 @@ and expr =
   | SeqAccess of expr * expr
   | StructCall of string * string * expr list (* name of identifier along with function call and list of arguments *)
   | StructAccess of string * string (* name of identifier and name of variable being accessed *)
-
-  
-(* A statement is something that controls how the program is executed *)
-type stmt =
+and stmt =
   Block of stmt list
   | Expr of expr
   | Declare of bind
@@ -41,6 +39,12 @@ type stmt =
   | Range of string * expr * expr * stmt
   | While of expr * stmt
   | Return of expr
+and lambda_def = {
+  parameters: bind list;
+  return_type: ty;
+  body: stmt;
+}
+
 
 (* Define the type of a funcion *)
 type func_def = {

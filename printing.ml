@@ -28,7 +28,10 @@ let rec string_of_typ = function
   | String -> "string"
   | Struct d -> d
   | List d -> Printf.sprintf "list<%s>" (string_of_typ d)
+  | Function(args, rty) -> "func (" ^ String.concat ", " (List.map string_of_typ args) ^ ")" ^ string_of_typ rty
   | AnyType -> "AnyType"
+
+let string_of_bind (t, id) = "var " ^  id ^ " " ^ string_of_typ t
 
 
 let rec string_of_expr = function
@@ -44,15 +47,16 @@ let rec string_of_expr = function
   | FloatLit(l) -> string_of_float l
   | CharLit(l) -> Char.escaped l
   | StringLit(l) -> l
+  | FunctionLit(func) -> "func (" ^ 
+    String.concat ", " (List.map string_of_bind func.parameters) ^ 
+    ") " ^ string_of_typ func.return_type ^ " -> " ^
+    string_of_stmt func.body
   | StructLit(t, d) -> t ^ "{" ^ String.concat ", " (List.map (fun (s, e) -> s ^ ": " ^ string_of_expr e) d) ^ "}"
   | Seq(s) -> "[" ^ String.concat ", " (List.map string_of_expr s) ^ "]"
   | SeqAccess(s,e) -> string_of_expr s ^ "[" ^ string_of_expr e ^ "]"
   | StructCall(st, fn, ps) -> st ^ "." ^ fn ^ "(" ^ String.concat ", " (List.map string_of_expr ps) ^ ")"
   | StructAccess(st, fld) -> st ^ "." ^ fld
-
-let string_of_bind (t, id) = "var " ^  id ^ " " ^ string_of_typ t
-
-let rec string_of_stmt = function
+and string_of_stmt = function
     Block(stmts) ->
     "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
   | Expr(expr) -> string_of_expr expr ^ ";\n"

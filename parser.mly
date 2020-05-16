@@ -50,6 +50,7 @@ open Ast
 %token FUNC
 %token VAR
 %token ELIPS
+%token ARROW
 %token <int> LITERAL
 %token <bool> BLIT
 %token <char> CHARLIT /* Need to recognize chars in lexer */
@@ -90,7 +91,7 @@ decls:
 
 /* Need to define func keyword in scanner */
 func_decl:
-  FUNC ID LPAREN func_parms RPAREN type_ block
+  FUNC ID LPAREN func_params RPAREN type_ block
   {
     {
       func_name = $2;
@@ -119,7 +120,7 @@ vardecls_semi:
   | vardecl SEMI vardecls_semi { $1 :: $3 }
 
 
-func_parms:
+func_params:
     /* NOTHING */ { [] }
   | funcparam_comma { $1 }
 
@@ -139,6 +140,15 @@ type_:
   | STRING            { String } /* Need string definition in scanner */
   | ID                { Struct $1 }
   | LIST LT type_ GT  { List $3 } /* Need to define greater than in scanner */
+  | FUNC LPAREN typelist RPAREN type_  { Function ($3, $5) }
+
+typelist:
+  /* NOTHING */ { [] }
+  | typelist_   { $1 }
+
+typelist_:
+  type_   { [$1] }
+  | type_ COMMA typelist_ { $1 :: $3 }
 
 
 expr_params:
@@ -160,6 +170,15 @@ field_list:
   anon_decl { [$1] }
   | anon_decl COMMA field_list { $1 :: $3 }
 
+anon_func:
+  FUNC LPAREN func_params RPAREN type_ ARROW block 
+  {
+    {
+      parameters = $3;
+      return_type = $5;
+      body = $7
+    }
+  }
 
 literal:
   ID                                     { Id($1) } /* varName */
@@ -171,6 +190,7 @@ literal:
   | ID LBRACE struct_fields RBRACE       { StructLit($1, $3) } /* Point{x: 2, y: 3}  */
   | LBRACKET expr_params RBRACKET        { Seq($2) } /* [2,3,4,5] */
   | ID DOT ID                            { StructAccess($1, $3) }
+  | anon_func                            { FunctionLit($1) }
 
 bexpr:
   | expr LT expr                       { Binop($1, Less, $3) } /* 2 < 3 */

@@ -70,6 +70,7 @@ rule token = parse
 | "var"    { VAR }
 | "struct" { STRUCT }
 | "func"   { FUNC }
+| "->"     { ARROW }
 | digit+ as lem  { LITERAL(int_of_string lem) }
 | letter (digit | letter | '_')* as lem { ID(lem) }
 | ''' (escaped_char | letter | digit) ''' as lem { CHARLIT(get_char lem) }
@@ -132,6 +133,7 @@ and comment = parse
     | STRUCT -> "STRUCT"
     | FUNC -> "FUNC"
     | STRING -> "STRING"
+    | ARROW -> "ARROW"
     | LITERAL(d) -> Printf.sprintf "LITERAL(%d)" d
     | ID(id) -> Printf.sprintf "ID(%s)" id
     | CHARLIT(id) -> Printf.sprintf "CHARLIT(%s)" (Char.escaped id)
