@@ -42,6 +42,7 @@ rule token = parse
 | "!="     { NEQ }
 | '<'      { LT }
 | '>'      { GT }
+| "..."    { ELIPS }
 | "<="     { LTEQ }
 | ">="     { GTEQ }
 | "&&"     { AND }
@@ -112,8 +113,8 @@ and comment = parse
     | FLOAT -> "FLOAT"
     | CHAR -> "CHAR"
     | BOOL -> "BOOL"
-    | NL -> "NL"
     | MODULUS -> "MODULUS"
+    | ELIPS -> "ELIPS"
     | NOT -> "NOT"
     | VAR -> "VAR"
     | BLIT(b)  -> Printf.sprintf "BLIT(%B)" b

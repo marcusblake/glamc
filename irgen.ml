@@ -497,9 +497,9 @@ let translate (globals, functions, _) =
           | String -> L.build_store (L.build_call getChar [|iterable; index|] "" body_builder) temp body_builder
           | _ -> raise Invalid
         in
-        let flatten_body = (function
+        let flatten_body = function
           | SBlock lst -> build_stmt_list new_table body_builder lst
-          | _ -> raise Invalid)
+          | _ -> raise Invalid
         in
         let updated_builder = flatten_body stmt in
         let add_res = L.build_add (L.build_load counter "" updated_builder) (L.const_int i32_t 1) "" updated_builder in
@@ -511,6 +511,45 @@ let translate (globals, functions, _) =
         ignore (L.build_cond_br llvalue for_body for_end for_builder);
         
         (L.builder_at_end context for_end, table)
+      | SRange(name, sexpr1, sexpr2, stmt) ->
+      
+      let e1' = build_expr table builder sexpr1 in
+      let hi = build_expr table builder sexpr2 in
+
+
+      (* Allocate temporary variable to store *)
+      let low = L.build_alloca (ltype_of_typ A.Int) name builder in
+      ignore(L.build_store e1' low builder);
+
+
+      let new_table = add_scope table in
+      let new_table = add_to_current_scope new_table name low A.Int in
+    
+
+      let for_loop = L.append_block context "for" current_function in
+
+      let start_for = L.build_br for_loop in (* partial function *)
+      ignore (start_for builder);
+
+      let for_builder = L.builder_at_end context for_loop in
+
+      let llvalue = L.build_icmp L.Icmp.Slt (L.build_load low "" for_builder) hi "" for_builder in
+      let for_body = L.append_block context "for_body" current_function in
+      let body_builder = L.builder_at_end context for_body in
+      let flatten_body = function
+        | SBlock lst -> build_stmt_list new_table body_builder lst
+        | _ -> raise Invalid
+      in
+      let updated_builder = flatten_body stmt in
+      let add_res = L.build_add (L.build_load low "" updated_builder) (L.const_int i32_t 1) "" updated_builder in
+        ignore(L.build_store add_res low updated_builder);
+      add_terminal updated_builder start_for;
+
+      let for_end = L.append_block context "for_end" current_function in
+
+      ignore (L.build_cond_br llvalue for_body for_end for_builder);
+      
+      (L.builder_at_end context for_end, table)
       | SWhile (sexpr, stmt) -> 
         (*
           br label %while

@@ -308,10 +308,24 @@ let check (globals, functions, structs) =
             (SIterate(x, (ty, e'), SBlock(check_stmt_list new_table lst)), table)
           | _ -> raise Invalid)
         in
-        (match ty with
+        begin match ty with
         | List el -> get_siterate el stmt
         | String -> get_siterate Char stmt
-        | _ -> raise Invalid)
+        | _ -> raise Invalid
+        end
+      | Range(x, e1, e2, stmt) ->
+        let (t1, e1') = check_expr table e1 in
+        let (t2, e2') = check_expr table e2 in
+        let get_srange = function
+          Block lst -> (* flatten list *)
+            let new_table = add_to_current_scope (add_scope table) x Int in 
+            (SRange(x, (t1, e1'), (t2, e2'), SBlock(check_stmt_list new_table lst)), table)
+          | _ -> raise Invalid
+        in
+        begin match t1, t2 with
+        | Int, Int -> get_srange stmt
+        | _, _ -> raise Invalid
+        end
       | While (e, stmt) -> (SWhile(check_bool_expr table e, fst (check_stmt table stmt)), table)
       | _ -> raise Unimplemented (* Ignore for now *)
     in

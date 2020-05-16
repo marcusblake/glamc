@@ -6,4 +6,7 @@ func add(a: int, b: list<int>) float {
 
 func main() int {
     var a int;
+    for (id in a...10) {
+        printi(id);
+    }
 }

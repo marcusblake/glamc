@@ -30,6 +30,7 @@ type sstmt =
   | SIf of sexpr * sstmt
   | SIfElse of sexpr * sstmt * sstmt
   | SIterate of string * sexpr * sstmt
+  | SRange of string * sexpr * sexpr * sstmt
   | SWhile of sexpr * sstmt
   | SReturn of sexpr
   | SAssign of string * sexpr

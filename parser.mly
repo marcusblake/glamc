@@ -44,7 +44,7 @@ open Ast
 %token DOT
 %token FUNC
 %token VAR
-%token NL
+%token ELIPS
 %token <int> LITERAL
 %token <bool> BLIT
 %token <char> CHARLIT /* Need to recognize chars in lexer */
@@ -77,7 +77,7 @@ program:
 
 decls:
   /* nothing */ { ([], [], []) }
-  | vardecl NL decls { (($1 :: fir $3), sec $3, third $3) }
+  | vardecl SEMI decls { (($1 :: fir $3), sec $3, third $3) }
   | func_decl decls { (fir $2, ($1 :: sec $2), third $2)  }
   | struct_decl decls { (fir $2, sec $2, ($1 :: third $2)) }
 
@@ -95,7 +95,7 @@ func_decl:
   }
 
 struct_decl:
-  STRUCT ID LBRACE vardecls_nl func_decls RBRACE
+  STRUCT ID LBRACE vardecls_semi func_decls RBRACE
   {
     {
       struct_name = $2;
@@ -108,9 +108,9 @@ func_decls:
   /* NOTHING */ { [] }
   | func_decl func_decls { $1 :: $2 }
 
-vardecls_nl:
+vardecls_semi:
   /* NOTHING */ { [] }
-  | vardecl NL vardecls_nl { $1 :: $3 }
+  | vardecl SEMI vardecls_semi { $1 :: $3 }
 
 
 func_parms:
@@ -213,16 +213,17 @@ ifelse_stmt:
    IF LPAREN expr RPAREN block ELSE block  { IfElse($3,$5,$7) } /* if (d > 3) { } else { } */
 
 stmt:
-    expr SEMI                               { Expr $1 } /* For any standalone expression */
-  | block                                 { $1 } /*  */
-  | vardecl SEMI                            { Declare($1) }
-  | vardecl ASSIGN expr SEMI                { Explicit($1, $3) } /* int x = 2; */
-  | ID DEFINE  expr SEMI                    { Define($1, $3) } /* id := 2 */
-  | ID ASSIGN expr SEMI                     { Assign($1, $3) } /* x = 2 */
-  | ID DOT ID ASSIGN expr SEMI              { StructAssign($1, $3, $5) }
-  | RETURN expr SEMI                        { Return $2 } /* return 2; */
-  | FOR LPAREN ID IN expr RPAREN block    { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
-  | WHILE LPAREN expr RPAREN block        { While($3, $5) }
-  | if_stmt                               { $1 }
-  | ifelse_stmt                           { $1 }
+    expr SEMI                                        { Expr $1 } /* For any standalone expression */
+  | block                                            { $1 } /*  */
+  | vardecl SEMI                                     { Declare($1) }
+  | vardecl ASSIGN expr SEMI                         { Explicit($1, $3) } /* int x = 2; */
+  | ID DEFINE  expr SEMI                             { Define($1, $3) } /* id := 2 */
+  | ID ASSIGN expr SEMI                              { Assign($1, $3) } /* x = 2 */
+  | ID DOT ID ASSIGN expr SEMI                       { StructAssign($1, $3, $5) }
+  | RETURN expr SEMI                                 { Return $2 } /* return 2; */
+  | FOR LPAREN ID IN expr RPAREN block               { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
+  | FOR LPAREN ID IN expr ELIPS expr RPAREN block    { Range($3, $5, $7, $9) }
+  | WHILE LPAREN expr RPAREN block                   { While($3, $5) }
+  | if_stmt                                          { $1 }
+  | ifelse_stmt                                      { $1 }
 

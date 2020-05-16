@@ -65,6 +65,7 @@ let rec string_of_stmt = function
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Explicit(b, e) -> string_of_bind b ^ " = " ^ string_of_expr e ^ ";\n"
   | Iterate(v, e, s) -> "for (" ^ v ^ " in " ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  | Range(v, e, e1, s) -> "for (" ^ v ^ " in " ^ string_of_expr e ^ "..." ^ string_of_expr e1 ^ ") " ^ string_of_stmt s
   | Declare(b) -> string_of_bind b ^ ";\n"
   | StructAssign(st, fld, e) -> st ^ "." ^ fld ^ " = " ^(string_of_expr e) ^ ";\n"
 

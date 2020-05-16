@@ -38,6 +38,7 @@ type stmt =
   | If of expr * stmt
   | IfElse of expr * stmt * stmt
   | Iterate of string * expr * stmt
+  | Range of string * expr * expr * stmt
   | While of expr * stmt
   | Return of expr
 
