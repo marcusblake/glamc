@@ -23,6 +23,11 @@ open Ast
 %token GT 
 %token LTEQ 
 %token GTEQ 
+%token PLEQ
+%token SUBEQ
+%token MLTEQ
+%token DIVEQ
+%token MODEQ
 %token AND 
 %token OR 
 %token NOT
@@ -59,6 +64,7 @@ open Ast
 
 
 %right DEFINE
+%right PLEQ MLTEQ SUBEQ DIVEQ
 %right ASSIGN
 %right NOT
 %left OR
@@ -217,6 +223,11 @@ stmt:
   | block                                            { $1 } /*  */
   | vardecl SEMI                                     { Declare($1) }
   | vardecl ASSIGN expr SEMI                         { Explicit($1, $3) } /* int x = 2; */
+  | ID PLEQ expr SEMI                                { Assign($1, Binop(Id($1), Add, $3)) }
+  | ID SUBEQ expr SEMI                               { Assign($1, Binop(Id($1), Sub, $3)) }
+  | ID MLTEQ expr SEMI                               { Assign($1, Binop(Id($1), Mult, $3)) }
+  | ID DIVEQ expr SEMI                               { Assign($1, Binop(Id($1), Div, $3)) }
+  | ID MODEQ expr SEMI                               { Assign($1, Binop(Id($1), Mod, $3)) }
   | ID DEFINE  expr SEMI                             { Define($1, $3) } /* id := 2 */
   | ID ASSIGN expr SEMI                              { Assign($1, $3) } /* x = 2 */
   | ID DOT ID ASSIGN expr SEMI                       { StructAssign($1, $3, $5) }

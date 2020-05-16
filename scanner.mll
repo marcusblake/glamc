@@ -43,6 +43,11 @@ rule token = parse
 | '<'      { LT }
 | '>'      { GT }
 | "..."    { ELIPS }
+| "+="     { PLEQ }
+| "-="     { SUBEQ }
+| "*="     { MLTEQ }
+| "/="     { DIVEQ }
+| "%="     { MODEQ }
 | "<="     { LTEQ }
 | ">="     { GTEQ }
 | "&&"     { AND }
@@ -93,6 +98,11 @@ and comment = parse
     | MINUS -> "MINUS"
     | MULT -> "MULT"
     | DIV -> "DIV"
+    | PLEQ -> "PLEQ"
+    | SUBEQ -> "SUBEQ"
+    | MLTEQ -> "MLTEQ"
+    | DIVEQ -> "DIVEQ"
+    | MODEQ -> "MODEQ"
     | ASSIGN -> "ASSIGN"
     | DEFINE -> "DEFINE"
     | EQ -> "EQ"
