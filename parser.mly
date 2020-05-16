@@ -191,6 +191,7 @@ literal:
   | LBRACKET expr_params RBRACKET        { Seq($2) } /* [2,3,4,5] */
   | ID DOT ID                            { StructAccess($1, $3) }
   | anon_func                            { FunctionLit($1) }
+  | literal LBRACKET expr RBRACKET       { SeqAccess($1, $3) }
 
 bexpr:
   | expr LT expr                       { Binop($1, Less, $3) } /* 2 < 3 */
@@ -215,7 +216,6 @@ expr:
   literal                                { $1 }
   | nexpr                                { $1 }
   | bexpr                                { $1 } 
-  | literal LBRACKET expr RBRACKET       { SeqAccess($1, $3) }
   | ID LPAREN expr_params RPAREN         { Call($1, $3) }
   | ID DOT ID LPAREN expr_params RPAREN  { StructCall($1, $3, $5) } /* point.toString() */
 

@@ -5,12 +5,10 @@ func add(a: int, b: list<int>) float {
 }
 
 func main() int {
-    var a int;
     for (id in "Marcus Blake") {
         printc(id);
     }
 
-    var a func (string, int) int = func (a: string, b: int) bool -> {
-
-    };
+    a := ["Marcus", "Hello"][0][3];
+    printc(a);
 }
