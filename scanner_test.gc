@@ -19,7 +19,7 @@ func main() int {
     });
 
     for (id in a) {
-        printi(id);
+        println(id);
     }
 
     return 0;

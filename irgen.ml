@@ -161,10 +161,11 @@ let translate (globals, functions, _) =
     if the current block does not already have a terminator.  Used,
     e.g., to handle the "fall off the end of the function" case. *)
 
-    let add_terminal builder instr =
+  let add_terminal builder instr =
     match L.block_terminator (L.insertion_block builder) with
       Some _ -> ()
-    | None -> ignore (instr builder) in
+    | None -> ignore (instr builder) 
+  in
 
   let function_decls = ref function_decls in
 
@@ -207,12 +208,6 @@ let translate (globals, functions, _) =
   
     let globalvars : (L.llvalue * Ast.ty) StringMap.t = List.fold_left add_identifier StringMap.empty globals in
   
-    let add_scope table = StringMap.empty :: table in
-  
-    let add_to_current_scope table name llval ty =
-      List.mapi (fun idx map -> if idx = 0 then StringMap.add name (llval, ty) map else map) table
-    in
-  
 
     let formals : (L.llvalue * Ast.ty) StringMap.t =
       let add_formal map (ty, name) param =
@@ -223,9 +218,11 @@ let translate (globals, functions, _) =
             L.build_alloca (ltype_of_typ ty) name builder
           ) 
         in
-        ignore (match ty with
-        | String | List _ -> let copy = L.build_load param "" builder in L.build_store copy local builder;
-        | _ -> L.build_store param local builder;);
+        let _ = 
+          match ty with
+          | String | List _ -> let copy = L.build_load param "" builder in L.build_store copy local builder
+          | _ -> L.build_store param local builder
+        in
         StringMap.add name (local, ty) map
       in
       List.fold_left2 add_formal StringMap.empty fdecl.sparameters (Array.to_list (L.params current_function))
@@ -352,19 +349,19 @@ let translate (globals, functions, _) =
 
 
       let args = List.map (build_expr table builder) e in
-      if name = "printi" then
-        L.build_call printf_func (Array.of_list ([gep_str int_format_str 0] @ args)) "printf" builder
-      else if name = "printfl" then 
-        L.build_call printf_func (Array.of_list ([gep_str float_format_str 0] @ args)) "printf" builder
-      else if name = "printc" then 
-        L.build_call printf_func (Array.of_list ([gep_str char_format_str 0] @ args)) "printf" builder
-      else if name = "printb" then
-        L.build_call printb (Array.of_list args) "" builder
-      else if name = "prints" then 
-        L.build_call prints (Array.of_list args) "" builder
-      else if name = "lenstr" then
-        L.build_call strLength (Array.of_list args) "length" builder
-      else if name = "append" then
+
+      begin match name with
+      "println" -> 
+        let (ty, _) = List.hd e in
+        begin match ty with
+        | A.Int -> L.build_call printf_func (Array.of_list ([gep_str int_format_str 0] @ args)) "printf" builder
+        | A.Float -> L.build_call printf_func (Array.of_list ([gep_str float_format_str 0] @ args)) "printf" builder
+        | A.Char -> L.build_call printf_func (Array.of_list ([gep_str char_format_str 0] @ args)) "printf" builder
+        | A.Bool -> L.build_call printb (Array.of_list args) "" builder
+        | A.String -> L.build_call prints (Array.of_list args) "" builder
+        | _ -> raise Invalid
+        end
+      | "append" -> 
         let el = List.nth args 1 in
         let (ty, _) = List.nth e 1 in
         let lst = List.hd args in
@@ -373,12 +370,11 @@ let translate (globals, functions, _) =
             | String | List _ -> let v = L.build_load el "" builder in L.build_store v temp builder
             | _ -> L.build_store el temp builder);
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
-          L.build_call addElement [| lst; generic |] "" builder
-      else if name = "lenlist"  then
-        L.build_call lenlist (Array.of_list args) "" builder
-      else if  name = "pop" then
-        L.build_call popElement (Array.of_list args) "" builder
-      else if name = "put" then
+        L.build_call addElement [| lst; generic |] "" builder
+      | "lenstr" -> L.build_call strLength (Array.of_list args) "length" builder
+      | "lenlist" -> L.build_call lenlist (Array.of_list args) "" builder
+      | "pop" -> L.build_call popElement (Array.of_list args) "" builder
+      | "put" -> 
         let el = List.nth args 2 in
         let (ty, _) = List.nth e 2 in
         let idx = List.nth args 1 in
@@ -388,8 +384,8 @@ let translate (globals, functions, _) =
             | String | List _ -> let v = L.build_load el "" builder in L.build_store v temp builder
             | _ -> L.build_store el temp builder);
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
-          L.build_call setElement [| lst; idx; generic |] "" builder
-      else if name = "map" then
+        L.build_call setElement [| lst; idx; generic |] "" builder
+      | "map" -> 
         let lst = List.hd args in
         let llfunc = List.nth args 1 in
 
@@ -426,7 +422,7 @@ let translate (globals, functions, _) =
         (* Get length *)
         let len= L.build_alloca (ltype_of_typ A.Int) "" builder in 
         ignore(L.build_store ( L.build_call lenlist [|lst|] "" builder) len builder);
-       
+      
 
         (* Set counter *)
         let counter = L.build_alloca (ltype_of_typ A.Int) "" builder in
@@ -457,7 +453,7 @@ let translate (globals, functions, _) =
         ignore (L.build_store result temp body_builder);
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" body_builder in
         ignore(L.build_call addElement [| var; generic |] "" body_builder);
-       
+      
         let add_res = L.build_add (L.build_load counter "" body_builder) (L.const_int i32_t 1) "" body_builder in
         ignore(L.build_store add_res counter body_builder);
         add_terminal body_builder start_map;
@@ -468,7 +464,8 @@ let translate (globals, functions, _) =
         my_builder := (L.builder_at_end context map_end);
         stale := true;
         var
-      else raise Not_found
+      | _ -> raise Not_found
+      end
     in
 
     let rec build_stmt_list table builder = function
@@ -485,7 +482,7 @@ let translate (globals, functions, _) =
         let e' = build_expr table builder sexpr in
         let builder = if !stale then (stale := false; !my_builder) else builder in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
-        let table = add_to_current_scope table name var ty in
+        let table = add_to_current_scope table name (var,ty) in
         let _ = match ty with
               | String | List _ -> let v = L.build_load e' "temp" builder in L.build_store v var builder
               | _ -> L.build_store e' var builder
@@ -500,14 +497,14 @@ let translate (globals, functions, _) =
                 L.build_call initList [| var; L.size_of (ltype_of_typ el_ty); L.const_int i32_t 0; ptr |] "" builder
               | _ -> L.build_store (initialized_value ty) var builder
         in
-        let table = add_to_current_scope table name var ty in
+        let table = add_to_current_scope table name (var,ty) in
         (builder, table)
       | SDefine (name, sexpr) -> 
         let e' = build_expr table builder sexpr in
         let builder = if !stale then (stale := false; !my_builder) else builder in
         let ty = fst sexpr in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
-        let table = add_to_current_scope table name var ty in
+        let table = add_to_current_scope table name (var,ty) in
         let _ = match ty with
               | String | List _ -> let v = L.build_load e' "temp" builder in L.build_store v var builder
               | _ -> L.build_store e' var builder
@@ -605,7 +602,7 @@ let translate (globals, functions, _) =
           ignore(L.build_store (initialized_value A.Int) counter builder);
 
         let new_table = add_scope table in
-        let new_table = add_to_current_scope new_table name temp el_ty in
+        let new_table = add_to_current_scope new_table name (temp,el_ty) in
       
 
         let for_loop = L.append_block context "for" current_function in
@@ -649,7 +646,7 @@ let translate (globals, functions, _) =
 
 
         let new_table = add_scope table in
-        let new_table = add_to_current_scope new_table name low A.Int in
+        let new_table = add_to_current_scope new_table name (low, A.Int) in
       
 
         let for_loop = L.append_block context "for" current_function in

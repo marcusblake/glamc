@@ -9,36 +9,8 @@ module StringMap = Map.Make(String)
 let built_in_functions = [
     {
       return_type = Int;
-      func_name = "printi";
-      parameters = [(Int, "x")];
-      body = Block [];
-      heap_vars = []
-    };
-    {
-      return_type = Int;
-      func_name = "printc";
-      parameters = [(Char, "x")];
-      body = Block [];
-      heap_vars = []
-    };
-    {
-      return_type = Int;
-      func_name = "printfl";
-      parameters = [(Float, "x")];
-      body = Block [];
-      heap_vars = []
-    };
-    {
-      return_type = Int;
-      func_name = "prints";
-      parameters = [(String, "x")];
-      body = Block [];
-      heap_vars = []
-    };
-    {
-      return_type = Int;
-      func_name = "printb";
-      parameters = [(Bool, "x")];
+      func_name = "println";
+      parameters = [(AnyType, "x")];
       body = Block [];
       heap_vars = []
     };
@@ -104,9 +76,9 @@ let check_assign lvaluet rvaluet err = if lvaluet = rvaluet then lvaluet else ra
 
 (* Add the variable to the current scope. 
 Takes in symbol_table, name of identifier, and type of identifier *)
-let add_to_current_scope table name ty =
+let add_to_current_scope table name value =
   if StringMap.mem name (List.hd table) then raise VariableAlreadyExists
-  else List.mapi (fun idx map -> if idx = 0 then StringMap.add name ty map else map) table
+  else List.mapi (fun idx map -> if idx = 0 then StringMap.add name value map else map) table
 
 
 

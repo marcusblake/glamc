@@ -224,11 +224,14 @@ let check (globals, functions, structs) =
             | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append"))
             end
 
-          ) else (
-
+          ) else if name = "println" then (
+            let (ty, e) = check_expr table (List.hd arguments) in
+            match ty with
+            | Int | Char | Bool | Float | String -> (Int, SCall(name, [(ty, e)]))
+            | _ -> raise (IllegalArgument("Can't print " ^ string_of_typ ty))
+          )else (
             let sargs = List.map2 check_call f.parameters arguments in 
             (f.return_type, SCall(name, sargs))
-
           )
         )
       | SeqAccess (var, inside_bracket) -> 
