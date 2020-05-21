@@ -19,6 +19,7 @@ open Sast
 open Exceptions
 
 module StringMap = Map.Make(String)
+module Set = Set.Make(String)
 
 (* translate : Sast.program -> Llvm.module *)
 (* Ignore structs for now *)
@@ -121,14 +122,15 @@ let translate (globals, functions, _) =
           lookup_identifier name tl
     in
 
+  let get_type ty = 
+    let llty = ltype_of_typ ty in
+    match ty with
+    | String | List _ -> L.pointer_type llty
+    | _ -> llty
+  in
+
   let function_decls : (L.llvalue * sfunc_def) StringMap.t = 
     let function_decl map fdecl = 
-      let get_type ty = 
-        let llty = ltype_of_typ ty in
-        match ty with
-        | String | List _ -> L.pointer_type llty
-        | _ -> llty
-      in
       let name = fdecl.sfunc_name 
       and formal_types = 
         Array.of_list (List.map (fun (ty, _) -> get_type ty) fdecl.sparameters) in
@@ -136,7 +138,11 @@ let translate (globals, functions, _) =
       StringMap.add name (L.define_function name llvalue the_module, fdecl) map in
       List.fold_left function_decl StringMap.empty functions in
 
-  let build_function_body fdecl = 
+
+    let function_decls = ref function_decls in
+
+
+  let rec build_function_body fdecl = 
     (* LLVM insists each basic block end with exactly one "terminator"
        instruction that transfers control.  This function runs "instr builder"
        if the current block does not already have a terminator.  Used,
@@ -147,9 +153,15 @@ let translate (globals, functions, _) =
         Some _ -> ()
       | None -> ignore (instr builder) in
     
-    let (current_function, _) = StringMap.find fdecl.sfunc_name function_decls in 
+    let (current_function, _) = StringMap.find fdecl.sfunc_name !function_decls in 
+
+    (* Set containing all of the variable within the current function which should be allocated on the heap *)
+    let heap_variables = List.fold_left (fun set el -> Set.add el set) Set.empty fdecl.sheap_vars in
     
     let builder : L.llbuilder = L.builder_at_end context (L.entry_block current_function) in
+
+    let my_builder = ref builder in
+    let stale = ref false in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt_int" builder in
     let float_format_str = L.build_global_stringptr "%f\n" "fmt_float" builder in
@@ -191,7 +203,12 @@ let translate (globals, functions, _) =
     let formals : (L.llvalue * Ast.ty) StringMap.t =
       let add_formal map (ty, name) param =
         L.set_value_name name param;
-        let local = L.build_alloca (ltype_of_typ ty) name builder in
+        let local = if Set.mem name heap_variables then (
+            L.build_malloc (ltype_of_typ ty) name builder  (* Will need to replace with gc malloc *)
+          ) else (
+            L.build_alloca (ltype_of_typ ty) name builder
+          ) 
+        in
         ignore (match ty with
         | String | List _ -> let copy = L.build_load param "" builder in L.build_store copy local builder;
         | _ -> L.build_store param local builder;);
@@ -276,7 +293,7 @@ let translate (globals, functions, _) =
         try (* try to see if it's a built in function first *)
           check_built_in f args table builder
         with Not_found ->
-          let (fdef, fdecl) = StringMap.find f function_decls in
+          let (fdef, fdecl) = StringMap.find f !function_decls in
           let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
           let result = f ^ "_result" in
           L.build_call fdef (Array.of_list llargs) result builder
@@ -301,6 +318,21 @@ let translate (globals, functions, _) =
       (*| StructCall -> raise Unimplemented
       | StructAccess -> raise Unimplemented
       | StructAssign -> raise Unimplemented *)
+      | SFunctionLit (_, lambda) ->
+        let formal_types = Array.of_list (List.map (fun (ty, _) -> get_type ty) lambda.sparameters) in
+        let llvalue = L.function_type (get_type lambda.sreturn_type) formal_types in
+        let llfunc = L.define_function (fdecl.sfunc_name ^ "_anon") llvalue the_module in
+        let lambda = {
+          sfunc_name = L.value_name llfunc;
+          sparameters = lambda.sparameters;
+          sreturn_type = lambda.sreturn_type;
+          sbody =  lambda.sbody;
+          sheap_vars = lambda.sheap_vars;
+        }
+        in
+        function_decls := StringMap.add (L.value_name llfunc) (llfunc, lambda)  !function_decls;
+        build_function_body lambda;
+        llfunc
       | _ -> raise Unimplemented
     and check_built_in name e table builder =
 
@@ -343,6 +375,85 @@ let translate (globals, functions, _) =
             | _ -> L.build_store el temp builder);
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
           L.build_call setElement [| lst; idx; generic |] "" builder
+      else if name = "map" then
+        let lst = List.hd args in
+        let llfunc = List.nth args 1 in
+
+        let el_ty = 
+          let get_element_type = function 
+          A.List ty -> ty
+          | _ -> raise Invalid
+          in
+          get_element_type (fst (List.hd e))
+        in
+
+        let new_ty =
+          let get_newlist_type = function
+            A.Function (_, output) -> output
+            | _ -> raise Invalid
+          in
+          get_newlist_type (fst (List.nth e 1))
+        in
+
+        (* Initialize a new list *)
+        let var = L.build_alloca list_t name builder in
+        let ptr = L.build_load (L.build_struct_gep var 2 "" builder) "" builder in
+        ignore(L.build_call initList [| var; L.size_of (ltype_of_typ new_ty); L.const_int i32_t 0; ptr |] "" builder);
+
+        
+        (* Temporary for current list element *)
+        let iterable = L.build_alloca (ltype_of_typ el_ty) "" builder in
+
+
+        (* Allocate temporary variable to store *)
+        let temp = L.build_alloca (ltype_of_typ new_ty) name builder in
+
+
+        (* Get length *)
+        let len= L.build_alloca (ltype_of_typ A.Int) "" builder in 
+        ignore(L.build_store ( L.build_call lenlist [|lst|] "" builder) len builder);
+       
+
+        (* Set counter *)
+        let counter = L.build_alloca (ltype_of_typ A.Int) "" builder in
+        ignore(L.build_store (initialized_value A.Int) counter builder);
+      
+
+        let map_loop = L.append_block context "map" current_function in
+
+        let start_map = L.build_br map_loop in (* partial function *)
+        ignore (start_map builder);
+
+        let map_builder = L.builder_at_end context map_loop in
+
+        let llvalue = L.build_icmp L.Icmp.Slt (L.build_load counter "count" map_builder) (L.build_load len "len" map_builder) "" map_builder in
+        let map_body = L.append_block context "map_body" current_function in
+        let body_builder = L.builder_at_end context map_body in
+        let index = L.build_load counter "" body_builder in
+        ignore (L.build_call getElement [|lst; index; L.build_bitcast iterable (L.pointer_type i8_t) "" body_builder|] "" body_builder);
+
+        
+        let item = (match el_ty with A.String | A.List _ -> iterable | _ -> L.build_load iterable "" body_builder) in
+        let result = L.build_call llfunc [|item|] "" body_builder in
+        let result = 
+          match new_ty with 
+          A.String | A.List _ -> L.build_load result "" body_builder
+          | _ -> result
+        in
+        ignore (L.build_store result temp body_builder);
+        let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" body_builder in
+        ignore(L.build_call addElement [| var; generic |] "" body_builder);
+       
+        let add_res = L.build_add (L.build_load counter "" body_builder) (L.const_int i32_t 1) "" body_builder in
+        ignore(L.build_store add_res counter body_builder);
+        add_terminal body_builder start_map;
+
+        let map_end = L.append_block context "map_end" current_function in
+
+        ignore (L.build_cond_br llvalue map_body map_end map_builder);
+        my_builder := (L.builder_at_end context map_end);
+        stale := true;
+        var
       else raise Not_found
     in
 
@@ -358,6 +469,7 @@ let translate (globals, functions, _) =
       | SExpr sexpr -> ignore(build_expr table builder sexpr); (builder, table)
       | SExplicit ((ty, name), sexpr) ->
         let e' = build_expr table builder sexpr in
+        let builder = if !stale then (stale := false; !my_builder) else builder in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
         let table = add_to_current_scope table name var ty in
         let _ = match ty with
@@ -378,6 +490,7 @@ let translate (globals, functions, _) =
         (builder, table)
       | SDefine (name, sexpr) -> 
         let e' = build_expr table builder sexpr in
+        let builder = if !stale then (stale := false; !my_builder) else builder in
         let ty = fst sexpr in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
         let table = add_to_current_scope table name var ty in
@@ -590,12 +703,9 @@ let translate (globals, functions, _) =
       | _ -> raise Unimplemented
     in
     
-    let funcbuilder = (match fdecl.sbody with
+    ignore (match fdecl.sbody with
     | SBlock lst -> build_stmt_list symbol_table builder lst (* Flatten sstmt *)
-    | _ -> raise Invalid)
-    in
-
-    add_terminal funcbuilder (L.build_ret (initialized_value A.Int))
+    | _ -> raise Invalid);
 
   in
   List.iter build_function_body functions;

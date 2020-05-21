@@ -32,6 +32,7 @@ and stmt =
   | Explicit of bind * expr
   | Define of string * expr (* Will be used for := *)
   | Assign of string * expr
+  | AssignSeq of expr * expr * expr
   | StructAssign of string * string * expr
   | If of expr * stmt
   | IfElse of expr * stmt * stmt
@@ -44,6 +45,7 @@ and func_def = {
   parameters: bind list;
   return_type: ty;
   body: stmt;
+  heap_vars: string list;
 }
 
 (* A struct has a name, data fields, and functions *)

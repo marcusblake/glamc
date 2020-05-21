@@ -1,16 +1,26 @@
-
-
-func getFunc() func(int) int {
-    return func (a: float) int -> {
-        return 1;
-    };
-}
-
+var a int;
+var b int;
+var c int;
 
 
 func main() int {
 
-    a := getFunc();
-  
+
+    d := [[1,2,3,4],[2,4,52,1],[0,1,2,12,94]];
+
+    a := map(d, func(a: list<int>) int -> {
+        sum := 0;
+        for (id in a) {
+            if (id % 2 == 0) {
+                sum += 1;
+            }
+        } 
+        return sum; 
+    });
+
+    for (id in a) {
+        printi(id);
+    }
+
     return 0;
 }

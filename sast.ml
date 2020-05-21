@@ -10,7 +10,7 @@ and sex =
   | SCharLit of char
   | SStringLit of string
   | SStructLit of string * sanon_decl list (* Name of struct and list of fields *)
-  | SFunctionLit of sfunc_def
+  | SFunctionLit of string list * sfunc_def
   | SSeq of sexpr list
   | SId of string
   | SBinop of sexpr * op * sexpr
@@ -38,6 +38,7 @@ and sfunc_def = {
   sparameters: bind list;
   sreturn_type: ty;
   sbody: sstmt;
+  sheap_vars: string list;
 }
 
 (* A struct has a name, data fields, and functions *)

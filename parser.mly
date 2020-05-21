@@ -97,7 +97,8 @@ func_decl:
       func_name = $2;
       parameters = $4;
       return_type = $6;
-      body = $7
+      body = $7;
+      heap_vars = []
     }
   }
 
@@ -177,7 +178,8 @@ anon_func:
       func_name = "";
       parameters = $3;
       return_type = $5;
-      body = $7
+      body = $7;
+      heap_vars = []
     }
   }
 
@@ -251,6 +253,7 @@ stmt:
   | ID MODEQ expr SEMI                               { Assign($1, Binop(Id($1), Mod, $3)) }
   | ID DEFINE  expr SEMI                             { Define($1, $3) } /* id := 2 */
   | ID ASSIGN expr SEMI                              { Assign($1, $3) } /* x = 2 */
+  | literal LBRACKET expr RBRACKET ASSIGN expr SEMI  { AssignSeq($1, $3, $6)}
   | ID DOT ID ASSIGN expr SEMI                       { StructAssign($1, $3, $5) }
   | RETURN expr SEMI                                 { Return $2 } /* return 2; */
   | FOR LPAREN ID IN expr RPAREN block               { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */

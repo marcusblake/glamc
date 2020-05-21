@@ -6,7 +6,7 @@ open Printing
 
 (* Map used for symbol table *)
 module StringMap = Map.Make(String)
-
+module Set = Set.Make(String)
 
 let check (globals, functions, structs) =
   let add_identifier map (ty, str) = 
@@ -45,62 +45,79 @@ let check (globals, functions, structs) =
       return_type = Int;
       func_name = "printi";
       parameters = [(Int, "x")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "printc";
       parameters = [(Char, "x")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "printfl";
       parameters = [(Float, "x")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "prints";
       parameters = [(String, "x")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "printb";
       parameters = [(Bool, "x")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "lenstr";
       parameters = [(String, "x")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "append";
       parameters = [(List AnyType, "x"); (AnyType, "y")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "put";
       parameters = [(List AnyType, "x"); (Int, "y") ;(AnyType, "z")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "lenlist";
       parameters = [(List AnyType, "x")];
-      body = Block []
+      body = Block [];
+      heap_vars = []
     };
     {
       return_type = Int;
       func_name = "pop";
       parameters = [(List AnyType, "x")];
-      body = Block []
-    }
+      body = Block [];
+      heap_vars = []
+    };
+    {
+      return_type = Int;
+      func_name = "map";
+      parameters = [(List AnyType, "x"); (Function(([AnyType], AnyType)), "y")];
+      body = Block [];
+      heap_vars = []
+    };
   ]
   in
 
@@ -115,6 +132,10 @@ let check (globals, functions, structs) =
   in
 
   let rec check_func symbol_table func = 
+
+    let vars_outside_scope = ref Set.empty in
+    let scope_count = ref 0 in
+    let heap_vars = ref Set.empty in
 
     check_dups func.parameters;
 
@@ -148,6 +169,18 @@ let check (globals, functions, structs) =
           lookup_identifier name tl
     in
 
+    let rec in_function_scope level var = function
+      | [] -> false
+      | hd :: tl ->
+        if level < 0 then (
+          false
+        ) else if StringMap.mem var hd then (
+          true
+        ) else (
+          in_function_scope (level-1) var tl
+        )
+    in
+
     let rec check_expr table = function 
     (* Todo: Nonetype *)
       | IntLit l -> (Int, SIntLit l)
@@ -157,9 +190,13 @@ let check (globals, functions, structs) =
       | StringLit l -> (String, SStringLit l)
       | FunctionLit lambda -> 
         let new_table = add_scope table in
-        let sfunc = check_func new_table lambda in
+        let (sfunc, vars) = check_func new_table lambda in
+        Set.iter (fun k -> Printf.printf "Set %s\n" k) vars;
+        let vars = Set.fold (fun k lst -> k :: lst) vars [] in (* Get list of variables outside of current scope *)
+        let infer_heap_vars  = List.fold_left (fun lst el -> if StringMap.mem el (List.hd table) then el :: lst else lst) [] vars in
+        heap_vars := List.fold_left (fun heapvars el -> Set.add el heapvars) !heap_vars infer_heap_vars;
         let types = List.map (fun (ty, _) -> ty) sfunc.sparameters in
-        (Function (types, sfunc.sreturn_type), SFunctionLit sfunc)
+        (Function (types, sfunc.sreturn_type), SFunctionLit (vars, sfunc))
       | Seq lst -> 
           let new_list = List.map (check_expr table) lst in
           let rec infer_type lst = 
@@ -169,7 +206,15 @@ let check (globals, functions, structs) =
             | hd :: tl -> let (ty, _) = hd in if ty = infer_type tl then ty else raise Seq_type_error)
           in
           (List (infer_type new_list), SSeq new_list)
-      | Id name -> (lookup_identifier name table, SId name)
+      | Id name -> 
+        let ty = lookup_identifier name table in
+        let _ = if in_function_scope !scope_count name table then (
+          ()
+        ) else (
+          vars_outside_scope := Set.add name !vars_outside_scope
+        )
+        in
+        (ty, SId name)
       | Binop (lhs, op, rhs) ->
         let (t1, lhs') = check_expr table lhs in
         let (t2, rhs') = check_expr table rhs in
@@ -259,6 +304,20 @@ let check (globals, functions, structs) =
           | _ -> raise Func_failed_typecheck
           end
         )
+        else if name = "map" then (
+          let (ty, e1) = check_expr table (List.hd arguments) in
+          let (el_ty, e2) =  check_expr table (List.nth arguments 1) in
+          begin match ty with
+          List rest -> 
+            begin match el_ty with
+            Function ([input], out) ->
+              if rest <> input then raise (IncorrectArgumentType("Input to function should be same as list type"))
+              else (List out, SCall(name, [(ty, e1); (el_ty, e2)]))
+            | _ -> raise (IncorrectArgumentType("Input to map should be a list and function accepting list element"))
+            end
+          | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append"))
+          end
+        )
         else (
           let sargs = List.map2 check_call f.parameters arguments in 
           (f.return_type, SCall(name, sargs))
@@ -284,10 +343,11 @@ let check (globals, functions, structs) =
       | Bool -> (ty, e')
       | _ -> raise Invalid (* Can come up with a better error message *)
     and check_stmt_list table = function
-        [] -> []
+        [] -> ([], table)
         | head :: tail -> 
           let (sast, table) = check_stmt table head in
-            sast :: check_stmt_list table tail
+          let (sastlst, table) = check_stmt_list table tail in
+          (sast::sastlst, table)
     and check_stmt table = function 
       | Return e -> 
         let (ty, e') = check_expr table e in
@@ -296,7 +356,10 @@ let check (globals, functions, structs) =
       | If (expr, stmt) -> (SIf(check_bool_expr table expr, fst (check_stmt table stmt)), table)
       | Block lst -> 
         let new_table = add_scope table in 
-        (SBlock(check_stmt_list new_table lst), table)
+        scope_count := !scope_count + 1;
+        let sblock = fst (check_stmt_list new_table lst) in
+        scope_count := !scope_count - 1;
+        (SBlock(sblock), table)
       | Expr expr -> (SExpr(check_expr table expr), table)
       | Declare (ty, name) -> 
         let table = add_to_current_scope table name ty in 
@@ -313,6 +376,12 @@ let check (globals, functions, structs) =
       | Assign (name, e) -> 
         let (ty, e') = check_expr table e in
         let vartype = lookup_identifier name table in
+        let _ = if in_function_scope !scope_count name table then (
+          ()
+        ) else (
+          vars_outside_scope := Set.add name !vars_outside_scope
+        )
+        in
         let ty = check_assign vartype ty "" in
         (SAssign(name, (ty, e')), table)
       | Define (name, expr) -> 
@@ -325,7 +394,10 @@ let check (globals, functions, structs) =
         let get_siterate el_ty = (function
           Block lst -> (* flatten list *)
             let new_table = add_to_current_scope (add_scope table) x el_ty in 
-            (SIterate(x, (ty, e'), SBlock(check_stmt_list new_table lst)), table)
+            scope_count := !scope_count + 1;
+            let sblock = fst (check_stmt_list new_table lst) in
+            scope_count := !scope_count - 1;
+            (SIterate(x, (ty, e'), SBlock(sblock)), table)
           | _ -> raise Invalid)
         in
         begin match ty with
@@ -338,8 +410,11 @@ let check (globals, functions, structs) =
         let (t2, e2') = check_expr table e2 in
         let get_srange = function
           Block lst -> (* flatten list *)
-            let new_table = add_to_current_scope (add_scope table) x Int in 
-            (SRange(x, (t1, e1'), (t2, e2'), SBlock(check_stmt_list new_table lst)), table)
+            let new_table = add_to_current_scope (add_scope table) x Int in
+            scope_count := !scope_count + 1;
+            let sblock = fst (check_stmt_list new_table lst) in
+            scope_count := !scope_count - 1; 
+            (SRange(x, (t1, e1'), (t2, e2'), SBlock(sblock)), table)
           | _ -> raise Invalid
         in
         begin match t1, t2 with
@@ -349,16 +424,27 @@ let check (globals, functions, structs) =
       | While (e, stmt) -> (SWhile(check_bool_expr table e, fst (check_stmt table stmt)), table)
       | _ -> raise Unimplemented (* Ignore for now *)
     in
-    let sast_func = SBlock (match func.body with
-      Block lst -> check_stmt_list symbol_table lst (* flatten block to list *)
-      | _ ->  raise Invalid
-    ) in
-    {
+    let (sast, table) = 
+    match func.body with
+    Block lst -> check_stmt_list symbol_table lst (* flatten block to list *)
+    | _ ->  raise Invalid
+    in
+
+    (* StringMap.iter (fun k v -> Printf.printf "Map %s -> %s\n" k (string_of_typ v)) (List.hd table); *)
+    Set.iter (fun k -> Printf.printf "Heap vars %s\n" k) !heap_vars;
+    let sast_func = SBlock(sast) in
+    
+    ({
       sfunc_name = func.func_name;
       sparameters = func.parameters;
       sreturn_type = func.return_type;
-      sbody = sast_func
-    }
+      sbody = sast_func;
+      sheap_vars = Set.fold (fun k lst -> k :: lst) !heap_vars []
+    }, !vars_outside_scope)
   in
   let check_struct stuct_ = ignore(print_endline "check_struct"); raise Unimplemented (* ignore for now *) in
-  (globals, List.map (check_func symbol_table) functions, List.map check_struct structs)
+  let get_func func =
+    let (func, _) = check_func symbol_table func in
+    func
+  in
+  (globals, List.map get_func functions, List.map check_struct structs)
