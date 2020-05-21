@@ -13,7 +13,8 @@ exception NonAccessibleProp of string
 exception Unimplemented (* for development purposes *)
 exception MainEntrypointUndefined
 exception FunctionAlreadyExists
-exception FunctionDoesntExist
+exception FunctionDoesntExist of string
+exception TypeMismatch of string
 exception IllegalArgument
 exception IllegalAccess of string
 exception IllegalCondition

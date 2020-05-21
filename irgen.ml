@@ -17,6 +17,7 @@ module L = Llvm
 module A = Ast
 open Sast
 open Exceptions
+open Semant_helper
 
 module StringMap = Map.Make(String)
 module Set = Set.Make(String)
@@ -39,7 +40,6 @@ let translate (globals, functions, _) =
   and void_t     = L.void_type   context
   and string_t   = L.named_struct_type context "string"
   and list_t     = L.named_struct_type context "list"
-  (* and none_t     = L.void_type   context *)
   in
 
   (* 
@@ -56,7 +56,8 @@ let translate (globals, functions, _) =
   *)
   let _ =
     ignore(L.struct_set_body string_t [| i32_t ; L.pointer_type i8_t |] false);
-    L.struct_set_body list_t   [| i32_t ; i32_t ; L.pointer_type i8_t |] false in
+    L.struct_set_body list_t   [| i32_t ; i32_t ; L.pointer_type i8_t |] false 
+  in
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
@@ -67,9 +68,6 @@ let translate (globals, functions, _) =
     | A.String -> string_t
     | A.List _ -> list_t
     | _ -> raise Unimplemented
-    (* | A.None  -> none_t *)
-    (* | A.String -> string_t ignore for now *)
-    (* | A.List(t) -> L.pointer_type (ltype_of_typ t) *)
   in
 
 
@@ -105,23 +103,33 @@ let translate (globals, functions, _) =
 
   (* print boolean *)
   let printb = L.declare_function "printb" (L.function_type void_t [| i1_t |]) the_module in
+  (* print float *)
+  (* let printb = L.declare_function "printfl" (L.function_type void_t [| float_t |]) the_module in *)
 
 
+
+  (* printf strings *)
+  let int_str = L.const_stringz context "%d\n" in
+  let float_str = L.const_stringz context "%f\n" in
+  let char_str = L.const_stringz context "\'%c\'\n" in
+  let empty_str = L.const_stringz context "" in
+
+  let int_format_str = L.define_global "fmt_int" int_str the_module in
+  let float_format_str = L.define_global "fmt_float" float_str the_module in
+  let char_format_str = L.define_global "fmt_char" char_str the_module in
+  let empty_initialize = L.define_global "empty_str" empty_str the_module in
+  (* End printf strings *)
+
+
+
+  (* Declare printf function *)
   let printf_t : L.lltype =
     L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue =
     L.declare_function "printf" printf_t the_module in
 
-  (* Function that takes in the name of a variable, and symbol_table. It returns the LLVM representation of the variable *)
-  let rec lookup_identifier name = function
-      | [] -> raise (UnrecognizedIdentifier "TODO: ERROR MESSAGE")
-      | current_scope :: tl -> 
-        try
-          StringMap.find name current_scope
-        with Not_found ->
-          lookup_identifier name tl
-    in
 
+  
   let get_type ty = 
     let llty = ltype_of_typ ty in
     match ty with
@@ -129,29 +137,39 @@ let translate (globals, functions, _) =
     | _ -> llty
   in
 
+
+
+  let gep_str value index = 
+    let pointer = L.const_gep value [| L.const_int i32_t index |] in
+    L.const_bitcast pointer (L.pointer_type i8_t) 
+  in
+
+
+
   let function_decls : (L.llvalue * sfunc_def) StringMap.t = 
     let function_decl map fdecl = 
       let name = fdecl.sfunc_name 
-      and formal_types = 
-        Array.of_list (List.map (fun (ty, _) -> get_type ty) fdecl.sparameters) in
+      and formal_types = Array.of_list (List.map (fun (ty, _) -> get_type ty) fdecl.sparameters) in
       let llvalue = L.function_type (get_type fdecl.sreturn_type) formal_types in
-      StringMap.add name (L.define_function name llvalue the_module, fdecl) map in
-      List.fold_left function_decl StringMap.empty functions in
+      StringMap.add name (L.define_function name llvalue the_module, fdecl) map 
+    in
+    List.fold_left function_decl StringMap.empty functions 
+  in
 
+  (* LLVM insists each basic block end with exactly one "terminator"
+    instruction that transfers control.  This function runs "instr builder"
+    if the current block does not already have a terminator.  Used,
+    e.g., to handle the "fall off the end of the function" case. *)
 
-    let function_decls = ref function_decls in
+    let add_terminal builder instr =
+    match L.block_terminator (L.insertion_block builder) with
+      Some _ -> ()
+    | None -> ignore (instr builder) in
+
+  let function_decls = ref function_decls in
 
 
   let rec build_function_body fdecl = 
-    (* LLVM insists each basic block end with exactly one "terminator"
-       instruction that transfers control.  This function runs "instr builder"
-       if the current block does not already have a terminator.  Used,
-       e.g., to handle the "fall off the end of the function" case. *)
-    
-    let add_terminal builder instr =
-      match L.block_terminator (L.insertion_block builder) with
-        Some _ -> ()
-      | None -> ignore (instr builder) in
     
     let (current_function, _) = StringMap.find fdecl.sfunc_name !function_decls in 
 
@@ -163,10 +181,6 @@ let translate (globals, functions, _) =
     let my_builder = ref builder in
     let stale = ref false in
 
-    let int_format_str = L.build_global_stringptr "%d\n" "fmt_int" builder in
-    let float_format_str = L.build_global_stringptr "%f\n" "fmt_float" builder in
-    let char_format_str = L.build_global_stringptr "\'%c\'\n" "fmt_char" builder in
-    let empty_str = L.build_global_stringptr "" "empty_str" builder in
 
     (* Return an initialized value of a given type *)
     let initialized_value = function 
@@ -339,11 +353,11 @@ let translate (globals, functions, _) =
 
       let args = List.map (build_expr table builder) e in
       if name = "printi" then
-        L.build_call printf_func (Array.of_list ([int_format_str] @ args)) "printf" builder
+        L.build_call printf_func (Array.of_list ([gep_str int_format_str 0] @ args)) "printf" builder
       else if name = "printfl" then 
-        L.build_call printf_func (Array.of_list ([float_format_str] @ args)) "printf" builder
+        L.build_call printf_func (Array.of_list ([gep_str float_format_str 0] @ args)) "printf" builder
       else if name = "printc" then 
-        L.build_call printf_func (Array.of_list ([char_format_str] @ args)) "printf" builder
+        L.build_call printf_func (Array.of_list ([gep_str char_format_str 0] @ args)) "printf" builder
       else if name = "printb" then
         L.build_call printb (Array.of_list args) "" builder
       else if name = "prints" then 
@@ -480,7 +494,7 @@ let translate (globals, functions, _) =
       | SDeclare(ty, name) -> 
         let var = L.build_alloca (ltype_of_typ ty) name builder in
         let _ = match ty with
-              | String -> L.build_call initString [|var; empty_str|] "" builder
+              | String -> L.build_call initString [|var; gep_str empty_initialize 0|] "" builder
               | List el_ty -> 
                 let ptr = L.build_load (L.build_struct_gep var 2 "" builder) "" builder in
                 L.build_call initList [| var; L.size_of (ltype_of_typ el_ty); L.const_int i32_t 0; ptr |] "" builder

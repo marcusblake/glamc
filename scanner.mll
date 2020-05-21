@@ -11,6 +11,7 @@
     else '\t'
 
   let get_str input = List.nth (String.split_on_char '\"' input) 1
+
 }
 
 let digit = ['0'-'9']
@@ -84,67 +85,69 @@ and comment = parse
 | _    { comment lexbuf }
 
 {
-   let to_string = function
-    | LPAREN -> "LPAREN"
-    | RPAREN -> "RPAREN"
-    | LBRACE -> "LBRACE"
-    | RBRACE -> "RBRACE"
-    | LBRACKET -> "LBRACKET"
-    | RBRACKET -> "RBRACKET"
-    | SEMI -> "SEMI"
-    | COLON -> "COLON"
-    | COMMA -> "COMMA"
-    | DOT -> "DOT"
-    | PLUS -> "PLUS"
-    | MINUS -> "MINUS"
-    | MULT -> "MULT"
-    | DIV -> "DIV"
-    | PLEQ -> "PLEQ"
-    | SUBEQ -> "SUBEQ"
-    | MLTEQ -> "MLTEQ"
-    | DIVEQ -> "DIVEQ"
-    | MODEQ -> "MODEQ"
-    | ASSIGN -> "ASSIGN"
-    | DEFINE -> "DEFINE"
-    | EQ -> "EQ"
-    | NEQ -> "NEQ"
-    | LT -> "LT"
-    | GT -> "GT"
-    | LTEQ -> "LTEQ"
-    | GTEQ -> "GTEQ"
-    | AND -> "AND"
-    | OR -> "OR"
-    | IF -> "IF"
-    | ELSE -> "ELSE"
-    | WHILE -> "WHILE"
-    | FOR -> "FOR"
-    | IN -> "IN"
-    | RETURN -> "RETURN"
-    | INT -> "INT"
-    | FLOAT -> "FLOAT"
-    | CHAR -> "CHAR"
-    | BOOL -> "BOOL"
-    | MODULUS -> "MODULUS"
-    | ELIPS -> "ELIPS"
-    | NOT -> "NOT"
-    | VAR -> "VAR"
-    | BLIT(b)  -> Printf.sprintf "BLIT(%B)" b
-    | LIST -> "LIST"
-    | STRUCT -> "STRUCT"
-    | FUNC -> "FUNC"
-    | STRING -> "STRING"
-    | ARROW -> "ARROW"
-    | LITERAL(d) -> Printf.sprintf "LITERAL(%d)" d
-    | ID(id) -> Printf.sprintf "ID(%s)" id
-    | CHARLIT(id) -> Printf.sprintf "CHARLIT(%s)" (Char.escaped id)
-    | STRLIT(str) -> Printf.sprintf "STRLIT(%s)" str
-    | FLOATLIT(f) -> Printf.sprintf "FLOATLIT(%f)" f
-    | EOF -> "EOF" in
-  let input = open_in "scanner_test.gc" in
-  let lexbuf = Lexing.from_channel input in
-  let rec loop prog = (function
-    | EOF -> List.rev (to_string EOF::prog)
-    | x -> loop (to_string x :: prog) (token lexbuf)) in
-  let prog = String.concat " " (loop [] (token lexbuf)) in
-  print_endline prog
+  let to_string = function
+  | LPAREN -> "LPAREN"
+  | RPAREN -> "RPAREN"
+  | LBRACE -> "LBRACE"
+  | RBRACE -> "RBRACE"
+  | LBRACKET -> "LBRACKET"
+  | RBRACKET -> "RBRACKET"
+  | SEMI -> "SEMI"
+  | COLON -> "COLON"
+  | COMMA -> "COMMA"
+  | DOT -> "DOT"
+  | PLUS -> "PLUS"
+  | MINUS -> "MINUS"
+  | MULT -> "MULT"
+  | DIV -> "DIV"
+  | PLEQ -> "PLEQ"
+  | SUBEQ -> "SUBEQ"
+  | MLTEQ -> "MLTEQ"
+  | DIVEQ -> "DIVEQ"
+  | MODEQ -> "MODEQ"
+  | ASSIGN -> "ASSIGN"
+  | DEFINE -> "DEFINE"
+  | EQ -> "EQ"
+  | NEQ -> "NEQ"
+  | LT -> "LT"
+  | GT -> "GT"
+  | LTEQ -> "LTEQ"
+  | GTEQ -> "GTEQ"
+  | AND -> "AND"
+  | OR -> "OR"
+  | IF -> "IF"
+  | ELSE -> "ELSE"
+  | WHILE -> "WHILE"
+  | FOR -> "FOR"
+  | IN -> "IN"
+  | RETURN -> "RETURN"
+  | INT -> "INT"
+  | FLOAT -> "FLOAT"
+  | CHAR -> "CHAR"
+  | BOOL -> "BOOL"
+  | MODULUS -> "MODULUS"
+  | ELIPS -> "ELIPS"
+  | NOT -> "NOT"
+  | VAR -> "VAR"
+  | BLIT(b)  -> Printf.sprintf "BLIT(%B)" b
+  | LIST -> "LIST"
+  | STRUCT -> "STRUCT"
+  | FUNC -> "FUNC"
+  | STRING -> "STRING"
+  | ARROW -> "ARROW"
+  | LITERAL(d) -> Printf.sprintf "LITERAL(%d)" d
+  | ID(id) -> Printf.sprintf "ID(%s)" id
+  | CHARLIT(id) -> Printf.sprintf "CHARLIT(%s)" (Char.escaped id)
+  | STRLIT(str) -> Printf.sprintf "STRLIT(%s)" str
+  | FLOATLIT(f) -> Printf.sprintf "FLOATLIT(%f)" f
+  | EOF -> "EOF"
+
+  let string_of_tokens file =
+    let input = open_in file in
+    let lexbuf = Lexing.from_channel input in
+    let rec loop prog = (function
+      | EOF -> List.rev (to_string EOF::prog)
+      | x -> loop (to_string x :: prog) (token lexbuf)) in
+    String.concat " " (loop [] (token lexbuf))
 }
+

@@ -1,4 +1,5 @@
 open Ast
+open Parser
 
 (* Pretty-printing functions *)
 let string_of_op = function
