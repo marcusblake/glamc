@@ -239,38 +239,51 @@ let translate (globals, functions, _) =
       | SFloatLit f -> L.const_float float_t f
       | SCharLit c -> L.const_int i8_t (int_of_char c)
       | SStringLit s -> 
-          let strptr = L.build_global_stringptr s "string_const" builder in
-          let strct = L.const_named_struct string_t [| L.const_int i32_t 0; strptr |] in 
-          let global = L.define_global "tmp_string" strct the_module in
-            ignore(L.build_call initString [|global; strptr|] "" builder); global
+        let strptr = L.build_global_stringptr s "string_const" builder in
+        let strct = L.const_named_struct string_t [| L.const_int i32_t 0; strptr |] in 
+        let global = L.define_global "tmp_string" strct the_module in
+        ignore(L.build_call initString [|global; strptr|] "" builder);
+        global
       | SSeq lst -> 
-          let ty = (match type_ with A.List ty -> ty | _ -> raise Invalid) in
-          let len = List.length lst in (* Get length of list *)
-          let llvlen = L.const_int i32_t len in (* llvm const of length *)
-          let llvty = (ltype_of_typ ty) in (* type of list elements *)
-          let llvlst = List.map (build_expr table builder) lst in
-          let strct = L.const_named_struct list_t [| L.const_int i32_t 0; L.const_int i32_t 0; L.const_pointer_null i8_t |] in 
-          let global = L.define_global "lst" strct the_module in
-          let add_to_lst a = let generic = L.build_bitcast a (L.pointer_type i8_t) "" builder in
-            L.build_call addElement [| global; generic |] "" builder
-          in
-          let _ = match ty with 
-              A.String | A.List _ -> 
-                let ptr = L.build_load (L.build_struct_gep global 2 "" builder) "" builder in
-                ignore(L.build_call initList [| global; L.size_of llvty; L.const_int i32_t 0; ptr |] "" builder);
-                ignore(List.map add_to_lst llvlst)
-              | _ -> let llvarray = Array.of_list (List.map (build_expr table builder) lst) in (* array of llvm values *)
-                    let buffer = L.define_global "tmparr" (L.const_array llvty llvarray) the_module in (* Set as global variable *)
-                     let ptr = L.build_bitcast buffer (L.pointer_type i8_t) "buff_ptr" builder in
-                    ignore(L.build_call initList [| global; L.size_of llvty; llvlen; ptr |] "" builder)
-            in
-            global
+        let ty = (match type_ with A.List ty -> ty | _ -> raise Invalid) in
+        let len = List.length lst in (* Get length of list *)
+        let llvlen = L.const_int i32_t len in (* llvm const of length *)
+        let llvty = (ltype_of_typ ty) in (* type of list elements *)
+        let llvlst = List.map (build_expr table builder) lst in
+        let strct = L.const_named_struct list_t [| L.const_int i32_t 0; L.const_int i32_t 0; L.const_pointer_null i8_t |] in 
+        let global = L.define_global "lst" strct the_module in
+        let add_to_lst a = let generic = L.build_bitcast a (L.pointer_type i8_t) "" builder in
+          L.build_call addElement [| global; generic |] "" builder
+        in
+        let _ = 
+          if is_iterable ty then (
+            let ptr = L.build_load (L.build_struct_gep global 2 "" builder) "" builder in
+            ignore(L.build_call initList [| global; L.size_of llvty; L.const_int i32_t 0; ptr |] "" builder);
+            ignore(List.map add_to_lst llvlst)
+          ) else (
+            let llvarray = Array.of_list (List.map (build_expr table builder) lst) in (* array of llvm values *)
+            let buffer = L.define_global "tmparr" (L.const_array llvty llvarray) the_module in (* Set as global variable *)
+            let ptr = L.build_bitcast buffer (L.pointer_type i8_t) "buff_ptr" builder in
+            ignore(L.build_call initList [| global; L.size_of llvty; llvlen; ptr |] "" builder)
+          )
+        in
+        global
       | SId s -> 
-            let (llv, ty) = lookup_identifier s table in
-            (match ty with A.String | A.List _ -> llv | _ -> L.build_load llv s builder)
+        let (llv, ty) = lookup_identifier s table in
+        if is_iterable ty then (
+          llv
+        ) else L.build_load llv s builder
       | SBinop (e1, op, e2) ->
         let e1' = build_expr table builder e1
         and e2' = build_expr table builder e2 in
+
+        let get_operation int_op float_op = function
+          A.Int | A.Char -> L.build_icmp int_op
+          | A.Float -> L.build_fcmp float_op
+          | _ -> raise Bad_compare
+        in
+
+        let ty = fst e1 in
         (match op with
         A.Add       -> L.build_add
         | A.Sub     -> L.build_sub
@@ -279,54 +292,38 @@ let translate (globals, functions, _) =
         | A.Mod     -> L.build_srem
         | A.And     -> L.build_and
         | A.Or      -> L.build_or
-        | A.Equal   -> L.build_icmp L.Icmp.Eq
-        | A.Neq     -> L.build_icmp L.Icmp.Ne
-        | A.Less    -> L.build_icmp L.Icmp.Slt
-        | A.Leq     -> L.build_icmp L.Icmp.Sle
-        | A.Greater -> L.build_icmp L.Icmp.Sgt
-        | A.Geq     -> L.build_icmp L.Icmp.Sge
+        | A.Equal   -> get_operation L.Icmp.Eq L.Fcmp.Oeq ty
+        | A.Neq     -> get_operation L.Icmp.Ne L.Fcmp.One ty
+        | A.Less    -> get_operation L.Icmp.Slt L.Fcmp.Olt ty
+        | A.Leq     -> get_operation L.Icmp.Sle L.Fcmp.Ole ty
+        | A.Greater -> get_operation L.Icmp.Sgt L.Fcmp.Ogt ty
+        | A.Geq     -> get_operation L.Icmp.Sge L.Fcmp.Oge ty
         ) e1' e2' "tmp" builder
-        (* Float operations *)
-        (*   A.Add	-> L.build_fadd
-					| A.Sub		-> L.build_fsub
-					| A.Mult	-> L.build_fmul
-					| A.Div		-> L.build_fdiv
-					| A.Mod		-> L.build_frem
-					| A.Equal	-> L.build_fcmp L.Fcmp.Oeq
-					| A.Neq		-> L.build_fcmp L.Fcmp.One
-					| A.Less	-> L.build_fcmp L.Fcmp.Olt
-					| A.Leq		-> L.build_fcmp L.Fcmp.Ole
-					| A.Greater	-> L.build_fcmp L.Fcmp.Ogt
-          | A.Geq		-> L.build_fcmp L.Fcmp.Oge 
-          | _         -> raise (Foo "Invalid Float Operator")
-					) e1' e2' "tmp" builder in *)
-      | SCall (f, args) ->
-        (
-        try (* try to see if it's a built in function first *)
-          check_built_in f args table builder
-        with Not_found ->
-          let (fdef, fdecl) = StringMap.find f !function_decls in
-          let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
-          let result = f ^ "_result" in
-          L.build_call fdef (Array.of_list llargs) result builder
+
+      | SCall (f, args) -> (
+          try (* try to see if it's a built in function first *)
+            check_built_in f args table builder
+          with Not_found ->
+            let (fdef, fdecl) = StringMap.find f !function_decls in
+            let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
+            let result = f ^ "_result" in
+            L.build_call fdef (Array.of_list llargs) result builder 
         )
       | SSeqAccess(s, e) -> 
         let llval = build_expr table builder s in
         let index_llval = build_expr table builder e in
         let (iden_ty, _) = s in
-        (
-        match iden_ty with
+        begin match iden_ty with
         | A.String -> L.build_call getChar [| llval; index_llval |] "idx" builder
         | A.List ty -> let temp = L.build_alloca (ltype_of_typ ty) "tmp_store" builder in
             let generic_ptr = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
             ignore (L.build_call getElement [| llval ; index_llval ; generic_ptr |] "" builder);
-            (
-            match ty with
+            begin match ty with
             | String | List _ -> temp
             | _ -> L.build_load temp "list_item" builder
-            )
+            end
         | _ -> raise Invalid
-        )
+        end
       (*| StructCall -> raise Unimplemented
       | StructAccess -> raise Unimplemented
       | StructAssign -> raise Unimplemented *)
