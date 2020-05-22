@@ -2,7 +2,7 @@ open Ast
 open Sast
 open Exceptions
 open Printing
-open Semant_helper
+open Helper
 
 
 (* Map used for symbol table *)
@@ -182,14 +182,18 @@ let check (globals, functions, structs) =
             | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append"))
             end
 
-          ) else if name = "lenlist" || name = "pop" then (
-
+          ) else if name = "len" then (
+            let (ty, e1) = check_expr table (List.hd arguments) in
+            begin match ty with 
+            List _  | String -> (f.return_type, SCall(name, [(ty, e1)]))
+            | _ -> raise Func_failed_typecheck
+            end
+          ) else if name = "pop" then (
             let (ty, e1) = check_expr table (List.hd arguments) in
             begin match ty with 
             List _ -> (f.return_type, SCall(name, [(ty, e1)])) 
             | _ -> raise Func_failed_typecheck
             end
-
           ) else if name = "put" then (
 
             let sargs = List.map (check_expr table) arguments in

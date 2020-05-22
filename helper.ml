@@ -16,8 +16,8 @@ let built_in_functions = [
     };
     {
       return_type = Int;
-      func_name = "lenstr";
-      parameters = [(String, "x")];
+      func_name = "len";
+      parameters = [(AnyType, "x")];
       body = Block [];
       heap_vars = []
     };
@@ -32,13 +32,6 @@ let built_in_functions = [
       return_type = Int;
       func_name = "put";
       parameters = [(List AnyType, "x"); (Int, "y") ;(AnyType, "z")];
-      body = Block [];
-      heap_vars = []
-    };
-    {
-      return_type = Int;
-      func_name = "lenlist";
-      parameters = [(List AnyType, "x")];
       body = Block [];
       heap_vars = []
     };

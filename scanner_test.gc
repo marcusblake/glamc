@@ -22,5 +22,8 @@ func main() int {
         println(id);
     }
 
+    println(len(d));
+    println(len("Hello "));
+
     return 0;
 }

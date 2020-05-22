@@ -17,7 +17,7 @@ module L = Llvm
 module A = Ast
 open Sast
 open Exceptions
-open Semant_helper
+open Helper
 
 module StringMap = Map.Make(String)
 module Set = Set.Make(String)
@@ -375,8 +375,13 @@ let translate (globals, functions, _) =
         in
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
         L.build_call addElement [| lst; generic |] "" builder
-      | "lenstr" -> L.build_call strLength (Array.of_list args) "length" builder
-      | "lenlist" -> L.build_call lenlist (Array.of_list args) "" builder
+      | "len" -> 
+        let (ty, _) = List.hd e in
+        begin match ty with
+        A.String -> L.build_call strLength (Array.of_list args) "length" builder
+        | A.List _ -> L.build_call lenlist (Array.of_list args) "length" builder
+        | _ -> raise Invalid
+        end
       | "pop" -> L.build_call popElement (Array.of_list args) "" builder
       | "put" -> 
         let el = List.nth args 2 in
