@@ -124,4 +124,20 @@ let find_func map function_name =
 
 (* END: Helper functions for functions *)
 
+
+
+let is_iterable type_ = 
+  begin match type_ with
+  String | List _ -> true
+  | _ -> false
+  end
+
+let get_element_type type_ =
+  begin match type_ with 
+  List ty -> ty
+  | String -> Char
+  | _ -> raise Invalid
+  end
+
+
   

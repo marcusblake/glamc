@@ -219,9 +219,10 @@ let translate (globals, functions, _) =
           ) 
         in
         let _ = 
-          match ty with
-          | String | List _ -> let copy = L.build_load param "" builder in L.build_store copy local builder
-          | _ -> L.build_store param local builder
+          if is_iterable ty then (
+            let copy = L.build_load param "" builder in 
+            L.build_store copy local builder
+          ) else L.build_store param local builder
         in
         StringMap.add name (local, ty) map
       in
@@ -366,9 +367,12 @@ let translate (globals, functions, _) =
         let (ty, _) = List.nth e 1 in
         let lst = List.hd args in
         let temp = L.build_alloca (ltype_of_typ ty) "" builder in
-            ignore (match ty with
-            | String | List _ -> let v = L.build_load el "" builder in L.build_store v temp builder
-            | _ -> L.build_store el temp builder);
+        let _ = 
+          if is_iterable ty then (
+            let v = L.build_load el "" builder in 
+            L.build_store v temp builder
+          ) else L.build_store el temp builder
+        in
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
         L.build_call addElement [| lst; generic |] "" builder
       | "lenstr" -> L.build_call strLength (Array.of_list args) "length" builder
@@ -380,22 +384,20 @@ let translate (globals, functions, _) =
         let idx = List.nth args 1 in
         let lst = List.hd args in
         let temp = L.build_alloca (ltype_of_typ ty) "" builder in
-            ignore (match ty with
-            | String | List _ -> let v = L.build_load el "" builder in L.build_store v temp builder
-            | _ -> L.build_store el temp builder);
+        let _ = 
+          if is_iterable ty then (
+            let v = L.build_load el "" builder in
+            L.build_store v temp builder
+          ) else L.build_store el temp builder
+        in
         let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
         L.build_call setElement [| lst; idx; generic |] "" builder
       | "map" -> 
         let lst = List.hd args in
         let llfunc = List.nth args 1 in
 
-        let el_ty = 
-          let get_element_type = function 
-          A.List ty -> ty
-          | _ -> raise Invalid
-          in
-          get_element_type (fst (List.hd e))
-        in
+        let el_ty = get_element_type (fst (List.hd e)) in
+        
 
         let new_ty =
           let get_newlist_type = function
@@ -483,19 +485,23 @@ let translate (globals, functions, _) =
         let builder = if !stale then (stale := false; !my_builder) else builder in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
         let table = add_to_current_scope table name (var,ty) in
-        let _ = match ty with
-              | String | List _ -> let v = L.build_load e' "temp" builder in L.build_store v var builder
-              | _ -> L.build_store e' var builder
+        let _ = 
+          if is_iterable ty then (
+            let v = L.build_load e' "temp" builder in
+            L.build_store v var builder
+          ) else L.build_store e' var builder
         in
         (builder, table)
       | SDeclare(ty, name) -> 
         let var = L.build_alloca (ltype_of_typ ty) name builder in
-        let _ = match ty with
-              | String -> L.build_call initString [|var; gep_str empty_initialize 0|] "" builder
-              | List el_ty -> 
-                let ptr = L.build_load (L.build_struct_gep var 2 "" builder) "" builder in
-                L.build_call initList [| var; L.size_of (ltype_of_typ el_ty); L.const_int i32_t 0; ptr |] "" builder
-              | _ -> L.build_store (initialized_value ty) var builder
+        let _ = 
+          begin match ty with
+          | String -> L.build_call initString [|var; gep_str empty_initialize 0|] "" builder
+          | List el_ty -> 
+            let ptr = L.build_load (L.build_struct_gep var 2 "" builder) "" builder in
+            L.build_call initList [| var; L.size_of (ltype_of_typ el_ty); L.const_int i32_t 0; ptr |] "" builder
+          | _ -> L.build_store (initialized_value ty) var builder
+          end
         in
         let table = add_to_current_scope table name (var,ty) in
         (builder, table)
@@ -505,9 +511,11 @@ let translate (globals, functions, _) =
         let ty = fst sexpr in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
         let table = add_to_current_scope table name (var,ty) in
-        let _ = match ty with
-              | String | List _ -> let v = L.build_load e' "temp" builder in L.build_store v var builder
-              | _ -> L.build_store e' var builder
+        let _ = 
+          if is_iterable ty then (
+            let v = L.build_load e' "temp" builder in
+            L.build_store v var builder
+          ) else L.build_store e' var builder
         in
         (builder, table)
         (* This won't support nested if statements. Will need to figure out a way to support nested if statements.
@@ -556,7 +564,8 @@ let translate (globals, functions, _) =
 
         ignore (L.build_cond_br llvalue if_block else_block builder);
         (L.builder_at_end context if_end, table)
-      | SAssign (s, e) -> let e' = build_expr table builder e in
+      | SAssign (s, e) -> 
+        let e' = build_expr table builder e in
         ignore(L.build_store e' (fst (lookup_identifier s table)) builder);
         (builder, table)
       | SIterate (name, sexpr, stmt) -> 
@@ -570,8 +579,6 @@ let translate (globals, functions, _) =
         for_end:
 
         *)
-        let get_element_type = (function | A.List ty -> ty | A.String -> Char | _ -> raise Invalid) in
-      
         let e' = build_expr table builder sexpr in
         let ty = fst sexpr in
         let iterable = L.build_alloca (ltype_of_typ ty) "" builder in
@@ -704,11 +711,12 @@ let translate (globals, functions, _) =
       | SReturn (sexpr) -> 
         let ty = fst sexpr in
         let e = build_expr table builder sexpr in
-        let return_val = (match ty with
-        | A.List _ | A.String -> 
-          let mem = L.build_malloc (ltype_of_typ ty) "return" builder in (* need to malloc so that object one roll back in stack*)
-          ignore(L.build_store (L.build_load e "" builder) mem builder); mem
-        | _ -> e)
+        let return_val = 
+          if is_iterable ty then (
+            let mem = L.build_malloc (ltype_of_typ ty) "return" builder in (* need to malloc so that object one roll back in stack*)
+            ignore(L.build_store (L.build_load e "" builder) mem builder);
+            mem
+          ) else e
         in
         ignore(L.build_ret return_val builder); (builder, table)
       | _ -> raise Unimplemented

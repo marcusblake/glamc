@@ -158,7 +158,7 @@ let check (globals, functions, structs) =
       | Call (name, arguments) as call -> 
         let f = find_func function_decls name in
         let len = List.length f.parameters in
-        if List.length arguments != len then (
+        if List.length arguments <> len then (
           raise (Failure ("expecting " ^ string_of_int len ^
                           " arguments in " ^ string_of_expr call))
         ) else (
