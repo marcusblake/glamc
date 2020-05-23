@@ -156,13 +156,27 @@ let check (globals, functions, structs) =
                                  " in " ^ string_of_expr ex))
           in (ty, SUop(op, (t, e')))
       | Call (name, arguments) as call -> 
-        let f = find_func function_decls name in
-        let len = List.length f.parameters in
+        let (name, parameters, return_type) = 
+          if func_exists function_decls name then (
+            let f = find_func function_decls name in
+            let params = List.map (fun (ty, _) -> ty) f.parameters in
+            (f.func_name, params, f.return_type)
+          ) else (
+            let func =   
+              begin match lookup_identifier name table with
+              Function(func) -> func
+              | _ -> raise Invalid
+              end
+            in
+            (name, fst func, snd func)
+          )
+        in
+        let len = List.length parameters in
         if List.length arguments <> len then (
           raise (Failure ("expecting " ^ string_of_int len ^
                           " arguments in " ^ string_of_expr call))
         ) else (
-          let check_call (ft, _) e =
+          let check_call ft e =
             let (ty, e') = check_expr table e in
             let err = "illegal argument found " ^ string_of_typ ty ^
             " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e in
@@ -175,7 +189,7 @@ let check (globals, functions, structs) =
             begin match ty with
             List rest -> 
               if rest = el_ty then (
-                f.return_type, SCall(name, [(ty, e1); (el_ty, e2)])
+                (return_type, SCall(name, [(ty, e1); (el_ty, e2)]))
               ) else (
                 raise Func_failed_typecheck
               )
@@ -185,13 +199,13 @@ let check (globals, functions, structs) =
           ) else if name = "len" then (
             let (ty, e1) = check_expr table (List.hd arguments) in
             begin match ty with 
-            List _  | String -> (f.return_type, SCall(name, [(ty, e1)]))
+            List _  | String -> (return_type, SCall(name, [(ty, e1)]))
             | _ -> raise Func_failed_typecheck
             end
           ) else if name = "pop" then (
             let (ty, e1) = check_expr table (List.hd arguments) in
             begin match ty with 
-            List _ -> (f.return_type, SCall(name, [(ty, e1)])) 
+            List _ -> (return_type, SCall(name, [(ty, e1)])) 
             | _ -> raise Func_failed_typecheck
             end
           ) else if name = "put" then (
@@ -201,7 +215,7 @@ let check (globals, functions, structs) =
             begin match ty with
             | List rest -> 
               if rest = fst (List.nth sargs 2) && fst (List.nth sargs 1) = Int then (
-                f.return_type, SCall(name, sargs)
+                return_type, SCall(name, sargs)
               )
               else (
                 raise Func_failed_typecheck
@@ -233,9 +247,9 @@ let check (globals, functions, structs) =
             match ty with
             | Int | Char | Bool | Float | String -> (Int, SCall(name, [(ty, e)]))
             | _ -> raise (IllegalArgument("Can't print " ^ string_of_typ ty))
-          )else (
-            let sargs = List.map2 check_call f.parameters arguments in 
-            (f.return_type, SCall(name, sargs))
+          ) else (
+            let sargs = List.map2 check_call parameters arguments in 
+            (return_type, SCall(name, sargs))
           )
         )
       | SeqAccess (var, inside_bracket) -> 

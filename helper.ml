@@ -102,9 +102,11 @@ let rec in_function_scope level var = function
 
 (* BEGIN: Helper functions for functions *)
 
+let func_exists map function_name = StringMap.mem function_name map
+
 (* Adds a function to a map that maps function name to the function definition struct *)
 let add_func map func =
-  if StringMap.mem func.func_name map then raise FunctionAlreadyExists
+  if func_exists map func.func_name then raise FunctionAlreadyExists
   else StringMap.add func.func_name func map
 
 

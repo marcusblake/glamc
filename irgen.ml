@@ -60,13 +60,25 @@ let translate (globals, functions, _) =
   in
 
   (* Return the LLVM type for a MicroC type *)
-  let ltype_of_typ = function
+  let rec ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t
     | A.Float -> float_t
     | A.Char -> i8_t
     | A.String -> string_t
     | A.List _ -> list_t
+    | A.Function (params, return) -> 
+      let get_type ty =
+        let lty = ltype_of_typ ty in
+        if is_iterable ty then (
+          L.pointer_type lty
+        ) else (
+          lty
+        )
+      in
+      let parameters = Array.of_list (List.map get_type params) in
+      let return_type = ltype_of_typ return in
+      L.pointer_type (L.function_type return_type parameters)
     | _ -> raise Unimplemented
   in
 
@@ -168,6 +180,7 @@ let translate (globals, functions, _) =
   in
 
   let function_decls = ref function_decls in
+  let globalvars = ref StringMap.empty in
 
 
   let rec build_function_body fdecl = 
@@ -205,9 +218,14 @@ let translate (globals, functions, _) =
       in
       StringMap.add str (var, ty) map
     in
-  
-    let globalvars : (L.llvalue * Ast.ty) StringMap.t = List.fold_left add_identifier StringMap.empty globals in
-  
+      
+    let _ =
+      (* Initialize global variables in main function *)
+      if fdecl.sfunc_name = "main" then (
+        let globalv : (L.llvalue * Ast.ty) StringMap.t = List.fold_left add_identifier StringMap.empty globals in
+        globalvars := globalv;
+      ) else ()
+    in
 
     let formals : (L.llvalue * Ast.ty) StringMap.t =
       let add_formal map (ty, name) param =
@@ -230,7 +248,7 @@ let translate (globals, functions, _) =
     in
 
 
-    let symbol_table : (L.llvalue * Ast.ty) StringMap.t list = [formals; globalvars] in
+    let symbol_table : (L.llvalue * Ast.ty) StringMap.t list = [formals; !globalvars] in
 
     (* TODO: IMPLEMENT BUILD_EXPR -> Needs to return llvalue for expression *)
     let rec build_expr table builder ((type_, e) : sexpr) = match e with
@@ -304,7 +322,12 @@ let translate (globals, functions, _) =
           try (* try to see if it's a built in function first *)
             check_built_in f args table builder
           with Not_found ->
-            let (fdef, fdecl) = StringMap.find f !function_decls in
+            let fdef = (
+              try
+                fst (StringMap.find f !function_decls)
+              with Not_found -> 
+                L.build_load (fst (lookup_identifier f table)) "" builder
+            ) in
             let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
             let result = f ^ "_result" in
             L.build_call fdef (Array.of_list llargs) result builder 
@@ -729,5 +752,6 @@ let translate (globals, functions, _) =
     | _ -> raise Invalid);
 
   in
+  print_endline "I'm here";
   List.iter build_function_body functions;
   the_module
