@@ -4,30 +4,11 @@ var c int;
 
 
 func main() int {
+    add3 := func (x: int) int -> { return x + 3; };
 
-
-    d := [[1,2,3,4],[2,4,52,1],[0,1,2,12,94]];
-
-
-
-    my_function := func(a: list<int>) int -> {
-        sum := 0;
-        for (id in a) {
-            sum += id;
-        } 
-        return sum;
-    };
-
-    a := map(d, my_function);
-
-    for (id in a) {
-        println(id);
-    }
-
-    println(len(d));
-    println(len("Hello"));
-    b := 2.0;
-    println(b > 2.0);
-
+    twice := func (f: func(int) int, x: int) int -> { return f(f(x)); };
+    
+    println(twice(add3, 7));
+    
     return 0;
 }

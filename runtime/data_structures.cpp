@@ -59,9 +59,6 @@ extern "C" void addElement(struct List *list, char *element) {
     current_list->push_back(copy);
 }
 
-
-
-
 extern "C" void setElement(struct List *list, int index, char *element) {
     std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
     int n = (int)current_list->size();

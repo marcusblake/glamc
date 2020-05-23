@@ -23,4 +23,5 @@
 	extern "C" char getChar(struct String *str, int index);
 	extern "C" void concat(struct String *l, struct String *r, struct String *n_str);
 	extern "C" void prints(struct String *str);
+	extern "C" void split(struct String *str, char delimeter);
 #endif

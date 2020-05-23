@@ -10,6 +10,16 @@ extern "C" void printb(int d) {
     }
 }
 
+
+extern "C" void read(struct String *filename, struct String *buffer) {
+
+}
+
+extern "C" void write(struct String *filename, struct String *content) {
+
+}
+
+
 // extern "C" int string_to_int(string s) {
 //     return atoi(s);
 // }
