@@ -4,11 +4,14 @@ var c int;
 
 
 func main() int {
-    add3 := func (x: int) int -> { return x + 3; };
-
-    twice := func (f: func(int) int, x: int) int -> { return f(f(x)); };
     
-    println(twice(add3, 7));
+    if (1 > 2) {
+        println(true);
+    } else if (0 == 0) {
+        println(false);
+    } else {
+        println("stuff");
+    }
     
     return 0;
 }

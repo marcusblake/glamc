@@ -557,9 +557,10 @@ let translate (globals, functions, _) =
         let llvalue = build_expr table builder sexpr in
         (* Need to add function declarations to a map *)
         let if_block = L.append_block context "if_block" current_function in
-        ignore(build_stmt table (L.builder_at_end context if_block) stmt);
+        let (end_then_builder, _) = build_stmt table (L.builder_at_end context if_block) stmt in
         let if_end = L.append_block context "if_end" current_function in
         let build_break = L.build_br if_end in
+        add_terminal end_then_builder build_break;
         add_terminal (L.builder_at_end context if_block) build_break;
 
         ignore(L.build_cond_br llvalue if_block if_end builder);
@@ -579,11 +580,13 @@ let translate (globals, functions, _) =
         *)
         let llvalue = build_expr table builder sexpr in
         let if_block = L.append_block context "if_block" current_function in
-        ignore (build_stmt table (L.builder_at_end context if_block) stmt1);
+        let (end_then_builder, _) = build_stmt table (L.builder_at_end context if_block) stmt1 in
         let else_block = L.append_block context "else_block" current_function in
-        ignore (build_stmt table (L.builder_at_end context else_block) stmt2);
+        let (end_else_builder, _) = build_stmt table (L.builder_at_end context else_block) stmt2 in
         let if_end  = L.append_block context "if_end" current_function in
         let build_break = L.build_br if_end in
+        add_terminal end_then_builder build_break;
+        add_terminal end_else_builder build_break;
         add_terminal (L.builder_at_end context if_block) build_break;
         add_terminal (L.builder_at_end context else_block) build_break;
 

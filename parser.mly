@@ -241,6 +241,10 @@ if_stmt:
 ifelse_stmt:
    IF LPAREN expr RPAREN block ELSE block  { IfElse($3,$5,$7) } /* if (d > 3) { } else { } */
 
+elseif_stmt:
+  | IF LPAREN expr RPAREN block ELSE if_stmt { IfElse($3, $5, $7) }
+  | IF LPAREN expr RPAREN block ELSE ifelse_stmt { IfElse($3, $5, $7) }
+
 stmt:
     expr SEMI                                        { Expr $1 } /* For any standalone expression */
   | block                                            { $1 } /*  */
@@ -261,4 +265,5 @@ stmt:
   | WHILE LPAREN expr RPAREN block                   { While($3, $5) }
   | if_stmt                                          { $1 }
   | ifelse_stmt                                      { $1 }
+  | elseif_stmt                                      { $1 }
 
