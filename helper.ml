@@ -49,6 +49,48 @@ let built_in_functions = [
       body = Block [];
       heap_vars = []
     };
+    {
+      return_type = Int;
+      func_name = "float_to_int";
+      parameters = [(Float, "x")];
+      body = Block [];
+      heap_vars = []
+    };
+    {
+      return_type = Float;
+      func_name = "int_to_float";
+      parameters = [(Int, "x")];
+      body = Block [];
+      heap_vars = []
+    };
+    {
+      return_type = Int;
+      func_name = "char_to_int";
+      parameters = [(Char, "x")];
+      body = Block [];
+      heap_vars = []
+    };
+    {
+      return_type = Char;
+      func_name = "int_to_char";
+      parameters = [(Int, "x")];
+      body = Block [];
+      heap_vars = []
+    };
+    {
+      return_type = String;
+      func_name = "read";
+      parameters = [(String, "x")];
+      body = Block [];
+      heap_vars = []
+    };
+    {
+      return_type = Int;
+      func_name = "write";
+      parameters = [(String, "filename"); (String, "str")];
+      body = Block [];
+      heap_vars = []
+    };
   ]
 
 
