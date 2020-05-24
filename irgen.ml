@@ -88,11 +88,13 @@ let translate (globals, functions, _) =
   let strLength_t = L.function_type i32_t [| L.pointer_type string_t |] in
   let getChar_t = L.function_type i8_t [| L.pointer_type string_t; i32_t |] in
   let prints_t = L.function_type void_t [| L.pointer_type string_t |] in
+  let concat_t = L.function_type void_t [|L.pointer_type string_t; L.pointer_type string_t; L.pointer_type string_t |] in
 
   let initString = L.declare_function "initString" initString_t the_module in
   let strLength = L.declare_function "lenstr" strLength_t the_module in
   let getChar = L.declare_function "getChar" getChar_t the_module in
   let prints = L.declare_function "prints" prints_t the_module in
+  let concat = L.declare_function "concat" concat_t the_module in
   (* END: Definitions for String library functions *)
 
   
@@ -302,21 +304,28 @@ let translate (globals, functions, _) =
         in
 
         let ty = fst e1 in
-        (match op with
-        A.Add       -> L.build_add
-        | A.Sub     -> L.build_sub
-        | A.Mult    -> L.build_mul
-        | A.Div     -> L.build_sdiv
-        | A.Mod     -> L.build_srem
-        | A.And     -> L.build_and
-        | A.Or      -> L.build_or
-        | A.Equal   -> get_operation L.Icmp.Eq L.Fcmp.Oeq ty
-        | A.Neq     -> get_operation L.Icmp.Ne L.Fcmp.One ty
-        | A.Less    -> get_operation L.Icmp.Slt L.Fcmp.Olt ty
-        | A.Leq     -> get_operation L.Icmp.Sle L.Fcmp.Ole ty
-        | A.Greater -> get_operation L.Icmp.Sgt L.Fcmp.Ogt ty
-        | A.Geq     -> get_operation L.Icmp.Sge L.Fcmp.Oge ty
-        ) e1' e2' "tmp" builder
+        begin match op with
+        A.Add -> 
+          begin match ty with
+          A.String -> 
+            let new_string = L.build_alloca (ltype_of_typ A.String) "result" builder in
+            ignore(L.build_call concat [|e1'; e2'; new_string|] "" builder);
+            new_string
+          | _ -> L.build_add e1' e2' "tmp" builder
+          end
+        | A.Sub     -> L.build_sub e1' e2' "tmp" builder
+        | A.Mult    -> L.build_mul e1' e2' "tmp" builder
+        | A.Div     -> L.build_sdiv e1' e2' "tmp" builder
+        | A.Mod     -> L.build_srem e1' e2' "tmp" builder
+        | A.And     -> L.build_and e1' e2' "tmp" builder
+        | A.Or      -> L.build_or e1' e2' "tmp" builder
+        | A.Equal   -> (get_operation L.Icmp.Eq L.Fcmp.Oeq ty) e1' e2' "tmp" builder
+        | A.Neq     -> (get_operation L.Icmp.Ne L.Fcmp.One ty) e1' e2' "tmp" builder
+        | A.Less    -> (get_operation L.Icmp.Slt L.Fcmp.Olt ty) e1' e2' "tmp" builder
+        | A.Leq     -> (get_operation L.Icmp.Sle L.Fcmp.Ole ty) e1' e2' "tmp" builder
+        | A.Greater -> (get_operation L.Icmp.Sgt L.Fcmp.Ogt ty) e1' e2' "tmp" builder
+        | A.Geq     -> (get_operation L.Icmp.Sge L.Fcmp.Oge ty) e1' e2' "tmp" builder
+        end
 
       | SCall (f, args) -> (
           try (* try to see if it's a built in function first *)
@@ -592,9 +601,15 @@ let translate (globals, functions, _) =
 
         ignore (L.build_cond_br llvalue if_block else_block builder);
         (L.builder_at_end context if_end, table)
-      | SAssign (s, e) -> 
-        let e' = build_expr table builder e in
-        ignore(L.build_store e' (fst (lookup_identifier s table)) builder);
+      | SAssign (s, (ty, e)) -> 
+        let e' = build_expr table builder (ty, e) in
+        let var = fst (lookup_identifier s table) in
+        let _ = 
+          if is_iterable ty then (
+            let v = L.build_load e' "temp" builder in
+            L.build_store v var builder
+          ) else L.build_store e' var builder
+        in
         (builder, table)
       | SIterate (name, sexpr, stmt) -> 
         (*

@@ -107,7 +107,15 @@ let check (globals, functions, structs) =
         if t1 = t2 then (
           let ty = match op with
           (* + - * / *)
-          Add | Sub | Mult | Div -> 
+          Add ->
+            begin match t1 with
+              Int -> Int
+              | Float -> Float
+              | Char -> Char
+              | String -> String
+              | _ -> raise Bad_arithmetic
+            end
+          | Sub | Mult | Div -> 
             begin match t1 with
             Int -> Int
             | Float -> Float

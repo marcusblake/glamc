@@ -22,6 +22,16 @@ extern "C" int lenstr(struct String *str) {
     return str->length;
 }
 
+extern "C" void concat(struct String *l, struct String *r, struct String *n_str) {
+    int lLength = l->length;
+    int rLength = r->length + 1; /* Add null terminator from this string */
+    int n = lLength + rLength;
+    n_str->length = n-1;
+    n_str->elements = new char[n];
+    memcpy(n_str->elements, l->elements, lLength);
+    memcpy(n_str->elements + lLength, r->elements, rLength);
+}
+
 extern "C" void prints(struct String *str) {
     printf("\"%s\"\n", str->elements);
 }
