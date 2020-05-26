@@ -20,7 +20,8 @@ let escaped_char = '\\' ('n' | 'r' | 't')
 let exponent = ('e' | 'E') ('+' | '-')? digit+
 
 rule token = parse
-  [' ' '\t' '\r' '\n'] { token lexbuf } (* Whitespace *)
+  [' ' '\t' '\r'] { token lexbuf } (* Whitespace *)
+| '\n'     { Lexing.new_line lexbuf; token lexbuf }
 | "/*"     { comment lexbuf }           (* Comments *)
 | '('      { LPAREN }
 | ')'      { RPAREN }

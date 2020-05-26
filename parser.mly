@@ -64,9 +64,7 @@ open Ast
 %type <Ast.program> program
 
 
-%right DEFINE
-%right PLEQ MLTEQ SUBEQ DIVEQ
-%right ASSIGN
+
 %right NOT
 %left OR
 %left AND
@@ -245,25 +243,34 @@ elseif_stmt:
   | IF LPAREN expr RPAREN block ELSE if_stmt { IfElse($3, $5, $7) }
   | IF LPAREN expr RPAREN block ELSE ifelse_stmt { IfElse($3, $5, $7) }
 
-stmt:
-    expr SEMI                                        { Expr $1 } /* For any standalone expression */
-  | block                                            { $1 } /*  */
-  | vardecl SEMI                                     { Declare($1) }
-  | vardecl ASSIGN expr SEMI                         { Explicit($1, $3) } /* int x = 2; */
-  | ID PLEQ expr SEMI                                { Assign($1, Binop(Id($1), Add, $3)) }
-  | ID SUBEQ expr SEMI                               { Assign($1, Binop(Id($1), Sub, $3)) }
-  | ID MLTEQ expr SEMI                               { Assign($1, Binop(Id($1), Mult, $3)) }
-  | ID DIVEQ expr SEMI                               { Assign($1, Binop(Id($1), Div, $3)) }
-  | ID MODEQ expr SEMI                               { Assign($1, Binop(Id($1), Mod, $3)) }
-  | ID DEFINE  expr SEMI                             { Define($1, $3) } /* id := 2 */
-  | ID ASSIGN expr SEMI                              { Assign($1, $3) } /* x = 2 */
-  | literal LBRACKET expr RBRACKET ASSIGN expr SEMI  { AssignSeq($1, $3, $6)}
-  | ID DOT ID ASSIGN expr SEMI                       { StructAssign($1, $3, $5) }
-  | RETURN expr SEMI                                 { Return $2 } /* return 2; */
-  | FOR LPAREN ID IN expr RPAREN block               { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
+control_flow:
+    FOR LPAREN ID IN expr RPAREN block               { Iterate($3, $5, $7) } /* for (id in array) { } or for (num in [1,2,3,4,5]) { } should be valid */
   | FOR LPAREN ID IN expr ELIPS expr RPAREN block    { Range($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN block                   { While($3, $5) }
   | if_stmt                                          { $1 }
   | ifelse_stmt                                      { $1 }
   | elseif_stmt                                      { $1 }
+
+
+
+assignment:
+    vardecl                                     { Declare($1) }
+  | vardecl ASSIGN expr                         { Explicit($1, $3) } /* int x = 2; */
+  | ID PLEQ expr                                { Assign($1, Binop(Id($1), Add, $3)) }
+  | ID SUBEQ expr                               { Assign($1, Binop(Id($1), Sub, $3)) }
+  | ID MLTEQ expr                               { Assign($1, Binop(Id($1), Mult, $3)) }
+  | ID DIVEQ expr                               { Assign($1, Binop(Id($1), Div, $3)) }
+  | ID MODEQ expr                               { Assign($1, Binop(Id($1), Mod, $3)) }
+  | ID DEFINE  expr                             { Define($1, $3) } /* id := 2 */
+  | ID ASSIGN expr                              { Assign($1, $3) } /* x = 2 */
+  | literal LBRACKET expr RBRACKET ASSIGN expr  { AssignSeq($1, $3, $6)}
+  | ID DOT ID ASSIGN expr                       { StructAssign($1, $3, $5) }
+
+
+stmt:
+    expr SEMI            { Expr $1 } /* For any standalone expression */
+  | assignment SEMI      { $1 }
+  | block                { $1 } /*  */
+  | RETURN expr SEMI     { Return $2 } /* return 2; */
+  | control_flow         { $1 }
 

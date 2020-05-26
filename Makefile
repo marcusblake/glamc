@@ -1,5 +1,6 @@
 # Compilers
 OCAMLBUILD := ocamlbuild
+OCAMLFLAGS := -use-ocamlfind -no-hygiene
 CPP := g++
 CFLAGS := -g -Wall
 LDFLAGS := -g
@@ -14,20 +15,24 @@ FILENAME?=glamc
 
 main: glamc.native $(OBJ_DIR)/libglamc.a
 
-glamc.native:
-	$(OCAMLBUILD) -use-ocamlfind -pkgs llvm glamc.native
+glamc.native: parser-driver
+	$(OCAMLBUILD) $(OCAMLFLAGS) -pkgs llvm -pkgs menhirLib glamc.native
 
 scanner:
-	$(OCAMLBUILD) -use-ocamlfind scanner.native
+	$(OCAMLBUILD) $(OCAMLFLAGS) scanner.native
 
-parser:
-	$(OCAMLBUILD) -use-ocamlfind parser.native
+parser: parser-driver
+	$(OCAMLBUILD) $(OCAMLFLAGS) -pkgs menhirLib parse_driver.native
+
+parser-driver:
+	menhir --table parser.mly
+	menhir --compile-errors parser.messages parser.mly > parser_messages.ml
 
 semant:
-	$(OCAMLBUILD) -use-ocamlfind semant.native
+	$(OCAMLBUILD) $(OCAMLFLAGS) semant.native
 
 custom:
-	$(OCAMLBUILD) -use-ocamlfind $(FILENAME).native
+	$(OCAMLBUILD) $(OCAMLFLAGS) $(FILENAME).native
 
 $(OBJ_DIR)/libglamc.a: $(OBJ)
 	ar -crs $@ $(OBJ)
@@ -41,4 +46,4 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
 
 clean:
 	ocamlbuild -clean
-	rm -f $(SRC_DIR)/*.o *.native $(OBJ_DIR)/*.a a.out llvm.out*
+	rm -f $(SRC_DIR)/*.o *.native $(OBJ_DIR)/*.a parser.ml parser.mli parser_messages.ml a.out llvm.out*

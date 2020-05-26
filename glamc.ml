@@ -16,13 +16,10 @@ let () =
     ("-o", Arg.String (set_output), "Output file");
   ] in
   let usage_msg = "usage: ./glamc.native [-t|-a|-s|-l] [file.mc] -o <executable>" in
-  let channel = ref stdin in
   let file = ref "" in
-  Arg.parse speclist (fun filename -> channel := open_in filename; file := filename) usage_msg;
+  Arg.parse speclist (fun filename -> file := filename) usage_msg;
 
-  let lexbuf = Lexing.from_channel !channel in
-
-  let ast = Parser.program Scanner.token lexbuf in
+  let ast = Parse_driver.parse_program !file in
   match !action with
   | Tokens -> print_string (Scanner.string_of_tokens !file)
   | Ast -> print_string (Printing.string_of_program ast)

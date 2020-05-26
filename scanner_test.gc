@@ -2,9 +2,16 @@ var a int;
 var b int;
 var c int;
 
+func countToN(a: int) int {
+    return 0;
+}
 
 func main() int {
-    
+    a := func count() int {
+        println("hello");
+        return 0;
+    };
+
     if (1 > 2) {
         println(true);
     } else if (0 == 0) {
