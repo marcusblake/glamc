@@ -13,7 +13,7 @@ let check (globals, functions, structs) =
   let add_identifier map (ty, str) = 
     StringMap.add str ty map
   in
-  
+
 
   (* Check for duplicate variables *)
   let check_dups variables =
@@ -24,7 +24,7 @@ let check (globals, functions, structs) =
       | _ :: t -> dups t
     in dups (List.sort (fun (_,a) (_,b) -> compare a b) variables)
   in
-  
+
   check_dups globals;
 
 
@@ -38,7 +38,7 @@ let check (globals, functions, structs) =
 
   (* Add all functions to map to create symbol table *)
   let function_decls : Ast.func_def StringMap.t = List.fold_left add_func StringMap.empty (functions @ built_in_functions) in
-  
+
   let _ = 
     try 
       find_func function_decls "main"
@@ -74,31 +74,31 @@ let check (globals, functions, structs) =
         let types = List.map (fun (ty, _) -> ty) sfunc.sparameters in
         (Function (types, sfunc.sreturn_type), SFunctionLit (vars, sfunc))
       | Seq lst -> 
-          let new_list = List.map (check_expr table) lst in
+        let new_list = List.map (check_expr table) lst in
 
-          (* Helper function used to the type of a list *)
-          let rec infer_type lst = 
-            if List.length lst = 1 then (
-              fst (List.hd lst)
-            ) else (
-              match lst with
-              | [] -> raise Seq_type_error
-              | hd :: tl -> 
-                let (ty, _) = hd in 
-                let ty_rest = infer_type tl in
-                if ty = ty_rest then ty 
-                else raise (TypeMismatch("Can't have sequence containing " ^ (string_of_typ ty) ^ " and " ^ (string_of_typ ty_rest)))
-            )
-          in
+        (* Helper function used to the type of a list *)
+        let rec infer_type lst = 
+          if List.length lst = 1 then (
+            fst (List.hd lst)
+          ) else (
+            match lst with
+            | [] -> raise Seq_type_error
+            | hd :: tl -> 
+              let (ty, _) = hd in 
+              let ty_rest = infer_type tl in
+              if ty = ty_rest then ty 
+              else raise (TypeMismatch("Can't have sequence containing " ^ (string_of_typ ty) ^ " and " ^ (string_of_typ ty_rest)))
+          )
+        in
 
-          (List (infer_type new_list), SSeq new_list)
+        (List (infer_type new_list), SSeq new_list)
       | Id name -> 
         let ty = lookup_identifier name table in
         let _ = if in_function_scope !scope_count name table then (
-          ()
-        ) else (
-          vars_outside_scope := Set.add name !vars_outside_scope
-        )
+            ()
+          ) else (
+            vars_outside_scope := Set.add name !vars_outside_scope
+          )
         in
         (ty, SId name)
       | Binop (lhs, op, rhs) ->
@@ -106,48 +106,48 @@ let check (globals, functions, structs) =
         let (t2, rhs') = check_expr table rhs in
         if t1 = t2 then (
           let ty = match op with
-          (* + - * / *)
-          Add ->
-            begin match t1 with
-              Int -> Int
-              | Float -> Float
-              | Char -> Char
-              | String -> String
-              | _ -> raise Bad_arithmetic
-            end
-          | Sub | Mult | Div -> 
-            begin match t1 with
-            Int -> Int
-            | Float -> Float
-            | Char -> Char
-            | _ -> raise Bad_arithmetic
-            end
-          (* % *)
-          | Mod -> 
-            begin match t1 with
-            Int -> Int
-            | _ -> raise Unimplemented
-            end
-          (* && || *)
-          | And | Or ->
-            begin match t1 with
-            Bool -> Bool
-            | _ -> raise Bad_logical
-            end
-          (* ==, != *)
-          | Equal | Neq ->
-            begin match t1 with
-            (* Only only equality comparison for basic types for now *)
-            Int | Float | Char | Bool -> Bool
-            | _ -> raise Bad_equal
-            end
-          (* <, >, <=, >= *)
-          | Less | Greater | Leq | Geq -> 
-            begin match t1 with
-            (* Should only be able to do these compare for integers, floats, and characters *)
-            | Int | Float | Char -> Bool
-            | _ -> raise Bad_compare
-            end
+            (* + - * / *)
+              Add ->
+              begin match t1 with
+                  Int -> Int
+                | Float -> Float
+                | Char -> Char
+                | String -> String
+                | _ -> raise Bad_arithmetic
+              end
+            | Sub | Mult | Div -> 
+              begin match t1 with
+                  Int -> Int
+                | Float -> Float
+                | Char -> Char
+                | _ -> raise Bad_arithmetic
+              end
+            (* % *)
+            | Mod -> 
+              begin match t1 with
+                  Int -> Int
+                | _ -> raise Unimplemented
+              end
+            (* && || *)
+            | And | Or ->
+              begin match t1 with
+                  Bool -> Bool
+                | _ -> raise Bad_logical
+              end
+            (* ==, != *)
+            | Equal | Neq ->
+              begin match t1 with
+                (* Only only equality comparison for basic types for now *)
+                  Int | Float | Char | Bool -> Bool
+                | _ -> raise Bad_equal
+              end
+            (* <, >, <=, >= *)
+            | Less | Greater | Leq | Geq -> 
+              begin match t1 with
+                (* Should only be able to do these compare for integers, floats, and characters *)
+                | Int | Float | Char -> Bool
+                | _ -> raise Bad_compare
+              end
           in
           (ty, SBinop((t1,lhs'), op, (t2, rhs')))
         ) 
@@ -156,13 +156,13 @@ let check (globals, functions, structs) =
         )
       | Unop(op, e) as ex -> 
         let (t, e') = check_expr table e in
-          let ty = match op with
+        let ty = match op with
             Neg when t = Int || t = Float -> t
           | Not when t = Bool -> Bool
           | _ -> raise (IllegalUnOp ("Illegal unary operator " ^
-                                 string_of_uop op ^ string_of_typ t ^
-                                 " in " ^ string_of_expr ex))
-          in (ty, SUop(op, (t, e')))
+                                     string_of_uop op ^ string_of_typ t ^
+                                     " in " ^ string_of_expr ex))
+        in (ty, SUop(op, (t, e')))
       | Call (name, arguments) as call -> 
         let (name, parameters, return_type) = 
           if func_exists function_decls name then (
@@ -172,8 +172,8 @@ let check (globals, functions, structs) =
           ) else (
             let func =   
               begin match lookup_identifier name table with
-              Function(func) -> func
-              | _ -> raise Invalid
+                  Function(func) -> func
+                | _ -> raise Invalid
               end
             in
             (name, fst func, snd func)
@@ -187,7 +187,7 @@ let check (globals, functions, structs) =
           let check_call ft e =
             let (ty, e') = check_expr table e in
             let err = "illegal argument found " ^ string_of_typ ty ^
-            " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e in
+                      " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e in
             (check_assign ft ty err, e')
           in
           if name = "append" then (
@@ -195,40 +195,40 @@ let check (globals, functions, structs) =
             let (ty, e1) = check_expr table (List.hd arguments) in
             let (el_ty, e2) =  check_expr table (List.nth arguments 1) in
             begin match ty with
-            List rest -> 
-              if rest = el_ty then (
-                (return_type, SCall(name, [(ty, e1); (el_ty, e2)]))
-              ) else (
-                raise Func_failed_typecheck
-              )
-            | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append"))
+                List rest -> 
+                if rest = el_ty then (
+                  (return_type, SCall(name, [(ty, e1); (el_ty, e2)]))
+                ) else (
+                  raise Func_failed_typecheck
+                )
+              | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append"))
             end
 
           ) else if name = "len" then (
             let (ty, e1) = check_expr table (List.hd arguments) in
             begin match ty with 
-            List _  | String -> (return_type, SCall(name, [(ty, e1)]))
-            | _ -> raise Func_failed_typecheck
+                List _  | String -> (return_type, SCall(name, [(ty, e1)]))
+              | _ -> raise Func_failed_typecheck
             end
           ) else if name = "pop" then (
             let (ty, e1) = check_expr table (List.hd arguments) in
             begin match ty with 
-            List _ -> (return_type, SCall(name, [(ty, e1)])) 
-            | _ -> raise Func_failed_typecheck
+                List _ -> (return_type, SCall(name, [(ty, e1)])) 
+              | _ -> raise Func_failed_typecheck
             end
           ) else if name = "put" then (
 
             let sargs = List.map (check_expr table) arguments in
             let (ty, e1) = List.hd sargs in
             begin match ty with
-            | List rest -> 
-              if rest = fst (List.nth sargs 2) && fst (List.nth sargs 1) = Int then (
-                return_type, SCall(name, sargs)
-              )
-              else (
-                raise Func_failed_typecheck
-              )
-            | _ -> raise Func_failed_typecheck
+              | List rest -> 
+                if rest = fst (List.nth sargs 2) && fst (List.nth sargs 1) = Int then (
+                  return_type, SCall(name, sargs)
+                )
+                else (
+                  raise Func_failed_typecheck
+                )
+              | _ -> raise Func_failed_typecheck
             end
 
           ) else if name = "map" then (
@@ -236,18 +236,18 @@ let check (globals, functions, structs) =
             let (ty, e1) = check_expr table (List.hd arguments) in
             let (el_ty, e2) =  check_expr table (List.nth arguments 1) in
             begin match ty with
-            List rest -> 
-              begin match el_ty with
-              Function ([input], out) ->
-              if rest <> input then (
-                raise (IncorrectArgumentType("Input to function should be same as list type"))
-              )
-              else (
-                (List out, SCall(name, [(ty, e1); (el_ty, e2)]))
-              )
-              | _ -> raise (IncorrectArgumentType("Input to map should be a list and function accepting list element"))
-              end
-            | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append"))
+                List rest -> 
+                begin match el_ty with
+                    Function ([input], out) ->
+                    if rest <> input then (
+                      raise (IncorrectArgumentType("Input to function should be same as list type"))
+                    )
+                    else (
+                      (List out, SCall(name, [(ty, e1); (el_ty, e2)]))
+                    )
+                  | _ -> raise (IncorrectArgumentType("Input to map should be a list and function accepting list element"))
+                end
+              | _ -> raise (IncorrectArgumentType("Expected a list as first argument to append"))
             end
 
           ) else if name = "println" then (
@@ -264,13 +264,13 @@ let check (globals, functions, structs) =
         let (ty, e') = check_expr table inside_bracket in
         let (type_, e1) = check_expr table var in
         begin match ty with
-        | Int -> 
-          begin match type_ with
-          | String -> (Char, SSeqAccess((type_, e1), (ty, e')))
-          | List ty -> (ty, SSeqAccess((type_, e1), (ty, e')))
-          | _ -> raise (IllegalAccess ((string_of_typ type_) ^ " is not a sequential type"))
-          end
-        | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty))
+          | Int -> 
+            begin match type_ with
+              | String -> (Char, SSeqAccess((type_, e1), (ty, e')))
+              | List ty -> (ty, SSeqAccess((type_, e1), (ty, e')))
+              | _ -> raise (IllegalAccess ((string_of_typ type_) ^ " is not a sequential type"))
+            end
+          | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty))
         end
       | _ -> raise Unimplemented (* Ignore for now *)
     and check_bool_expr table expr = 
@@ -281,10 +281,10 @@ let check (globals, functions, structs) =
       | _ -> raise Invalid (* Can come up with a better error message *)
     and check_stmt_list table = function
         [] -> ([], table)
-        | head :: tail -> 
-          let (sast, table) = check_stmt table head in
-          let (sastlst, table) = check_stmt_list table tail in
-          (sast::sastlst, table)
+      | head :: tail -> 
+        let (sast, table) = check_stmt table head in
+        let (sastlst, table) = check_stmt_list table tail in
+        (sast::sastlst, table)
     and check_stmt table = function 
       | Return e -> 
 
@@ -320,10 +320,10 @@ let check (globals, functions, structs) =
         let (ty, e') = check_expr table e in
         let vartype = lookup_identifier name table in
         let _ = if in_function_scope !scope_count name table then (
-          ()
-        ) else (
-          vars_outside_scope := Set.add name !vars_outside_scope
-        )
+            ()
+          ) else (
+            vars_outside_scope := Set.add name !vars_outside_scope
+          )
         in
         let ty = check_assign vartype ty "" in
         (SAssign(name, (ty, e')), table)
@@ -339,7 +339,7 @@ let check (globals, functions, structs) =
 
         let (ty, e') = check_expr table e in
         let get_siterate el_ty = function
-          Block lst -> (* flatten list *)
+            Block lst -> (* flatten list *)
             let new_table = add_to_current_scope (add_scope table) x el_ty in 
             scope_count := !scope_count + 1;
             let sblock = fst (check_stmt_list new_table lst) in
@@ -349,9 +349,9 @@ let check (globals, functions, structs) =
         in
 
         begin match ty with
-        | List el -> get_siterate el stmt
-        | String -> get_siterate Char stmt
-        | _ -> raise Invalid
+          | List el -> get_siterate el stmt
+          | String -> get_siterate Char stmt
+          | _ -> raise Invalid
         end
 
       | Range(x, e1, e2, stmt) ->
@@ -359,7 +359,7 @@ let check (globals, functions, structs) =
         let (t1, e1') = check_expr table e1 in
         let (t2, e2') = check_expr table e2 in
         let get_srange = function
-          Block lst -> (* flatten list *)
+            Block lst -> (* flatten list *)
             let new_table = add_to_current_scope (add_scope table) x Int in
             scope_count := !scope_count + 1;
             let sblock = fst (check_stmt_list new_table lst) in
@@ -369,8 +369,8 @@ let check (globals, functions, structs) =
         in
 
         begin match t1, t2 with
-        | Int, Int -> get_srange stmt
-        | _, _ -> raise Invalid
+          | Int, Int -> get_srange stmt
+          | _, _ -> raise Invalid
         end
 
       | While (e, stmt) -> (SWhile(check_bool_expr table e, fst (check_stmt table stmt)), table)
@@ -379,15 +379,15 @@ let check (globals, functions, structs) =
 
 
     let (sast, table) = 
-    match func.body with
-    Block lst -> check_stmt_list symbol_table lst (* flatten block to list *)
-    | _ ->  raise Invalid
+      match func.body with
+        Block lst -> check_stmt_list symbol_table lst (* flatten block to list *)
+      | _ ->  raise Invalid
     in
 
     (* StringMap.iter (fun k v -> Printf.printf "Map %s -> %s\n" k (string_of_typ v)) (List.hd table); *)
     Set.iter (fun k -> Printf.printf "Heap vars %s\n" k) !heap_vars;
     let sast_func = SBlock(sast) in
-    
+
     ({
       sfunc_name = func.func_name;
       sparameters = func.parameters;

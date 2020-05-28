@@ -299,7 +299,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID ASSIGN STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID ASSIGN WHILE
 ##
@@ -342,7 +342,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID DEFINE STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID DEFINE WHILE
 ##
@@ -385,7 +385,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID DIVEQ STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID DIVEQ WHILE
 ##
@@ -428,7 +428,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID DOT ID ASSIGN STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID DOT ID ASSIGN WHILE
 ##
@@ -460,7 +460,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID DOT ID LPAREN STRLIT RBRACKET
 ## In state 95, spurious reduction of production expr_params -> expr_list 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ')'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID DOT ID LPAREN WHILE
 ##
@@ -567,7 +567,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID LBRACE ID WHILE
 ## ID
 ##
 
-Expected :
+Expected ':'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID LBRACE WHILE
 ##
@@ -599,7 +599,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID LPAREN STRLIT RBRACKET
 ## In state 95, spurious reduction of production expr_params -> expr_list 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected ')'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID LPAREN WHILE
 ##
@@ -611,7 +611,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID LPAREN WHILE
 ## ID LPAREN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected list of experessions
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID MLTEQ STRLIT RPAREN
 ##
@@ -642,7 +642,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID MLTEQ STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID MLTEQ WHILE
 ##
@@ -654,7 +654,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID MLTEQ WHILE
 ## ID MLTEQ
 ##
 
-Expected expression following *=
+Expected expression following '*='
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID MODEQ STRLIT RPAREN
 ##
@@ -685,7 +685,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID MODEQ STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID MODEQ WHILE
 ##
@@ -697,7 +697,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID MODEQ WHILE
 ## ID MODEQ
 ##
 
-Expected expression following %=
+Expected expression following '%='
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID PLEQ STRLIT RPAREN
 ##
@@ -728,7 +728,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID PLEQ STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID PLEQ WHILE
 ##
@@ -740,7 +740,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID PLEQ WHILE
 ## ID PLEQ
 ##
 
-Expected expression following +=
+Expected expression following '+='
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID SUBEQ STRLIT RPAREN
 ##
@@ -771,7 +771,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID SUBEQ STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID SUBEQ WHILE
 ##
@@ -783,7 +783,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE ID SUBEQ WHILE
 ## ID SUBEQ
 ##
 
-Expected expression following -=
+Expected expression following '-='
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE ID WHILE
 ##
@@ -877,7 +877,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE IF LPAREN STRLIT RPAREN LBRACE RBRA
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ')'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE IF LPAREN STRLIT RPAREN LBRACE RBRACE ELSE IF LPAREN WHILE
 ##
@@ -1526,7 +1526,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE STRLIT LBRACKET STRLIT RBRACKET ASS
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE STRLIT LBRACKET STRLIT RBRACKET ASSIGN WHILE
 ##
@@ -1911,7 +1911,7 @@ program: FUNC ID LPAREN RPAREN STRING LBRACE VAR ID BOOL ASSIGN STRLIT RPAREN
 ## In state 61, spurious reduction of production expr -> literal 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Expected binary operator or ';'
 
 program: FUNC ID LPAREN RPAREN STRING LBRACE VAR ID BOOL ASSIGN WHILE
 ##
