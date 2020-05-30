@@ -8,7 +8,6 @@ exception IllegalBinOp of string
 exception IllegalUnOp of string
 exception IncorrectType of string
 exception InvalidReturnType of string
-exception UnrecognizedIdentifier of string
 exception NonAccessibleProp of string
 exception Unimplemented (* for development purposes *)
 exception MainEntrypointUndefined
@@ -35,4 +34,3 @@ exception Invalid_struct_lit
 exception Func_failed_typecheck
 exception Struct_failed_typecheck
 exception Seq_type_error
-exception VariableAlreadyExists

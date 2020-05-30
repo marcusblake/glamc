@@ -1,24 +1,40 @@
-var a int;
-var b int;
-var c int;
-
-func countToN(a: int) int {
+func swap(li: list<int>, j: int, i: int) int {
+    temp := li[j];
+    put(li, j, li[i]);
+    put(li, i, temp);
     return 0;
 }
 
-func main() int {
-    a := func count() int {
-        println("hello");
-        return 0;
-    };
 
-    if (1 > 2) {
-        println(true);
-    } else if (0 == 0) {
-        println(false);
-    } else {
-        println("stuff");
+func selection_sort(a: list<int>) list<int> {
+    i := 0;
+    n := len(a);
+
+    while (i < n) {
+        j := i;
+        min_left := 10000000;
+        idx := i;
+        while (j < n) {
+            if (a[j] < min_left) {
+                idx = j;
+                min_left = a[j];
+            }
+            j += 1;
+        }
+        swap(a, i, idx);
+        i += 1;
     }
-    
+
+    return a;
+}
+
+
+func main() int {
+    result := selection_sort([99, 22, 54, 24, 554, 24, 7885, 22, 11, 34, 44, 224, 455, 77, 422, 9, 88, 33,213, 55, 88, 353,22,10]);
+
+    for (num in result) {
+        println(num);
+    }
+
     return 0;
 }

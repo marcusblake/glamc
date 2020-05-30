@@ -12,13 +12,13 @@
 
 *)
 
-
-module L = Llvm
-module A = Ast
 open Sast
 open Exceptions
 open Helper
 
+module L = Llvm
+module A = Ast
+module St = Symbol_table
 module StringMap = Map.Make(String)
 module Set = Set.Make(String)
 
@@ -182,7 +182,7 @@ let translate (globals, functions, _) =
   in
 
   let function_decls = ref function_decls in
-  let globalvars = ref StringMap.empty in
+  let globalvars = ref [] in
 
 
   let rec build_function_body fdecl = 
@@ -209,7 +209,7 @@ let translate (globals, functions, _) =
         | _ -> raise Unimplemented
     in
 
-    let add_identifier map (ty, str) = 
+    let add_identifier lst (ty, str) = 
       let var = L.define_global str (initialized_value ty) the_module in 
       let _ = match ty with
       | A.String -> ignore(L.build_call initString [|var; empty_str|] "" builder)
@@ -218,19 +218,19 @@ let translate (globals, functions, _) =
         ignore(L.build_call initList [| var; L.size_of (ltype_of_typ el_ty); L.const_int i32_t 0; ptr |] "" builder)
       | _ -> ()
       in
-      StringMap.add str (var, ty) map
+      (str, var, ty) :: lst
     in
       
     let _ =
       (* Initialize global variables in main function *)
       if fdecl.sfunc_name = "main" then (
-        let globalv : (L.llvalue * Ast.ty) StringMap.t = List.fold_left add_identifier StringMap.empty globals in
+        let globalv : (string * L.llvalue * Ast.ty) list = List.fold_left add_identifier [] globals in
         globalvars := globalv;
       ) else ()
     in
 
-    let formals : (L.llvalue * Ast.ty) StringMap.t =
-      let add_formal map (ty, name) param =
+    let formals : (string * L.llvalue * Ast.ty) list =
+      let add_formal lst (ty, name) param =
         L.set_value_name name param;
         let local = if Set.mem name heap_variables then (
             L.build_malloc (ltype_of_typ ty) name builder  (* Will need to replace with gc malloc *)
@@ -244,13 +244,16 @@ let translate (globals, functions, _) =
             L.build_store copy local builder
           ) else L.build_store param local builder
         in
-        StringMap.add name (local, ty) map
+        (name, local, ty) :: lst
       in
-      List.fold_left2 add_formal StringMap.empty fdecl.sparameters (Array.to_list (L.params current_function))
+      List.fold_left2 add_formal [] fdecl.sparameters (Array.to_list (L.params current_function))
     in
 
-
-    let symbol_table : (L.llvalue * Ast.ty) StringMap.t list = [formals; !globalvars] in
+    let symbol_table =
+      List.fold_left (fun accum (name, llv, type_) -> St.add_current_scope accum name (llv, type_)) (St.add_scope (St.empty ())) !globalvars in
+    
+    let symbol_table = 
+      List.fold_left (fun accum (name, llv, type_) -> St.add_current_scope accum name (llv, type_)) (St.add_scope symbol_table) formals in
 
     (* TODO: IMPLEMENT BUILD_EXPR -> Needs to return llvalue for expression *)
     let rec build_expr table builder ((type_, e) : sexpr) = match e with
@@ -289,7 +292,7 @@ let translate (globals, functions, _) =
         in
         global
       | SId s -> 
-        let (llv, ty) = lookup_identifier s table in
+        let (llv, ty) = St.lookup_identifier s table in
         if is_iterable ty then (
           llv
         ) else L.build_load llv s builder
@@ -297,10 +300,16 @@ let translate (globals, functions, _) =
         let e1' = build_expr table builder e1
         and e2' = build_expr table builder e2 in
 
-        let get_operation int_op float_op = function
+        let get_compare int_op float_op = function
           A.Int | A.Char -> L.build_icmp int_op
           | A.Float -> L.build_fcmp float_op
           | _ -> raise Bad_compare
+        in
+
+        let get_equality int_op float_op = function
+          A.Int | A.Char | A.Bool -> L.build_icmp int_op
+          | A.Float -> L.build_fcmp float_op
+          | _ -> raise Bad_equal
         in
 
         let ty = fst e1 in
@@ -319,12 +328,12 @@ let translate (globals, functions, _) =
         | A.Mod     -> L.build_srem e1' e2' "tmp" builder
         | A.And     -> L.build_and e1' e2' "tmp" builder
         | A.Or      -> L.build_or e1' e2' "tmp" builder
-        | A.Equal   -> (get_operation L.Icmp.Eq L.Fcmp.Oeq ty) e1' e2' "tmp" builder
-        | A.Neq     -> (get_operation L.Icmp.Ne L.Fcmp.One ty) e1' e2' "tmp" builder
-        | A.Less    -> (get_operation L.Icmp.Slt L.Fcmp.Olt ty) e1' e2' "tmp" builder
-        | A.Leq     -> (get_operation L.Icmp.Sle L.Fcmp.Ole ty) e1' e2' "tmp" builder
-        | A.Greater -> (get_operation L.Icmp.Sgt L.Fcmp.Ogt ty) e1' e2' "tmp" builder
-        | A.Geq     -> (get_operation L.Icmp.Sge L.Fcmp.Oge ty) e1' e2' "tmp" builder
+        | A.Equal   -> (get_equality L.Icmp.Eq L.Fcmp.Oeq ty) e1' e2' "tmp" builder
+        | A.Neq     -> (get_equality L.Icmp.Ne L.Fcmp.One ty) e1' e2' "tmp" builder
+        | A.Less    -> (get_compare L.Icmp.Slt L.Fcmp.Olt ty) e1' e2' "tmp" builder
+        | A.Leq     -> (get_compare L.Icmp.Sle L.Fcmp.Ole ty) e1' e2' "tmp" builder
+        | A.Greater -> (get_compare L.Icmp.Sgt L.Fcmp.Ogt ty) e1' e2' "tmp" builder
+        | A.Geq     -> (get_compare L.Icmp.Sge L.Fcmp.Oge ty) e1' e2' "tmp" builder
         end
 
       | SCall (f, args) -> (
@@ -335,7 +344,7 @@ let translate (globals, functions, _) =
               try
                 fst (StringMap.find f !function_decls)
               with Not_found -> 
-                L.build_load (fst (lookup_identifier f table)) "" builder
+                L.build_load (fst (St.lookup_identifier f table)) "" builder
             ) in
             let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
             let result = f ^ "_result" in
@@ -511,14 +520,14 @@ let translate (globals, functions, _) =
           build_stmt_list table builder tail
     and build_stmt table builder = function
       | SBlock lst -> 
-          let new_table = add_scope table in
+          let new_table = St.add_scope table in
             (build_stmt_list new_table builder lst, table)
       | SExpr sexpr -> ignore(build_expr table builder sexpr); (builder, table)
       | SExplicit ((ty, name), sexpr) ->
         let e' = build_expr table builder sexpr in
         let builder = if !stale then (stale := false; !my_builder) else builder in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
-        let table = add_to_current_scope table name (var,ty) in
+        let table = St.add_current_scope table name (var,ty) in
         let _ = 
           if is_iterable ty then (
             let v = L.build_load e' "temp" builder in
@@ -537,14 +546,14 @@ let translate (globals, functions, _) =
           | _ -> L.build_store (initialized_value ty) var builder
           end
         in
-        let table = add_to_current_scope table name (var,ty) in
+        let table = St.add_current_scope table name (var,ty) in
         (builder, table)
       | SDefine (name, sexpr) -> 
         let e' = build_expr table builder sexpr in
         let builder = if !stale then (stale := false; !my_builder) else builder in
         let ty = fst sexpr in
         let var = L.build_alloca (ltype_of_typ ty) name builder in
-        let table = add_to_current_scope table name (var,ty) in
+        let table = St.add_current_scope table name (var,ty) in
         let _ = 
           if is_iterable ty then (
             let v = L.build_load e' "temp" builder in
@@ -603,7 +612,7 @@ let translate (globals, functions, _) =
         (L.builder_at_end context if_end, table)
       | SAssign (s, (ty, e)) -> 
         let e' = build_expr table builder (ty, e) in
-        let var = fst (lookup_identifier s table) in
+        let var = fst (St.lookup_identifier s table) in
         let _ = 
           if is_iterable ty then (
             let v = L.build_load e' "temp" builder in
@@ -651,8 +660,8 @@ let translate (globals, functions, _) =
         let counter = L.build_alloca (ltype_of_typ A.Int) "" builder in
           ignore(L.build_store (initialized_value A.Int) counter builder);
 
-        let new_table = add_scope table in
-        let new_table = add_to_current_scope new_table name (temp,el_ty) in
+        let new_table = St.add_scope table in
+        let new_table = St.add_current_scope new_table name (temp,el_ty) in
       
 
         let for_loop = L.append_block context "for" current_function in
@@ -695,8 +704,8 @@ let translate (globals, functions, _) =
         ignore(L.build_store e1' low builder);
 
 
-        let new_table = add_scope table in
-        let new_table = add_to_current_scope new_table name (low, A.Int) in
+        let new_table = St.add_scope table in
+        let new_table = St.add_current_scope new_table name (low, A.Int) in
       
 
         let for_loop = L.append_block context "for" current_function in

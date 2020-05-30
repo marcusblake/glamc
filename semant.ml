@@ -8,11 +8,12 @@ open Helper
 (* Map used for symbol table *)
 module StringMap = Map.Make(String)
 module Set = Set.Make(String)
+module St = Symbol_table
 
 let check (globals, functions, structs) =
-  let add_identifier map (ty, str) = 
+  (* let add_identifier map (ty, str) = 
     StringMap.add str ty map
-  in
+  in *)
 
 
   (* Check for duplicate variables *)
@@ -28,12 +29,9 @@ let check (globals, functions, structs) =
   check_dups globals;
 
 
-  (* Global variables of program *)
-  let globalvars : Ast.ty StringMap.t = List.fold_left add_identifier StringMap.empty globals in
-
-
   (* Symbol table which consists of global variables to start *)
-  let symbol_table : Ast.ty StringMap.t list = [globalvars] in
+  let symbol_table = 
+    List.fold_left (fun accum (type_, name) -> St.add_current_scope accum name type_) (St.add_scope (St.empty ())) globals in
 
 
   (* Add all functions to map to create symbol table *)
@@ -53,10 +51,9 @@ let check (globals, functions, structs) =
 
     check_dups func.parameters;
 
-    let parameters = List.fold_left add_identifier StringMap.empty func.parameters in
-
     (* Initial symbol table only contains globally defined variables *)
-    let symbol_table = parameters :: symbol_table in
+    let symbol_table = 
+      List.fold_left (fun accum (type_, name) -> St.add_current_scope accum name type_) (St.add_scope symbol_table) func.parameters in
 
     let rec check_expr table = function
       | IntLit integer -> (Int, SIntLit integer)
@@ -65,12 +62,12 @@ let check (globals, functions, structs) =
       | CharLit ch -> (Char, SCharLit ch)
       | StringLit str -> (String, SStringLit str)
       | FunctionLit lambda -> 
-        let new_table = add_scope table in
+        let new_table = St.add_scope table in
         let (sfunc, vars) = check_func new_table lambda in
-        Set.iter (fun k -> Printf.printf "Set %s\n" k) vars;
-        let vars = Set.fold (fun k lst -> k :: lst) vars [] in (* Get list of variables outside of current scope *)
-        let infer_heap_vars  = List.fold_left (fun lst el -> if StringMap.mem el (List.hd table) then el :: lst else lst) [] vars in
-        heap_vars := List.fold_left (fun heapvars el -> Set.add el heapvars) !heap_vars infer_heap_vars;
+        (* Set.iter (fun k -> Printf.printf "Set %s\n" k) vars; *)
+        let vars = Set.fold (fun k lst -> k :: lst) vars [] in
+        (* let infer_heap_vars  = List.fold_left (fun lst el -> if StringMap.mem el (List.hd table) then el :: lst else lst) [] vars in
+        heap_vars := List.fold_left (fun heapvars el -> Set.add el heapvars) !heap_vars infer_heap_vars; *)
         let types = List.map (fun (ty, _) -> ty) sfunc.sparameters in
         (Function (types, sfunc.sreturn_type), SFunctionLit (vars, sfunc))
       | Seq lst -> 
@@ -93,13 +90,13 @@ let check (globals, functions, structs) =
 
         (List (infer_type new_list), SSeq new_list)
       | Id name -> 
-        let ty = lookup_identifier name table in
-        let _ = if in_function_scope !scope_count name table then (
+        let ty = St.lookup_identifier name table in
+        (* let _ = if in_function_scope !scope_count name table then (
             ()
           ) else (
             vars_outside_scope := Set.add name !vars_outside_scope
           )
-        in
+        in *)
         (ty, SId name)
       | Binop (lhs, op, rhs) ->
         let (t1, lhs') = check_expr table lhs in
@@ -171,7 +168,7 @@ let check (globals, functions, structs) =
             (f.func_name, params, f.return_type)
           ) else (
             let func =   
-              begin match lookup_identifier name table with
+              begin match St.lookup_identifier name table with
                   Function(func) -> func
                 | _ -> raise Invalid
               end
@@ -295,7 +292,7 @@ let check (globals, functions, structs) =
       | If (expr, stmt) -> (SIf(check_bool_expr table expr, fst (check_stmt table stmt)), table)
       | Block lst -> 
 
-        let new_table = add_scope table in 
+        let new_table = St.add_scope table in 
         scope_count := !scope_count + 1;
         let sblock = fst (check_stmt_list new_table lst) in
         scope_count := !scope_count - 1;
@@ -304,34 +301,28 @@ let check (globals, functions, structs) =
       | Expr expr -> (SExpr(check_expr table expr), table)
       | Declare (ty, name) -> 
 
-        let table = add_to_current_scope table name ty in 
+        let table = St.add_current_scope table name ty in 
         (SDeclare(ty, name), table)
 
       | Explicit ((ty, name),expr)->
 
         let (expr_ty, e') = check_expr table expr in
         if expr_ty = ty then (
-          let table = add_to_current_scope table name expr_ty in 
+          let table = St.add_current_scope table name expr_ty in 
           (SExplicit((ty, name), (expr_ty, e')), table)
         ) else raise InvalidAssignment
 
       | Assign (name, e) -> 
 
         let (ty, e') = check_expr table e in
-        let vartype = lookup_identifier name table in
-        let _ = if in_function_scope !scope_count name table then (
-            ()
-          ) else (
-            vars_outside_scope := Set.add name !vars_outside_scope
-          )
-        in
+        let vartype = St.lookup_identifier name table in
         let ty = check_assign vartype ty "" in
         (SAssign(name, (ty, e')), table)
 
       | Define (name, expr) -> 
 
         let (expr_ty, e') = check_expr table expr in
-        let table = add_to_current_scope table name expr_ty in 
+        let table = St.add_current_scope table name expr_ty in 
         (SDefine(name, (expr_ty, e')), table)
 
       | IfElse (expr, stmt1, stmt2) -> (SIfElse(check_bool_expr table expr, fst (check_stmt table stmt1), fst (check_stmt table stmt2)), table)
@@ -340,7 +331,7 @@ let check (globals, functions, structs) =
         let (ty, e') = check_expr table e in
         let get_siterate el_ty = function
             Block lst -> (* flatten list *)
-            let new_table = add_to_current_scope (add_scope table) x el_ty in 
+            let new_table = St.add_current_scope (St.add_scope table) x el_ty in 
             scope_count := !scope_count + 1;
             let sblock = fst (check_stmt_list new_table lst) in
             scope_count := !scope_count - 1;
@@ -360,7 +351,7 @@ let check (globals, functions, structs) =
         let (t2, e2') = check_expr table e2 in
         let get_srange = function
             Block lst -> (* flatten list *)
-            let new_table = add_to_current_scope (add_scope table) x Int in
+            let new_table = St.add_current_scope (St.add_scope table) x Int in
             scope_count := !scope_count + 1;
             let sblock = fst (check_stmt_list new_table lst) in
             scope_count := !scope_count - 1; 
