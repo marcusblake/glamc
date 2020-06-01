@@ -1,6 +1,7 @@
 #include "glamc_stdlib.h"
 #include <stdio.h>
 #include <string.h>
+#include <fstream>
 
 extern "C" void printb(int d) {
     if (d == 0) {
@@ -11,12 +12,28 @@ extern "C" void printb(int d) {
 }
 
 
-extern "C" void read(struct String *filename, struct String *buffer) {
+extern "C" void read(struct String *filename, struct String *content) {
+    std::ifstream fs(filename->elements);
 
+    fs.seekg(0, std::ios::end); /* Seek to end of file */
+    size_t size = fs.tellg(); /* Get size of file */
+    fs.seekg(0, std::ios::beg);
+
+    char *buffer = new char[size + 1];
+    fs.read(buffer, size);
+    buffer[size] = 0; /* Add null terminator */
+
+    fs.close();
+
+    initString(content, buffer); /* Create string using file contents */
+
+    delete[] buffer;
 }
 
 extern "C" void write(struct String *filename, struct String *content) {
-
+    std::ofstream fs(filename->elements);
+    size_t size = (size_t)lenstr(content);
+    fs.write(content->elements, size);
 }
 
 
