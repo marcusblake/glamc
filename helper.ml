@@ -91,6 +91,13 @@ let built_in_functions = [
       body = Block [];
       heap_vars = []
     };
+    {
+      return_type = List String;
+      func_name = "split";
+      parameters = [(String, "str"); (Char, "del")];
+      body = Block [];
+      heap_vars = []      
+    }
   ]
 
 

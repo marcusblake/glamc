@@ -89,12 +89,14 @@ let translate (globals, functions, _) =
   let getChar_t = L.function_type i8_t [| L.pointer_type string_t; i32_t |] in
   let prints_t = L.function_type void_t [| L.pointer_type string_t |] in
   let concat_t = L.function_type void_t [|L.pointer_type string_t; L.pointer_type string_t; L.pointer_type string_t |] in
+  let split_t = L.function_type void_t [|L.pointer_type string_t; i8_t ; L.pointer_type list_t |] in
 
   let initString = L.declare_function "initString" initString_t the_module in
   let strLength = L.declare_function "lenstr" strLength_t the_module in
   let getChar = L.declare_function "getChar" getChar_t the_module in
   let prints = L.declare_function "prints" prints_t the_module in
   let concat = L.declare_function "concat" concat_t the_module in
+  let split = L.declare_function "split" split_t the_module in
   (* END: Definitions for String library functions *)
 
   
@@ -518,9 +520,13 @@ let translate (globals, functions, _) =
         var
       | "read" -> 
         let buffer = L.build_alloca (ltype_of_typ A.String) "buffer" builder in
-        L.build_call read (Array.of_list (args @ [buffer])) "" builder;
+        ignore(L.build_call read (Array.of_list (args @ [buffer])) "" builder);
         buffer
       | "write" -> L.build_call write (Array.of_list args) "" builder
+      | "split" -> 
+        let lst = L.build_alloca (ltype_of_typ (A.List A.String)) "result" builder in
+        ignore(L.build_call split (Array.of_list (args @ [lst])) "" builder);
+        lst
       | _ -> raise Not_found
       end
     in
