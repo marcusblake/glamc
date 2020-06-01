@@ -1,7 +1,7 @@
-func is_palindrome(string k) bool {
-    j := lenstr(k) - 1;
+func is_palindrome(k: string) bool {
+    j := len(k) - 1;
     i := 0;
-    bool is_palindrome = true;
+    var is_palindrome bool = true;
     while (i <= j) {
         if (k[i] != k[j]) {
             is_palindrome = false;
@@ -13,20 +13,21 @@ func is_palindrome(string k) bool {
 }
 
 
-func printStringList(list<string> my_list) int {
+func printStringList(my_list: list<string> ) int {
     put(my_list, 0, "Start");
-    id := lenlist(my_list);
+    id := len(my_list);
     counter := 0;
     while (counter < id) {
-        prints(my_list[counter]);
+        println(my_list[counter]);
         counter = counter + 1;
     }
     pop(my_list);
+    return 0;
 }
 
 
-func createList(int low, int high) list<int> {
-    list<int> temp;
+func createList(low: int, high: int) list<int> {
+    var temp list<int> ;
     while (low <= high) {
         append(temp, low);
         low = low + 1;
@@ -36,14 +37,11 @@ func createList(int low, int high) list<int> {
 
 
 func main() int {
-    list<string> words = ["Marcus Blake", "racecar", "dogeeseseegod", "datyayyay"];
+    var words list<string> = ["Marcus Blake", "racecar", "dogeeseseegod", "datyayyay"];
     count := 0;
-    list<string> palindromes;
-    int x;
-    bool y;
-    printi(x);
-    printb(y);
-    while (count < 4) {
+    var palindromes list<string>;
+    println(len(words));
+    while (count < len(words)) {
         str := words[count];
         if (is_palindrome(str)) {
             append(palindromes, str);
@@ -53,8 +51,8 @@ func main() int {
     printStringList(palindromes);
     a := createList(1,10);
     count = 0;
-    while (count < lenlist(a)) {
-        printi(a[count]);
+    while (count < len(a)) {
+        println(a[count]);
         count = count + 1;
     }
     return 0;

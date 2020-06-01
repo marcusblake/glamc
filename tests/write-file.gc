@@ -1,0 +1,5 @@
+func main() int {
+    str := "hello to the fucking world";
+    write("hello.txt", str);
+    return 0;
+}

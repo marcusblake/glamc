@@ -135,6 +135,16 @@ let translate (globals, functions, _) =
   (* End printf strings *)
 
 
+  (* File IO Functions *)
+  let read_t = L.function_type void_t [|L.pointer_type string_t; L.pointer_type string_t|] in
+  let write_t = L.function_type void_t [|L.pointer_type string_t; L.pointer_type string_t |] in
+
+
+  let read = L.declare_function "read" read_t the_module in
+  let write = L.declare_function "write" write_t the_module in
+  (* End File IO Functions *)
+
+
 
   (* Declare printf function *)
   let printf_t : L.lltype =
@@ -385,10 +395,7 @@ let translate (globals, functions, _) =
         llfunc
       | _ -> raise Unimplemented
     and check_built_in name e table builder =
-
-
       let args = List.map (build_expr table builder) e in
-
       begin match name with
       "println" -> 
         let (ty, _) = List.hd e in
@@ -509,6 +516,11 @@ let translate (globals, functions, _) =
         my_builder := (L.builder_at_end context map_end);
         stale := true;
         var
+      | "read" -> 
+        let buffer = L.build_alloca (ltype_of_typ A.String) "buffer" builder in
+        L.build_call read (Array.of_list (args @ [buffer])) "" builder;
+        buffer
+      | "write" -> L.build_call write (Array.of_list args) "" builder
       | _ -> raise Not_found
       end
     in

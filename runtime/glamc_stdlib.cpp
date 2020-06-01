@@ -14,19 +14,16 @@ extern "C" void printb(int d) {
 
 extern "C" void read(struct String *filename, struct String *content) {
     std::ifstream fs(filename->elements);
-
-    fs.seekg(0, std::ios::end); /* Seek to end of file */
-    size_t size = fs.tellg(); /* Get size of file */
-    fs.seekg(0, std::ios::beg);
+    fs.seekg(0, fs.end); /* Seek to end of file */
+    long size = fs.tellg(); /* Get size of file */
+    fs.seekg(0);
 
     char *buffer = new char[size + 1];
     fs.read(buffer, size);
     buffer[size] = 0; /* Add null terminator */
 
     fs.close();
-
     initString(content, buffer); /* Create string using file contents */
-
     delete[] buffer;
 }
 
