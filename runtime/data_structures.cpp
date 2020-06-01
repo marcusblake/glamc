@@ -1,6 +1,7 @@
 #include "data_structures.h"
 #include <vector>
 #include <cstring>
+#include <string>
 #include <stdlib.h>
 
 extern "C" void initString(struct String *str, char *elements) {
@@ -98,5 +99,30 @@ extern "C" int lenlist(struct List *list) {
     return (int)current_list->size();
 }
 
+
+extern "C" void split(struct String *str, char delimeter, struct List *list) {
+    /* Initialize list */
+    initList(list, sizeof(struct String), 0, (char *)0);
+
+    std::string temp;
+    struct String newString;
+    for (int index = 0; index < str->length; index++) {
+        char current = str->elements[index];
+        if (current == delimeter) {
+            char *c_string = const_cast<char*>(temp.c_str());
+            initString(&newString, c_string);
+            addElement(list, (char *)&newString);
+            temp = "";
+        } else {
+            temp += current;
+        }
+    }
+
+    if (temp != "") {
+        char *c_string = const_cast<char*>(temp.c_str());
+        initString(&newString, c_string);
+        addElement(list, (char *)&newString);
+    }
+}
 
 
