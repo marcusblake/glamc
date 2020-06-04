@@ -97,6 +97,13 @@ let built_in_functions = [
       parameters = [(String, "str"); (Char, "del")];
       body = Block [];
       heap_vars = []      
+    };
+    {
+      return_type = String;
+      func_name = "join";
+      parameters = [(List String, "str"); (Char, "del")];
+      body = Block [];
+      heap_vars = []      
     }
   ]
 

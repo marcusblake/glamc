@@ -1,0 +1,6 @@
+
+
+func main() int {
+    write("stuff.txt", "Hello World\n\tGoodbye World");
+    return 0;
+}

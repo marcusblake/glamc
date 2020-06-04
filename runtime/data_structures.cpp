@@ -126,3 +126,19 @@ extern "C" void split(struct String *str, char delimeter, struct List *list) {
 }
 
 
+extern "C" void join(struct List *list, char delimeter,  struct String *str) {
+    std::string temp = "";
+    struct String my_string;
+    int n = list->length;
+    for (int i = 0; i < n; i++) {
+        getElement(list, i, (char *)&my_string);
+        temp.append(my_string.elements);
+        if (i != n-1) {
+            temp.append(1, delimeter);
+        }
+    }
+    char *c_string = const_cast<char*>(temp.c_str());
+    initString(str, c_string);
+}
+
+

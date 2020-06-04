@@ -3,15 +3,36 @@
 { 
   open Parser
 
+  exception InvalidEscape
+
+  let match_char = function
+  'n' -> '\n'
+  | 'r' -> '\r'
+  | 't' -> '\t'
+  | _ -> raise InvalidEscape
+
+
   (* This most likely needs to be changed. Easier way to detect chars????? *)
   let get_char input =
-    if String.length input == 3 then input.[1]
-    else if input.[2] == 'n' then '\n'
-    else if input.[2] == 'r' then '\r'
-    else '\t'
+    if String.length input = 3 then input.[1]
+    else match_char input.[2]
 
-  let get_str input = List.nth (String.split_on_char '\"' input) 1
-
+  let get_str input = 
+    let n = String.length input in
+    let esc_char = function
+      'n' | 'r' | 't' -> true
+      | _ -> false
+    in
+    let rec helper idx str = 
+      if idx = 0 then helper (idx+1) str
+      else if idx = (n-1) then  ""
+      else (
+        let c = str.[idx] in
+        if c = '\\' && esc_char str.[idx+1] then String.make 1 (match_char str.[idx+1]) ^ helper (idx+2) str
+        else String.make 1 c ^ helper(idx+1) str
+      )
+    in
+    helper 0 input
 }
 
 let digit = ['0'-'9']

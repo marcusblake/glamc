@@ -107,6 +107,7 @@ let translate (globals, functions, _) =
   let setEl_t = L.function_type void_t [| L.pointer_type list_t; i32_t; L.pointer_type i8_t |] in
   let popEl_t = L.function_type void_t [| L.pointer_type list_t |] in 
   let lenlist_t = L.function_type i32_t [| L.pointer_type list_t |] in
+  let join_t = L.function_type void_t [|L.pointer_type list_t; i8_t ; L.pointer_type string_t|] in
 
   let initList = L.declare_function "initList" initList_t the_module in
   let getElement= L.declare_function "getElement" getEl_t  the_module in
@@ -114,6 +115,7 @@ let translate (globals, functions, _) =
   let setElement = L.declare_function "setElement" setEl_t  the_module in
   let popElement= L.declare_function "popElement" popEl_t  the_module in
   let lenlist = L.declare_function "lenlist" lenlist_t the_module in
+  let join = L.declare_function "join" join_t the_module in
   (* END: Definition for List library function *)
   
 
@@ -527,6 +529,10 @@ let translate (globals, functions, _) =
         let lst = L.build_alloca (ltype_of_typ (A.List A.String)) "result" builder in
         ignore(L.build_call split (Array.of_list (args @ [lst])) "" builder);
         lst
+      | "join" ->
+        let str = L.build_alloca (ltype_of_typ A.String) "result" builder in
+        ignore(L.build_call join (Array.of_list (args @ [str])) "" builder);
+        str
       | _ -> raise Not_found
       end
     in
