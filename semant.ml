@@ -319,6 +319,19 @@ let check (globals, functions, structs) =
         let ty = check_assign vartype ty "" in
         (SAssign(name, (ty, e')), table)
 
+      | AssignSeq(seq, index, var) ->
+        
+        let (ty, e') = check_expr table seq in 
+        let (ind_ty, sindex) = check_expr table index in
+        let _ = if ind_ty <> Int then raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty)) in
+
+        let (vartype, svar) = check_expr table var in
+
+        let el_ty = get_element_type ty in
+
+        if el_ty = vartype then (SAssignSeq((ty, e'), (ind_ty, sindex), (vartype,svar)), table)
+        else raise InvalidAssignment
+
       | Define (name, expr) -> 
 
         let (expr_ty, e') = check_expr table expr in

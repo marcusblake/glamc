@@ -644,6 +644,25 @@ let translate (globals, functions, _) =
           ) else L.build_store e' var builder
         in
         (builder, table)
+      | SAssignSeq(lst, idx, ex) -> 
+        let llv_lst = build_expr table builder lst in
+        let llv_idx = build_expr table builder idx in
+        let llv_ex = build_expr table builder ex in
+        let set_element llval = 
+          let generic_ptr = L.build_bitcast llval (L.pointer_type i8_t) "generic" builder in
+          L.build_call setElement [| llv_lst; llv_idx ; generic_ptr |] "" builder 
+        in
+        let _ = 
+          let ty = fst ex in
+          if is_iterable ty then (
+            set_element llv_ex
+          ) else (
+            let temp = L.build_alloca (ltype_of_typ ty) "" builder in
+            ignore(L.build_store llv_ex temp builder);
+            set_element temp
+          )
+        in
+        (builder, table)
       | SIterate (name, sexpr, stmt) -> 
         (*
         setup

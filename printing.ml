@@ -67,6 +67,7 @@ and string_of_stmt = function
                       string_of_stmt s1 ^ "else " ^ string_of_stmt s2
   | Define(v, e) -> v ^ " := " ^ string_of_expr e ^ ";\n"
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e ^ ";\n"
+  | AssignSeq(l, i, e) -> string_of_expr l ^ "[" ^ string_of_expr i ^ "] = " ^ string_of_expr e ^ ";\n" 
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Explicit(b, e) -> string_of_bind b ^ " = " ^ string_of_expr e ^ ";\n"
   | Iterate(v, e, s) -> "for (" ^ v ^ " in " ^ string_of_expr e ^ ") " ^ string_of_stmt s

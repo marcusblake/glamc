@@ -32,6 +32,7 @@ and sstmt =
   | SWhile of sexpr * sstmt
   | SReturn of sexpr
   | SAssign of string * sexpr
+  | SAssignSeq of sexpr * sexpr * sexpr
   | SStructAssign of string * string * sexpr
 and sfunc_def = {
   sfunc_name: string;
