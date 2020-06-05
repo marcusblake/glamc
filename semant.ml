@@ -37,6 +37,31 @@ let check (globals, functions, structs) =
   (* Add all functions to map to create symbol table *)
   let function_decls : Ast.func_def StringMap.t = List.fold_left add_func StringMap.empty (functions @ built_in_functions) in
 
+  (* All struct functions *)
+  let struct_functions : Ast.func_def StringMap.t StringMap.t = 
+    let add_methods map _struct = 
+      let methods = List.fold_left (fun map func -> StringMap.add func.func_name func map) StringMap.empty _struct.methods in
+      StringMap.add _struct.struct_name methods map
+    in
+    List.fold_left add_methods StringMap.empty structs
+  in
+
+  (* All struct fields *)
+  let struct_fields : Ast.ty StringMap.t StringMap.t = 
+    let add_fields map _struct = 
+      let fields = List.fold_left (fun map bind -> StringMap.add (snd bind) (fst bind) map) StringMap.empty _struct.fields in
+      StringMap.add _struct.struct_name fields map
+    in
+    List.fold_left add_fields StringMap.empty structs
+  in
+
+  let find_struct_value map struct_name value = 
+    try
+      let values = StringMap.find struct_name map in
+      StringMap.find value values
+    with Not_found -> raise Invalid
+  in
+
   let _ = 
     try 
       find_func function_decls "main"
@@ -269,6 +294,29 @@ let check (globals, functions, structs) =
             end
           | _ -> raise (IllegalAccess ("Can't access sequential type with " ^ string_of_typ ty))
         end
+      | StructCall(var, func, args) as struct_call -> 
+        let ty = St.lookup_identifier var table in
+        let name = struct_name ty in
+        let struct_func = find_struct_value struct_functions name func in
+        let len = List.length struct_func.parameters in
+        if List.length args <> len then (
+          raise (Failure ("expecting " ^ string_of_int len ^
+                          " arguments in " ^ string_of_expr struct_call))
+        ) else (
+          let check_call (ft, _) e =
+            let (ty, e') = check_expr table e in
+            let err = "illegal argument found " ^ string_of_typ ty ^
+                      " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e in
+            (check_assign ft ty err, e')
+          in
+          let sargs = List.map2 check_call struct_func.parameters args in
+          (struct_func.return_type, SStructCall(var, func, sargs))
+        )
+      | StructAccess(var, field) -> 
+        let ty = St.lookup_identifier var table in
+        let name = struct_name ty in
+        let field_ty = find_struct_value struct_fields name field in
+        (field_ty, SStructAccess(var, field))
       | _ -> raise Unimplemented (* Ignore for now *)
     and check_bool_expr table expr = 
       let (ty, e') = check_expr table expr in
@@ -400,7 +448,7 @@ let check (globals, functions, structs) =
       sheap_vars = Set.fold (fun k lst -> k :: lst) !heap_vars []
     }, !vars_outside_scope)
   in
-  let check_struct stuct_ = raise Unimplemented (* ignore for now *) in
+  let check_struct strct = raise Unimplemented (* ignore for now *) in
   let get_func func =
     let (func, _) = check_func symbol_table func in
     func

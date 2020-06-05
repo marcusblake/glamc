@@ -145,5 +145,11 @@ let get_element_type type_ =
   | _ -> raise Invalid
   end
 
+let struct_name type_ =
+  begin match type_ with
+  Struct name -> name
+  | _ -> raise Invalid
+  end
+
 
   
