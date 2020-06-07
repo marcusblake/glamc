@@ -448,7 +448,15 @@ let check (globals, functions, structs) =
       sheap_vars = Set.fold (fun k lst -> k :: lst) !heap_vars []
     }, !vars_outside_scope)
   in
-  let check_struct strct = raise Unimplemented (* ignore for now *) in
+  let check_struct _struct =
+    let symbol_table = List.fold_left (fun st (ty, name) -> St.add_current_scope st name ty) (St.add_scope symbol_table) _struct.fields in
+    (* Create symbol table with struct vars then check_func for each of the methods *)
+    {
+      sstruct_name = _struct.struct_name;
+      sfields = _struct.fields;
+      smethods = List.map (fun func -> fst (check_func symbol_table func)) _struct.methods
+    }
+  in
   let get_func func =
     let (func, _) = check_func symbol_table func in
     func

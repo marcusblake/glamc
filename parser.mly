@@ -64,7 +64,6 @@ open Ast
 %type <Ast.program> program
 
 
-
 %right NOT
 %left OR
 %left AND
@@ -214,9 +213,13 @@ nexpr:
   | MINUS expr                           { Unop(Neg, $2) }
 
 expr:
+  inexpr                  { $1 }
+  | LPAREN inexpr RPAREN  { $2 }
+
+inexpr:
   literal                                { $1 }
   | nexpr                                { $1 }
-  | bexpr                                { $1 } 
+  | bexpr                                { $1 }
   | ID LPAREN expr_params RPAREN         { Call($1, $3) }
   | ID DOT ID LPAREN expr_params RPAREN  { StructCall($1, $3, $5) } /* point.toString() */
 
