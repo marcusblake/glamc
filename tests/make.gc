@@ -1,0 +1,6 @@
+func main() {
+    var a list<bool> = make(bool, 10000, true);
+    for (id in a) {
+        println(id);
+    }
+}

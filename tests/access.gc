@@ -1,4 +1,4 @@
-func main() int {
+func main() {
     a := [[1,2,3,4,5], [1,2,1,68]];
     
     a[0][len(a[0])-1] = 700;
@@ -14,5 +14,5 @@ func main() int {
         }
         i += 1;
     }
-    return 0;
+    
 }

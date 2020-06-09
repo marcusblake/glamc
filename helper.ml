@@ -1,6 +1,6 @@
 open Ast
 open Exceptions
-open Printing
+open Print_ast
 
 
 (* Map used for symbol table *)
@@ -8,7 +8,7 @@ module StringMap = Map.Make(String)
 
 let built_in_functions = [
     {
-      return_type = Int;
+      return_type = Void;
       func_name = "println";
       parameters = [(AnyType, "x")];
       body = Block [];
@@ -22,28 +22,28 @@ let built_in_functions = [
       heap_vars = []
     };
     {
-      return_type = Int;
+      return_type = Void;
       func_name = "append";
       parameters = [(List AnyType, "x"); (AnyType, "y")];
       body = Block [];
       heap_vars = []
     };
     {
-      return_type = Int;
+      return_type = Void;
       func_name = "put";
       parameters = [(List AnyType, "x"); (Int, "y") ;(AnyType, "z")];
       body = Block [];
       heap_vars = []
     };
     {
-      return_type = Int;
+      return_type = Void;
       func_name = "pop";
       parameters = [(List AnyType, "x")];
       body = Block [];
       heap_vars = []
     };
     {
-      return_type = Int;
+      return_type = Void;
       func_name = "map";
       parameters = [(List AnyType, "x"); (Function(([AnyType], AnyType)), "y")];
       body = Block [];
@@ -85,7 +85,7 @@ let built_in_functions = [
       heap_vars = []
     };
     {
-      return_type = Int;
+      return_type = Void;
       func_name = "write";
       parameters = [(String, "filename"); (String, "str")];
       body = Block [];
@@ -102,6 +102,13 @@ let built_in_functions = [
       return_type = String;
       func_name = "join";
       parameters = [(List String, "str"); (Char, "del")];
+      body = Block [];
+      heap_vars = []      
+    };
+    {
+      return_type = List AnyType;
+      func_name = "make";
+      parameters = [(Type AnyType, "str"); (Int, "count"); (AnyType, "init")];
       body = Block [];
       heap_vars = []      
     }

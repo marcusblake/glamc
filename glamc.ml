@@ -22,7 +22,7 @@ let () =
   let ast = Parse_driver.parse_program !file in
   match !action with
   | Tokens -> print_string (Scanner.string_of_tokens !file)
-  | Ast -> print_string (Printing.string_of_program ast)
+  | Ast -> print_string (Print_ast.string_of_program ast)
   | _ -> let sast = Semant.check ast in
   let llvm_module = Llvm.string_of_llmodule (Irgen.translate sast) in
     match !action with

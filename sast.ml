@@ -10,6 +10,7 @@ and sex =
   | SCharLit of char
   | SStringLit of string
   | SStructLit of string * sanon_decl list (* Name of struct and list of fields *)
+  | STypeLit of ty
   | SFunctionLit of string list * sfunc_def
   | SSeq of sexpr list
   | SId of string

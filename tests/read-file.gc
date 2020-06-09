@@ -1,5 +1,4 @@
-func main() int {
+func main() {
     content := read("stuff.txt");
     println(content);
-    return 0;
 }

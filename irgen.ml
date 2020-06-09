@@ -79,6 +79,7 @@ let translate (globals, functions, _) =
       let parameters = Array.of_list (List.map get_type params) in
       let return_type = ltype_of_typ return in
       L.pointer_type (L.function_type return_type parameters)
+    | A.Void -> void_t
     | _ -> raise Unimplemented
   in
 
@@ -108,6 +109,7 @@ let translate (globals, functions, _) =
   let popEl_t = L.function_type void_t [| L.pointer_type list_t |] in 
   let lenlist_t = L.function_type i32_t [| L.pointer_type list_t |] in
   let join_t = L.function_type void_t [|L.pointer_type list_t; i8_t ; L.pointer_type string_t|] in
+  let make_t = L.function_type void_t [| L.pointer_type list_t; i64_t; i32_t; L.pointer_type i8_t |] in
 
   let initList = L.declare_function "initList" initList_t the_module in
   let getElement= L.declare_function "getElement" getEl_t  the_module in
@@ -116,6 +118,7 @@ let translate (globals, functions, _) =
   let popElement= L.declare_function "popElement" popEl_t  the_module in
   let lenlist = L.declare_function "lenlist" lenlist_t the_module in
   let join = L.declare_function "join" join_t the_module in
+  let make_list = L.declare_function "make" make_t the_module in
   (* END: Definition for List library function *)
   
 
@@ -129,7 +132,7 @@ let translate (globals, functions, _) =
   (* printf strings *)
   let int_str = L.const_stringz context "%d\n" in
   let float_str = L.const_stringz context "%f\n" in
-  let char_str = L.const_stringz context "\'%c\'\n" in
+  let char_str = L.const_stringz context "%c\n" in
   let empty_str = L.const_stringz context "" in
 
   let int_format_str = L.define_global "fmt_int" int_str the_module in
@@ -361,7 +364,7 @@ let translate (globals, functions, _) =
                 L.build_load (fst (St.lookup_identifier f table)) "" builder
             ) in
             let llargs = List.rev (List.map (build_expr table builder) (List.rev args)) in
-            let result = f ^ "_result" in
+            let result = if type_ = Void then "" else f ^ "_result" in
             L.build_call fdef (Array.of_list llargs) result builder 
         )
       | SSeqAccess(s, e) -> 
@@ -399,7 +402,11 @@ let translate (globals, functions, _) =
         llfunc
       | _ -> raise Unimplemented
     and check_built_in name e table builder =
-      let args = List.map (build_expr table builder) e in
+      let args = 
+        match name with
+        | "make" -> List.map (build_expr table builder) (List.tl e)
+        | _ -> List.map (build_expr table builder) e
+      in
       begin match name with
       "println" -> 
         let (ty, _) = List.hd e in
@@ -432,6 +439,22 @@ let translate (globals, functions, _) =
         | _ -> raise Invalid
         end
       | "pop" -> L.build_call popElement (Array.of_list args) "" builder
+      | "make" -> 
+        let ty = match List.hd e with | (A.Type ty, _) -> ty | _ -> raise Unimplemented in
+        let element_size = L.size_of (ltype_of_typ ty) in
+        let n = List.nth args 0 in
+        let element = List.nth args 1 in
+        let result = L.build_alloca (ltype_of_typ (A.List ty)) "result" builder in
+        let temp = L.build_alloca (ltype_of_typ ty) "" builder in
+        let _ = 
+          if is_iterable ty then (
+            let v = L.build_load element "" builder in 
+            L.build_store v temp builder
+          ) else L.build_store element temp builder
+        in
+        let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
+        ignore(L.build_call make_list [| result; element_size; n; generic|] "" builder);
+        result
       | "put" -> 
         let el = List.nth args 2 in
         let (ty, _) = List.nth e 2 in
@@ -805,23 +828,30 @@ let translate (globals, functions, _) =
         
       | SReturn (sexpr) -> 
         let ty = fst sexpr in
-        let e = build_expr table builder sexpr in
-        let return_val = 
-          if is_iterable ty then (
-            let mem = L.build_malloc (ltype_of_typ ty) "return" builder in (* need to malloc so that object one roll back in stack*)
-            ignore(L.build_store (L.build_load e "" builder) mem builder);
-            mem
-          ) else e
+        let _ = begin match ty with 
+          | Void -> L.build_ret_void builder
+          | _ ->
+          let e = build_expr table builder sexpr in
+          let return_val = 
+            if is_iterable ty then (
+              let mem = L.build_malloc (ltype_of_typ ty) "return" builder in (* need to malloc so that object one roll back in stack*)
+              ignore(L.build_store (L.build_load e "" builder) mem builder);
+              mem
+            ) else e
+          in
+          L.build_ret return_val builder
+        end
         in
-        ignore(L.build_ret return_val builder); (builder, table)
+        (builder, table)
       | _ -> raise Unimplemented
     in
     
-    ignore (match fdecl.sbody with
+    let funcbuilder = match fdecl.sbody with
     | SBlock lst -> build_stmt_list symbol_table builder lst (* Flatten sstmt *)
-    | _ -> raise Invalid);
-
+    | _ -> raise Invalid
+    in
+    
+    if fdecl.sreturn_type = Void then add_terminal funcbuilder (L.build_ret_void)
   in
-  print_endline "I'm here";
   List.iter build_function_body functions;
   the_module

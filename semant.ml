@@ -1,7 +1,7 @@
 open Ast
 open Sast
 open Exceptions
-open Printing
+open Print_ast
 open Helper
 
 
@@ -64,7 +64,8 @@ let check (globals, functions, structs) =
 
   let _ = 
     try 
-      find_func function_decls "main"
+      let main_func = find_func function_decls "main" in
+      if main_func.return_type <> Void then raise(InvalidReturnType("main() should have void return type"))
     with FunctionDoesntExist _ -> raise MainEntrypointUndefined
   in
 
@@ -95,6 +96,7 @@ let check (globals, functions, structs) =
         heap_vars := List.fold_left (fun heapvars el -> Set.add el heapvars) !heap_vars infer_heap_vars; *)
         let types = List.map (fun (ty, _) -> ty) sfunc.sparameters in
         (Function (types, sfunc.sreturn_type), SFunctionLit (vars, sfunc))
+      | TypeLit l -> (Type l, STypeLit l)
       | Seq lst -> 
         let new_list = List.map (check_expr table) lst in
 
@@ -239,7 +241,6 @@ let check (globals, functions, structs) =
               | _ -> raise Func_failed_typecheck
             end
           ) else if name = "put" then (
-
             let sargs = List.map (check_expr table) arguments in
             let (ty, e1) = List.hd sargs in
             begin match ty with
@@ -252,7 +253,6 @@ let check (globals, functions, structs) =
                 )
               | _ -> raise Func_failed_typecheck
             end
-
           ) else if name = "map" then (
 
             let (ty, e1) = check_expr table (List.hd arguments) in
@@ -275,8 +275,18 @@ let check (globals, functions, structs) =
           ) else if name = "println" then (
             let (ty, e) = check_expr table (List.hd arguments) in
             match ty with
-            | Int | Char | Bool | Float | String -> (Int, SCall(name, [(ty, e)]))
+            | Int | Char | Bool | Float | String -> (return_type, SCall(name, [(ty, e)]))
             | _ -> raise (IllegalArgument("Can't print " ^ string_of_typ ty))
+          ) else if name = "make" then (
+            let sargs = List.map (check_expr table) arguments in
+            let (ty, _) = List.hd sargs in
+            match ty with
+            | Type el_ty -> 
+              let (arg2_ty, _) = List.nth sargs 1 in
+              let (arg3_ty, _) = List.nth sargs 2 in
+              if arg2_ty = Int && arg3_ty = el_ty then (List el_ty, SCall(name, sargs))
+              else raise (IncorrectArgumentType("Incorrect arguments supplied to make()"))
+            | _ -> raise (IncorrectArgumentType("Expected type of list elements as first argument"))
           ) else (
             let sargs = List.map2 check_call parameters arguments in 
             (return_type, SCall(name, sargs))
@@ -334,6 +344,7 @@ let check (globals, functions, structs) =
       | Return e -> 
 
         let (ty, e') = check_expr table e in
+        let ty = match ty with Type t -> t | _ -> ty in
         if ty = func.return_type then (SReturn(ty, e'), table)
         else raise (InvalidReturnType (Printf.sprintf "Returned %s must be of type %s" (string_of_expr e) (string_of_typ ty)))
 

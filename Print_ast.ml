@@ -31,9 +31,10 @@ let rec string_of_typ = function
   | List d -> Printf.sprintf "list<%s>" (string_of_typ d)
   | Function(args, rty) -> "func (" ^ String.concat ", " (List.map string_of_typ args) ^ ") " ^ string_of_typ rty
   | AnyType -> "AnyType"
+  | Void -> "void"
+  | Type d -> string_of_typ d
 
 let string_of_bind (t, id) = "var " ^  id ^ " " ^ string_of_typ t
-
 
 let rec string_of_expr = function
     IntLit(l) -> string_of_int l
@@ -48,6 +49,7 @@ let rec string_of_expr = function
   | FloatLit(l) -> string_of_float l
   | CharLit(l) -> Char.escaped l
   | StringLit(l) -> l
+  | TypeLit(t) -> string_of_typ t
   | FunctionLit(func) -> "func (" ^ 
     String.concat ", " (List.map string_of_bind func.parameters) ^ 
     ") " ^ string_of_typ func.return_type ^ " -> " ^

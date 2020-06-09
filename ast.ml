@@ -3,7 +3,7 @@ type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq
 
 type uop = Neg | Not
 
-type ty = AnyType | Int | Bool | Float | Char | String | Struct of string | List of ty | Function of (ty list * ty)
+type ty = AnyType | Type of ty | Void | Int | Bool | Float | Char | String | Struct of string | List of ty | Function of (ty list * ty)
 
 type bind = ty * string
 
@@ -17,6 +17,7 @@ and expr =
   | StringLit of string
   | StructLit of string * anon_decl list (* Name of struct and list of fields *)
   | FunctionLit of func_def
+  | TypeLit of ty
   | Seq of expr list
   | Id of string
   | Binop of expr * op * expr

@@ -8,9 +8,8 @@ struct Point {
     }
 }
 
-func main() int {
+func main() {
     id := 69;
     a := 60 / 12 + 10 * 10;
     println(a);
-    return 0;
 }

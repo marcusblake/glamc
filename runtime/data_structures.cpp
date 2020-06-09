@@ -34,7 +34,7 @@ extern "C" void concat(struct String *l, struct String *r, struct String *n_str)
 }
 
 extern "C" void prints(struct String *str) {
-    printf("\"%s\"\n", str->elements);
+    printf("%s\n", str->elements);
 }
 
 extern "C" void initList(struct List *list, int element_size, int num, char *elements) {
@@ -47,6 +47,18 @@ extern "C" void initList(struct List *list, int element_size, int num, char *ele
         memcpy(element, curr, element_size);
         array->push_back(element);
         list->length++;
+    }
+    list->list = reinterpret_cast<char *>(array);
+}
+
+extern "C" void make(struct List *list, int element_size, int num, char *initializer) {
+    list->length = num;
+    list->element_size = element_size;
+    std::vector<char *>* array = new std::vector<char *>();
+    for (int count = 0; count < num; count++) {
+        char *element = new char[element_size];
+        memcpy(element, initializer, element_size);
+        array->push_back(element);
     }
     list->list = reinterpret_cast<char *>(array);
 }

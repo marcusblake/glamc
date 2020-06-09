@@ -9,7 +9,7 @@ func fib(int n) int {
 }
 
 
-func main() int {
+func main() {
     id := 0;
     list<int> fibs;
     while (id <= 20) {
@@ -20,5 +20,4 @@ func main() int {
     for (num in fibs) {
         printi(num);
     }
-    return 0;
 }

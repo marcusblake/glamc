@@ -1,6 +1,5 @@
-func main() int {
+func main() {
     lst := ["Hello", "World", "I", "Like", "Pickles"];
     str := join(lst, '\n');
     println(str);
-    return 0;
 }
