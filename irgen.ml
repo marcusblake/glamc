@@ -24,7 +24,7 @@ module Set = Set.Make(String)
 
 (* translate : Sast.program -> Llvm.module *)
 (* Ignore structs for now *)
-let translate (globals, functions, _) =
+let translate (globals, functions, structs) =
   let context    = L.global_context () in
 
   (* Create the LLVM compilation module into which
@@ -59,7 +59,7 @@ let translate (globals, functions, _) =
     L.struct_set_body list_t   [| i32_t ; i32_t ; L.pointer_type i8_t |] false 
   in
 
-  (* Return the LLVM type for a MicroC type *)
+  (* Return the LLVM type for a Glamc type *)
   let rec ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t
@@ -70,7 +70,7 @@ let translate (globals, functions, _) =
     | A.Function (params, return) -> 
       let get_type ty =
         let lty = ltype_of_typ ty in
-        if is_iterable ty then (
+        if pointer_type ty then (
           L.pointer_type lty
         ) else (
           lty
@@ -80,7 +80,8 @@ let translate (globals, functions, _) =
       let return_type = ltype_of_typ return in
       L.pointer_type (L.function_type return_type parameters)
     | A.Void -> void_t
-    | _ -> raise Unimplemented
+    | A.Struct name -> L.named_struct_type context name
+    | _ -> raise(IncorrectType("Type cannot be converted to an equivalent llvm type"))
   in
 
 
@@ -164,7 +165,7 @@ let translate (globals, functions, _) =
   let get_type ty = 
     let llty = ltype_of_typ ty in
     match ty with
-    | String | List _ -> L.pointer_type llty
+    | String | List _ | Struct _ -> L.pointer_type llty
     | _ -> llty
   in
 
@@ -185,6 +186,32 @@ let translate (globals, functions, _) =
       StringMap.add name (L.define_function name llvalue the_module, fdecl) map 
     in
     List.fold_left function_decl StringMap.empty functions 
+  in
+
+
+  let struct_functions : (L.llvalue * sfunc_def) StringMap.t StringMap.t = 
+    let struct_function map struct_decl = 
+      let struct_name = struct_decl.sstruct_name in
+      let struct_ptr = L.pointer_type (ltype_of_typ (A.Struct struct_name)) in 
+      let add_struct_func map fdecl = 
+        let name = struct_name ^ "_" ^ fdecl.sfunc_name and 
+        formal_types = List.map (fun (ty, _) -> get_type ty) fdecl.sparameters in
+        let llvalue = L.function_type (get_type fdecl.sreturn_type) (Array.of_list ([struct_ptr] @ formal_types)) in
+        StringMap.add name (L.define_function name llvalue the_module, fdecl) map
+      in
+      let functions = List.fold_left add_struct_func StringMap.empty struct_decl.smethods in
+      StringMap.add struct_name functions map
+    in
+    List.fold_left struct_function StringMap.empty structs
+  in
+
+  let _ = 
+    let set_body struct_ =
+      let llty = ltype_of_typ (A.Struct struct_.sstruct_name) in
+      let types = List.map (fun (ty, _) -> ltype_of_typ ty) struct_.sfields in
+      L.struct_set_body llty (Array.of_list types) false
+    in
+    List.iter set_body structs
   in
 
   (* LLVM insists each basic block end with exactly one "terminator"
@@ -296,7 +323,7 @@ let translate (globals, functions, _) =
           L.build_call addElement [| global; generic |] "" builder
         in
         let _ = 
-          if is_iterable ty then (
+          if pointer_type ty then (
             let ptr = L.build_load (L.build_struct_gep global 2 "" builder) "" builder in
             ignore(L.build_call initList [| global; L.size_of llvty; L.const_int i32_t 0; ptr |] "" builder);
             ignore(List.map add_to_lst llvlst)
@@ -853,5 +880,6 @@ let translate (globals, functions, _) =
     
     if fdecl.sreturn_type = Void then add_terminal funcbuilder (L.build_ret_void)
   in
+  
   List.iter build_function_body functions;
   the_module

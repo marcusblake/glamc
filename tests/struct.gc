@@ -8,6 +8,29 @@ struct Point {
     }
 }
 
+struct File {
+    var filename string;
+
+    func init(s: string) {
+        filename = s;
+    }
+
+    func read() string {
+        if (len(filename) == 0) {
+            return "";
+        } 
+        return read(filename);
+    }
+
+    func write(str: string) {
+        write(filename, str);
+    }
+}
+
+func helper() int {
+    return 0;
+}
+
 func main() {
     id := 69;
     a := 60 / 12 + 10 * 10;

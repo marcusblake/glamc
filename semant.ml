@@ -327,7 +327,9 @@ let check (globals, functions, structs) =
         let name = struct_name ty in
         let field_ty = find_struct_value struct_fields name field in
         (field_ty, SStructAccess(var, field))
-      | _ -> raise Unimplemented (* Ignore for now *)
+      | StructLit(name, fields) -> 
+        let sfields = List.map (fun (var, expr) -> (var, check_expr table expr)) fields in
+        (Struct name, SStructLit(name, sfields))
     and check_bool_expr table expr = 
       let (ty, e') = check_expr table expr in
       (* type of this expression must be a boolean *)

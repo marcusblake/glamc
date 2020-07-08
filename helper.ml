@@ -145,6 +145,12 @@ let is_iterable type_ =
   | _ -> false
   end
 
+let pointer_type type_ =
+  begin match type_ with
+  String | List _ | Struct _ -> true
+  | _ -> false
+  end
+
 let get_element_type type_ =
   begin match type_ with 
   List ty -> ty
