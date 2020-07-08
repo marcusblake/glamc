@@ -91,6 +91,7 @@ let translate (globals, functions, _) =
   let prints_t = L.function_type void_t [| L.pointer_type string_t |] in
   let concat_t = L.function_type void_t [|L.pointer_type string_t; L.pointer_type string_t; L.pointer_type string_t |] in
   let split_t = L.function_type void_t [|L.pointer_type string_t; i8_t ; L.pointer_type list_t |] in
+  let compare_t = L.function_type i1_t [| L.pointer_type string_t; L.pointer_type string_t; i1_t |] in
 
   let initString = L.declare_function "initString" initString_t the_module in
   let strLength = L.declare_function "lenstr" strLength_t the_module in
@@ -98,6 +99,7 @@ let translate (globals, functions, _) =
   let prints = L.declare_function "prints" prints_t the_module in
   let concat = L.declare_function "concat" concat_t the_module in
   let split = L.declare_function "split" split_t the_module in
+  let compare = L.declare_function "compare_string" compare_t the_module in
   (* END: Definitions for String library functions *)
 
   
@@ -316,7 +318,6 @@ let translate (globals, functions, _) =
       | SBinop (e1, op, e2) ->
         let e1' = build_expr table builder e1
         and e2' = build_expr table builder e2 in
-
         let get_compare int_op float_op = function
           A.Int | A.Char -> L.build_icmp int_op
           | A.Float -> L.build_fcmp float_op
@@ -330,23 +331,36 @@ let translate (globals, functions, _) =
         in
 
         let ty = fst e1 in
+        let is_str = is_string ty in
         begin match op with
         A.Add -> 
-          begin match ty with
-          A.String -> 
+          if is_str then (
             let new_string = L.build_alloca (ltype_of_typ A.String) "result" builder in
             ignore(L.build_call concat [|e1'; e2'; new_string|] "" builder);
             new_string
-          | _ -> L.build_add e1' e2' "tmp" builder
-          end
+          ) else (
+            L.build_add e1' e2' "tmp" builder
+          )
         | A.Sub     -> L.build_sub e1' e2' "tmp" builder
         | A.Mult    -> L.build_mul e1' e2' "tmp" builder
         | A.Div     -> L.build_sdiv e1' e2' "tmp" builder
         | A.Mod     -> L.build_srem e1' e2' "tmp" builder
         | A.And     -> L.build_and e1' e2' "tmp" builder
         | A.Or      -> L.build_or e1' e2' "tmp" builder
-        | A.Equal   -> (get_equality L.Icmp.Eq L.Fcmp.Oeq ty) e1' e2' "tmp" builder
-        | A.Neq     -> (get_equality L.Icmp.Ne L.Fcmp.One ty) e1' e2' "tmp" builder
+        | A.Equal   -> 
+          if is_str then (
+            let op = initialized_value A.Bool in (* Indicate the type of operation *)
+            L.build_call compare [|e1'; e2'; op|] "" builder
+          ) else (
+            (get_equality L.Icmp.Eq L.Fcmp.Oeq ty) e1' e2' "tmp" builder
+          )
+        | A.Neq     -> 
+          if is_str then (
+            let op = L.const_int i1_t 1 in (* Indicate the type of operation *)
+            L.build_call compare [|e1'; e2'; op|] "" builder
+          ) else (
+            (get_equality L.Icmp.Ne L.Fcmp.One ty) e1' e2' "tmp" builder
+          )
         | A.Less    -> (get_compare L.Icmp.Slt L.Fcmp.Olt ty) e1' e2' "tmp" builder
         | A.Leq     -> (get_compare L.Icmp.Sle L.Fcmp.Ole ty) e1' e2' "tmp" builder
         | A.Greater -> (get_compare L.Icmp.Sgt L.Fcmp.Ogt ty) e1' e2' "tmp" builder

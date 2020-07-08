@@ -33,6 +33,16 @@ extern "C" void concat(struct String *l, struct String *r, struct String *n_str)
     memcpy(n_str->elements + lLength, r->elements, rLength);
 }
 
+extern "C" bool compare_string(struct String *l, struct String *r, bool op) {
+    int ans;
+    ans = strcmp(l->elements, r->elements);
+    if (op == 0) { /* equals operation */
+        return ans == 0;
+    }
+    return ans != 0;
+    
+}
+
 extern "C" void prints(struct String *str) {
     printf("%s\n", str->elements);
 }

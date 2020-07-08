@@ -162,7 +162,7 @@ let check (globals, functions, structs) =
             | Equal | Neq ->
               begin match t1 with
                 (* Only only equality comparison for basic types for now *)
-                  Int | Float | Char | Bool -> Bool
+                  Int | Float | Char | Bool | String -> Bool
                 | _ -> raise Bad_equal
               end
             (* <, >, <=, >= *)

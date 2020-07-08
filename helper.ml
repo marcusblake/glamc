@@ -138,6 +138,11 @@ let find_func map function_name =
 (* END: Helper functions for functions *)
 
 
+let is_string type_ = 
+  begin match type_ with
+  String -> true
+  | _ -> false
+  end
 
 let is_iterable type_ = 
   begin match type_ with
