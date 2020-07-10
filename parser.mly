@@ -195,6 +195,9 @@ anonymous_function:
       })
     }
 
+sub_sequence:
+  valexpr COLON valexpr { ($1, $3) }
+
 value:
   | ID                                   { Id($1) } /* varName */
   | LITERAL                              { IntLit($1) } /* 2 */
@@ -203,6 +206,7 @@ value:
   | CHARLIT                              { CharLit($1) } /* 'c' */
   | STRLIT                               { StringLit($1) } /*  "helloworld" */
   | value LBRACKET valexpr RBRACKET      { SeqAccess($1, $3) }
+  | value LBRACKET sub_sequence RBRACKET { SubSeq($1, fst $3, snd $3) }
   | LBRACKET expr_params RBRACKET        { Seq($2) } /* [2,3,4,5] */
   | ID DOT ID                            { StructAccess($1, $3) }
 

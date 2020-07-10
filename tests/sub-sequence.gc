@@ -1,0 +1,10 @@
+
+func main() {
+    a := make(int, 10, 1);
+    println(a[2]);
+    b := a[2:len(a)];
+    
+    for (integer in b) {
+        println(integer);
+    }
+}

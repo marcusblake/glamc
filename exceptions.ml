@@ -10,6 +10,7 @@ exception IncorrectType of string
 exception InvalidReturnType of string
 exception NonAccessibleProp of string
 exception Unimplemented (* for development purposes *)
+exception InvalidSublist of string
 exception MainEntrypointUndefined
 exception FunctionAlreadyExists
 exception FunctionDoesntExist of string

@@ -61,6 +61,24 @@ extern "C" void initList(struct List *list, int element_size, int num, char *ele
     list->list = reinterpret_cast<char *>(array);
 }
 
+extern "C" void subSequence(struct List *list, int start, int end, struct List *newList) {
+    int n = lenlist(list);
+    if (start < 0 || start > n || end < 0 || end > n || start > end) {
+        fprintf(stderr, "Fatal Error: Invalid Indices\n");
+        exit(1);
+    }
+    initList(newList, list->element_size, 0, (char *)NULL); /* Initialize list */
+    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
+    std::vector<char *>* copy_list = reinterpret_cast<std::vector<char *>*>(newList->list);
+    int element_size = list->element_size;
+    for (int i = start; i < end; i++) {
+        char *element = current_list->at(i);
+        char *copy = new char[element_size];   
+        memcpy(copy, element, element_size);
+        copy_list->push_back(copy);
+    }
+}
+
 extern "C" void make(struct List *list, int element_size, int num, char *initializer) {
     list->length = num;
     list->element_size = element_size;

@@ -18,6 +18,7 @@ and sex =
   | SUop of uop * sexpr
   | SCall of string * sexpr list
   | SSeqAccess of sexpr * sexpr
+  | SSubSeq of sexpr * sexpr * sexpr
   | SStructCall of string * string * sexpr list (* name of identifier along with function call and list of arguments *)
   | SStructAccess of string * string (* name of identifier and name of variable being accessed *)
 and sstmt =

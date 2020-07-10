@@ -56,6 +56,7 @@ let rec string_of_expr = function
     string_of_stmt func.body
   | StructLit(t, d) -> t ^ "{" ^ String.concat ", " (List.map (fun (s, e) -> s ^ ": " ^ string_of_expr e) d) ^ "}"
   | Seq(s) -> "[" ^ String.concat ", " (List.map string_of_expr s) ^ "]"
+  | SubSeq(l,s,e) -> string_of_expr l ^ "[" ^ string_of_expr s ^ ":" ^ string_of_expr e ^ "]"
   | SeqAccess(s,e) -> string_of_expr s ^ "[" ^ string_of_expr e ^ "]"
   | StructCall(st, fn, ps) -> st ^ "." ^ fn ^ "(" ^ String.concat ", " (List.map string_of_expr ps) ^ ")"
   | StructAccess(st, fld) -> st ^ "." ^ fld

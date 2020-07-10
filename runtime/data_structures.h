@@ -19,6 +19,7 @@
 	extern "C" void addElement(struct List *list, char *element);
 	extern "C" void setElement(struct List *list, int index, char *element);
 	extern "C" void popElement(struct List *list);
+	extern "C" void subSequence(struct List *list, int start, int end, struct List *newList);
 	extern "C" int lenlist(struct List *list);
 	extern "C" void initString(struct String *str, char *elements);
 	extern "C" int strlength(struct String *str);

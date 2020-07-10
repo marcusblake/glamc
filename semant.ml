@@ -327,6 +327,14 @@ let check (globals, functions, structs) =
         let name = struct_name ty in
         let field_ty = find_struct_value struct_fields name field in
         (field_ty, SStructAccess(var, field))
+      | SubSeq(l, s, e) as ex->
+        let (ty_l, l') = check_expr table l in
+        let (ty_s, s') = check_expr table s in
+        let (ty_e, e') = check_expr table e in
+        begin match (ty_l, ty_s, ty_e) with
+        | List _, Int, Int -> (ty_l, SSubSeq((ty_l, l'), (ty_s, s'), (ty_e, e')))
+        | _, _, _ -> raise (InvalidSublist(string_of_expr ex))
+        end
       | _ -> raise Unimplemented (* Ignore for now *)
     and check_bool_expr table expr = 
       let (ty, e') = check_expr table expr in

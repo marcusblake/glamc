@@ -112,6 +112,7 @@ let translate (globals, functions, _) =
   let lenlist_t = L.function_type i32_t [| L.pointer_type list_t |] in
   let join_t = L.function_type void_t [|L.pointer_type list_t; i8_t ; L.pointer_type string_t|] in
   let make_t = L.function_type void_t [| L.pointer_type list_t; i64_t; i32_t; L.pointer_type i8_t |] in
+  let subseq_t = L.function_type void_t [| L.pointer_type list_t; i32_t; i32_t; L.pointer_type list_t|] in
 
   let initList = L.declare_function "initList" initList_t the_module in
   let getElement= L.declare_function "getElement" getEl_t  the_module in
@@ -121,6 +122,7 @@ let translate (globals, functions, _) =
   let lenlist = L.declare_function "lenlist" lenlist_t the_module in
   let join = L.declare_function "join" join_t the_module in
   let make_list = L.declare_function "make" make_t the_module in
+  let subseq = L.declare_function "subSequence" subseq_t the_module in
   (* END: Definition for List library function *)
   
 
@@ -414,6 +416,13 @@ let translate (globals, functions, _) =
         function_decls := StringMap.add (L.value_name llfunc) (llfunc, lambda)  !function_decls;
         build_function_body lambda;
         llfunc
+      | SSubSeq(l, s, e) ->
+        let l' = build_expr table builder l in
+        let s' = build_expr table builder s in
+        let e' = build_expr table builder e in
+        let new_list = L.build_alloca list_t "result" builder in
+        ignore(L.build_call subseq [|l'; s'; e'; new_list|] "" builder);
+        new_list
       | _ -> raise Unimplemented
     and check_built_in name e table builder =
       let args = 

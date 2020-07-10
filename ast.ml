@@ -24,6 +24,7 @@ and expr =
   | Unop of uop * expr
   | Call of string * expr list
   | SeqAccess of expr * expr
+  | SubSeq of expr * expr * expr
   | StructCall of string * string * expr list (* name of identifier along with function call and list of arguments *)
   | StructAccess of string * string (* name of identifier and name of variable being accessed *)
 and stmt =
