@@ -56,7 +56,7 @@ let translate (globals, functions, _) =
   *)
   let _ =
     ignore(L.struct_set_body string_t [| i32_t ; L.pointer_type i8_t |] false);
-    L.struct_set_body list_t   [| i32_t ; i32_t ; L.pointer_type i8_t |] false 
+    L.struct_set_body list_t   [| i32_t ; i32_t; i32_t ; L.pointer_type (L.pointer_type i8_t) |] false 
   in
 
   (* Return the LLVM type for a MicroC type *)

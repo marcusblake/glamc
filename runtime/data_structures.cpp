@@ -1,4 +1,5 @@
 #include "data_structures.h"
+#include "gc.h"
 #include <vector>
 #include <cstring>
 #include <string>
@@ -6,7 +7,7 @@
 
 extern "C" void initString(struct String *str, char *elements) {
     int n = strlen(elements) + 1;
-    str->elements = new char[n];
+    str->elements = (char *)gmalloc((size_t)n);
     str->length = n-1;
     memcpy(str->elements, elements, n);
 }
@@ -28,7 +29,7 @@ extern "C" void concat(struct String *l, struct String *r, struct String *n_str)
     int rLength = r->length + 1; /* Add null terminator from this string */
     int n = lLength + rLength;
     n_str->length = n-1;
-    n_str->elements = new char[n];
+    n_str->elements = (char *)gmalloc((size_t)n);
     memcpy(n_str->elements, l->elements, lLength);
     memcpy(n_str->elements + lLength, r->elements, rLength);
 }
@@ -50,15 +51,20 @@ extern "C" void prints(struct String *str) {
 extern "C" void initList(struct List *list, int element_size, int num, char *elements) {
     list->length = 0;
     list->element_size = element_size;
-    std::vector<char *>* array = new std::vector<char *>();
+    int max_size = num + 1000; // set a buffer for array
+    list->max_size = max_size;
+    char *array = (char *) gmalloc((size_t)max_size * sizeof(char *));
+    char *curr_element;
+    char *curr_array;
     for (int count = 0; count < num; count++) {
-        char *element = new char[element_size];
-        char *curr = elements + element_size * count;
-        memcpy(element, curr, element_size);
-        array->push_back(element);
+        char *element = (char *) gmalloc((size_t)element_size);
+        curr_element = elements + element_size * count;
+        memcpy(element, curr_element, element_size);
+        curr_array = array + sizeof(char *) * count;
+        memcpy(curr_array, elements, sizeof(char *));
         list->length++;
     }
-    list->list = reinterpret_cast<char *>(array);
+    list->list = array;
 }
 
 extern "C" void subSequence(struct List *list, int start, int end, struct List *newList) {
@@ -67,76 +73,79 @@ extern "C" void subSequence(struct List *list, int start, int end, struct List *
         fprintf(stderr, "Fatal Error: Invalid Indices\n");
         exit(1);
     }
-    initList(newList, list->element_size, 0, (char *)NULL); /* Initialize list */
-    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
-    std::vector<char *>* copy_list = reinterpret_cast<std::vector<char *>*>(newList->list);
-    int element_size = list->element_size;
-    for (int i = start; i < end; i++) {
-        char *element = current_list->at(i);
-        char *copy = new char[element_size];   
-        memcpy(copy, element, element_size);
-        copy_list->push_back(copy);
-    }
+    initList(newList, list->element_size, n, list->list); /* Initialize list */
 }
 
 extern "C" void make(struct List *list, int element_size, int num, char *initializer) {
-    list->length = num;
+    list->length = 0;
     list->element_size = element_size;
-    std::vector<char *>* array = new std::vector<char *>();
+    size_t size = num + 1000;
+    char *array = (char *)gmalloc(size * sizeof(char *));
+    char *curr;
     for (int count = 0; count < num; count++) {
-        char *element = new char[element_size];
+        char *element = (char *) gmalloc((size_t)element_size);
         memcpy(element, initializer, element_size);
-        array->push_back(element);
+        curr = element + element_size * count;
+        memcpy(element, curr, element_size);
+        list->length++;
     }
-    list->list = reinterpret_cast<char *>(array);
+    list->list = array;
 }
 
 extern "C" void getElement(struct List *list, int index, char *ret) {
-    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
-    int n = (int)current_list->size();
+    char *current_list = list->list;
+    int n = (int)list->length;
     if (index < 0 || index >= n) {
         fprintf(stderr, "Fatal Error: Index Out Of Bounds\n");
         exit(1);
     }
-    char *element = current_list->at(index);
+    char *element = NULL;
+    memcpy(element, current_list + sizeof(char *)*index, sizeof(char *));
     memcpy(ret, element, list->element_size);
 }
 
 extern "C" void addElement(struct List *list, char *element) {
-    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
-    char *copy = new char[list->element_size];
+    if (list->length == list->max_size) {
+        list->max_size *= 2;
+        char *new_list = (char *) gmalloc((size_t)list->max_size * sizeof(char *));
+        for (int i = 0; i < list->length; i++) {
+            memcpy(new_list + sizeof(char *)*i, list + sizeof(char *)*i, sizeof(char *));
+        }
+        list->list = new_list;
+    }
+    char *current_list = list->list;
+    char *copy = (char *)gmalloc((size_t)list->element_size);
     memcpy(copy, element, list->element_size);
+    memcpy(current_list + sizeof(char *)*list->length, copy, sizeof(char *));
     list->length++;
-    current_list->push_back(copy);
 }
 
 extern "C" void setElement(struct List *list, int index, char *element) {
-    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
-    int n = (int)current_list->size();
+    char *current_list = list->list;
+    int n = (int)list->length;
     if (index < 0 || index >= n) {
         fprintf(stderr, "Fatal Error: Index Out Of Bounds\n");
         exit(1);
     }
-    char *copy = new char[list->element_size];
+    char *copy = (char *)gmalloc((size_t)list->element_size);
     memcpy(copy, element, list->element_size);
-    current_list->at(index) = copy;
+    memcpy(current_list + sizeof(char *)*index, copy, sizeof(char *));
 }
 
 extern "C" void popElement(struct List *list) {
-    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
-    int n = (int)current_list->size();
+    char *current_list = list->list;
+    int n = (int)list->length;
     if (n == 0) {
         fprintf(stderr, "Fatal Error: Pop from empty list\n");
         exit(1);
     }
-    current_list->pop_back(); /* Let the memory leak? Will do garbage collection eventually */
     list->length--;
+    memcpy(current_list + sizeof(char *)*list->length, (char *)NULL, sizeof(char *)); /* Let the memory leak? Will do garbage collection eventually */
 }
 
 
 extern "C" int lenlist(struct List *list) {
-    std::vector<char *>* current_list = reinterpret_cast<std::vector<char *>*>(list->list);
-    return (int)current_list->size();
+    return (int)list->length;
 }
 
 

@@ -2,6 +2,7 @@
 #define DATA_STRUCTURES_H
 	struct List {
 		int length;
+		int max_size;
 		int element_size;
 		char *list;
 	};
