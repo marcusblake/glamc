@@ -1,10 +1,9 @@
 
-func main() int {
+func main() {
     str := read("test.txt");
     stuff := split(str, '\n');
     println(len(stuff));
     for (str in stuff) {
         println(str);
     }
-    return 0;
 }

@@ -1,5 +1,5 @@
-func fib(int n) int {
-    list<int> lst = [0, 1];
+func fib(n: int) int {
+    lst := [0, 1];
     i := 2;
     while (i <= n) {
         append(lst, lst[i-1] + lst[i-2]);
@@ -11,13 +11,13 @@ func fib(int n) int {
 
 func main() {
     id := 0;
-    list<int> fibs;
+    var fibs list<int>;
     while (id <= 20) {
         append(fibs, fib(id));
         id = id + 1;
     }
 
     for (num in fibs) {
-        printi(num);
+        println(num);
     }
 }

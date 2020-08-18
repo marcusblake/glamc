@@ -56,7 +56,7 @@ let translate (globals, functions, _) =
   *)
   let _ =
     ignore(L.struct_set_body string_t [| i32_t ; L.pointer_type i8_t |] false);
-    L.struct_set_body list_t   [| i32_t ; i32_t; i32_t ; L.pointer_type (L.pointer_type i8_t) |] false 
+    L.struct_set_body list_t   [| i32_t ; i32_t; i32_t ; L.pointer_type i8_t |] false 
   in
 
   (* Return the LLVM type for a MicroC type *)
@@ -294,14 +294,14 @@ let translate (globals, functions, _) =
         let llvlen = L.const_int i32_t len in (* llvm const of length *)
         let llvty = (ltype_of_typ ty) in (* type of list elements *)
         let llvlst = List.map (build_expr table builder) lst in
-        let strct = L.const_named_struct list_t [| L.const_int i32_t 0; L.const_int i32_t 0; L.const_pointer_null i8_t |] in 
+        let strct = L.const_named_struct list_t [| L.const_int i32_t 0; L.const_int i32_t 0; L.const_int i32_t 0; L.const_pointer_null i8_t |] in 
         let global = L.define_global "lst" strct the_module in
         let add_to_lst a = let generic = L.build_bitcast a (L.pointer_type i8_t) "" builder in
           L.build_call addElement [| global; generic |] "" builder
         in
         let _ = 
           if is_iterable ty then (
-            let ptr = L.build_load (L.build_struct_gep global 2 "" builder) "" builder in
+            let ptr = L.build_load (L.build_struct_gep global 3 "" builder) "" builder in
             ignore(L.build_call initList [| global; L.size_of llvty; L.const_int i32_t 0; ptr |] "" builder);
             ignore(List.map add_to_lst llvlst)
           ) else (
@@ -611,7 +611,7 @@ let translate (globals, functions, _) =
           begin match ty with
           | String -> L.build_call initString [|var; gep_str empty_initialize 0|] "" builder
           | List el_ty -> 
-            let ptr = L.build_load (L.build_struct_gep var 2 "" builder) "" builder in
+            let ptr = L.build_load (L.build_struct_gep var 3 "" builder) "" builder in
             L.build_call initList [| var; L.size_of (ltype_of_typ el_ty); L.const_int i32_t 0; ptr |] "" builder
           | _ -> L.build_store (initialized_value ty) var builder
           end

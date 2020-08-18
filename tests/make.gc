@@ -1,6 +1,19 @@
 func main() {
-    var a list<bool> = make(bool, 10000, true);
-    for (id in a) {
-        println(id);
+    var a list<bool> = make(bool, 10, true);
+
+    for (counter in 1...10000) {
+        append(a, false);
     }
+
+    falseCount := 0;
+    trueCount := 0;
+    for (id in a) {
+        if (id) {
+            trueCount += 1;
+        } else {
+            falseCount += 1;
+        }
+    }
+    println(trueCount);
+    println(falseCount);
 }

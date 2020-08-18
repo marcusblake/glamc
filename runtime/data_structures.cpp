@@ -41,7 +41,6 @@ extern "C" bool compare_string(struct String *l, struct String *r, bool op) {
         return ans == 0;
     }
     return ans != 0;
-    
 }
 
 extern "C" void prints(struct String *str) {
@@ -49,22 +48,22 @@ extern "C" void prints(struct String *str) {
 }
 
 extern "C" void initList(struct List *list, int element_size, int num, char *elements) {
+    // fprintf(stderr, "hi initList\n");
     list->length = 0;
     list->element_size = element_size;
     int max_size = num + 1000; // set a buffer for array
     list->max_size = max_size;
-    char *array = (char *) gmalloc((size_t)max_size * sizeof(char *));
+    char *array = (char *) gmalloc((size_t)max_size * element_size);
     char *curr_element;
     char *curr_array;
     for (int count = 0; count < num; count++) {
-        char *element = (char *) gmalloc((size_t)element_size);
         curr_element = elements + element_size * count;
-        memcpy(element, curr_element, element_size);
-        curr_array = array + sizeof(char *) * count;
-        memcpy(curr_array, elements, sizeof(char *));
+        curr_array = array + element_size * count;
+        memcpy(curr_array, curr_element, element_size);
         list->length++;
     }
     list->list = array;
+    // fprintf(stderr, "bye initList\n");
 }
 
 extern "C" void subSequence(struct List *list, int start, int end, struct List *newList) {
@@ -77,47 +76,49 @@ extern "C" void subSequence(struct List *list, int start, int end, struct List *
 }
 
 extern "C" void make(struct List *list, int element_size, int num, char *initializer) {
+    // fprintf(stderr, "start");
     list->length = 0;
     list->element_size = element_size;
     size_t size = num + 1000;
-    char *array = (char *)gmalloc(size * sizeof(char *));
+    char *array = (char *) gmalloc(size * sizeof(char *));
     char *curr;
     for (int count = 0; count < num; count++) {
-        char *element = (char *) gmalloc((size_t)element_size);
-        memcpy(element, initializer, element_size);
-        curr = element + element_size * count;
-        memcpy(element, curr, element_size);
+        curr = array + element_size * count;
+        memcpy(curr, initializer, element_size);
         list->length++;
     }
+    // fprintf(stderr, "stuff");
     list->list = array;
 }
 
 extern "C" void getElement(struct List *list, int index, char *ret) {
+    // fprintf(stderr, "hi getElement\n");
     char *current_list = list->list;
     int n = (int)list->length;
     if (index < 0 || index >= n) {
         fprintf(stderr, "Fatal Error: Index Out Of Bounds\n");
         exit(1);
     }
-    char *element = NULL;
-    memcpy(element, current_list + sizeof(char *)*index, sizeof(char *));
+    char *element = current_list + list->element_size*index;
     memcpy(ret, element, list->element_size);
+    // fprintf(stderr, "bye getElement\n");
 }
 
 extern "C" void addElement(struct List *list, char *element) {
+    // fprintf(stderr, "hi addElement\n");
+    char *current_list = list->list;
     if (list->length == list->max_size) {
         list->max_size *= 2;
-        char *new_list = (char *) gmalloc((size_t)list->max_size * sizeof(char *));
-        for (int i = 0; i < list->length; i++) {
-            memcpy(new_list + sizeof(char *)*i, list + sizeof(char *)*i, sizeof(char *));
-        }
+        char *new_list = (char *) gmalloc(list->max_size * list->element_size);
+        memcpy(new_list, current_list, list->element_size * list->length);
         list->list = new_list;
+        current_list = new_list;
     }
-    char *current_list = list->list;
-    char *copy = (char *)gmalloc((size_t)list->element_size);
-    memcpy(copy, element, list->element_size);
-    memcpy(current_list + sizeof(char *)*list->length, copy, sizeof(char *));
+    
+    char *index = current_list + list->element_size*list->length;
+    memcpy(index, element, list->element_size);
     list->length++;
+    // fprintf(stderr, "bye addElement\n");
 }
 
 extern "C" void setElement(struct List *list, int index, char *element) {
@@ -127,9 +128,8 @@ extern "C" void setElement(struct List *list, int index, char *element) {
         fprintf(stderr, "Fatal Error: Index Out Of Bounds\n");
         exit(1);
     }
-    char *copy = (char *)gmalloc((size_t)list->element_size);
-    memcpy(copy, element, list->element_size);
-    memcpy(current_list + sizeof(char *)*index, copy, sizeof(char *));
+    char *curr_element = current_list + list->element_size * index;
+    memcpy(curr_element, element, list->element_size);
 }
 
 extern "C" void popElement(struct List *list) {
@@ -140,7 +140,8 @@ extern "C" void popElement(struct List *list) {
         exit(1);
     }
     list->length--;
-    memcpy(current_list + sizeof(char *)*list->length, (char *)NULL, sizeof(char *)); /* Let the memory leak? Will do garbage collection eventually */
+    char *index = current_list + list->element_size * list->length;
+    memset(index, 0, list->element_size); /* Let the memory leak? Will do garbage collection eventually */
 }
 
 
