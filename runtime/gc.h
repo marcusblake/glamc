@@ -1,18 +1,21 @@
 #ifndef GC_H
 #define GC_H
-#include <unordered_set>
+#include <unordered_map>
+#include <vector>
 #include <stdio.h>
+#include <stdint.h>
 
-class HeapNodes {
-    std::unordered_set<void *> pointers;
-};
+unsigned long MEMORY_LIMIT = 1024;
+unsigned long CURRENT_MEMORY;
+
+void *stack_bottom;
+std::unordered_map<uintptr_t, size_t> pointers;
 
 extern "C" void gcInit(void *bottom);
-extern "C" void *gmalloc(size_t size);
-extern "C" void gfree(void *pointer);
-extern "C" void crawl_stack();
-extern "C" void mark();
-extern "C" void sweep();
-extern "C" void depth_first_search();
-extern "C" void gcStop();
+void *gmalloc(size_t size);
+void gfree(void *pointer);
+void collect();
+std::vector<int> crawl_memory(void *bottom, void *top);
+void depth_first_search();
+void gcStop();
 #endif
