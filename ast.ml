@@ -1,16 +1,41 @@
 (* The following defines the following operations +, -, *, / , && , ||, ==, !=, <, >, <=, >= *)
-type op = Add | Sub | Mult | Div | And | Or | Equal | Neq | Less | Greater | Leq | Geq | Mod
+type op =
+  | Add
+  | Sub
+  | Mult
+  | Div
+  | And
+  | Or
+  | Equal
+  | Neq
+  | Less
+  | Greater
+  | Leq
+  | Geq
+  | Mod
 
 type uop = Neg | Not
 
-type ty = AnyType | Type of ty | Void | Int | Bool | Float | Char | String | Struct of string | List of ty | Function of (ty list * ty)
+type ty =
+  | AnyType
+  | Type of ty
+  | Void
+  | Int
+  | Bool
+  | Float
+  | Char
+  | String
+  | Struct of string
+  | List of ty
+  | Function of (ty list * ty)
 
 type bind = ty * string
 
-(* An expression is something that computes and returns a value *) 
-type anon_decl = (string * expr)
-and expr = 
-  IntLit of int
+(* An expression is something that computes and returns a value *)
+type anon_decl = string * expr
+
+and expr =
+  | IntLit of int
   | BoolLit of bool
   | FloatLit of float
   | CharLit of char
@@ -26,9 +51,11 @@ and expr =
   | SeqAccess of expr * expr
   | SubSeq of expr * expr * expr
   | StructCall of string * string * expr list (* name of identifier along with function call and list of arguments *)
-  | StructAccess of string * string (* name of identifier and name of variable being accessed *)
+  | StructAccess of string * string
+
+(* name of identifier and name of variable being accessed *)
 and stmt =
-  Block of stmt list
+  | Block of stmt list
   | Expr of expr
   | Declare of bind
   | Explicit of bind * expr
@@ -42,12 +69,13 @@ and stmt =
   | Range of string * expr * expr * stmt
   | While of expr * stmt
   | Return of expr
+
 and func_def = {
-  func_name: string;
-  parameters: bind list;
-  return_type: ty;
-  body: stmt;
-  heap_vars: string list;
+  func_name : string;
+  parameters : bind list;
+  return_type : ty;
+  body : stmt;
+  heap_vars : string list;
 }
 
 (* A struct has a name, data fields, and functions *)
@@ -63,20 +91,16 @@ and func_def = {
   }
 *)
 type struct_def = {
-  struct_name: string;
-  fields: bind list;
-  methods: func_def list;
+  struct_name : string;
+  fields : bind list;
+  methods : func_def list;
 }
 
 (* Our program consists of global variables, funtion definitions, and struct definitions *)
 type program = bind list * func_def list * struct_def list
 
+let fir = function a, _, _ -> a
 
-let fir = function
-  | (a,_,_) -> a
+let sec = function _, a, _ -> a
 
-let sec = function
-  | (_,a,_) -> a
-
-let third = function
-  | (_,_,a) -> a
+let third = function _, _, a -> a

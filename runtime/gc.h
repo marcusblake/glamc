@@ -5,11 +5,13 @@
 #include <stdio.h>
 #include <stdint.h>
 
-unsigned long MEMORY_LIMIT = 1024;
-unsigned long CURRENT_MEMORY;
-
-void *stack_bottom;
-std::unordered_map<uintptr_t, size_t> pointers;
+class GCUtil {
+    public:
+        static unsigned long MEMORY_LIMIT;
+        static unsigned long CURRENT_MEMORY;
+        static void *stack_bottom;
+        static std::unordered_map<uintptr_t, size_t> pointers;
+};
 
 extern "C" void gcInit(void *bottom);
 void *gmalloc(size_t size);
