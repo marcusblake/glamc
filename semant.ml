@@ -170,7 +170,7 @@ let check (globals, functions, structs) =
             in
             (ty, SBinop ((t1, lhs'), op, (t2, rhs')))
           else raise (IllegalBinOp (Printf.sprintf "Illegal operation"))
-      | Unop (op, e) as ex ->
+      | Unop (op, e) as ex -> (
           let t, e' = check_expr table e in
           let ty =
             match op with
@@ -181,12 +181,11 @@ let check (globals, functions, structs) =
                   (IllegalUnOp
                      ( "Illegal unary operator " ^ string_of_uop op
                      ^ string_of_typ t ^ " in " ^ string_of_expr ex ))
-          in 
-          begin match e' with
-          | SIntLit integer ->  (ty, SIntLit(-integer))
-          | SBoolLit boolean -> (ty, SBoolLit(not boolean))
-          | _ -> (ty, SUop (op, (t, e')))
-          end
+          in
+          match e' with
+          | SIntLit integer -> (ty, SIntLit (-integer))
+          | SBoolLit boolean -> (ty, SBoolLit (not boolean))
+          | _ -> (ty, SUop (op, (t, e'))) )
       | Call (name, arguments) as call ->
           let name, parameters, return_type =
             if func_exists function_decls name then
@@ -346,7 +345,9 @@ let check (globals, functions, structs) =
           | List _, Int, Int ->
               (ty_l, SSubSeq ((ty_l, l'), (ty_s, s'), (ty_e, e')))
           | _, _, _ -> raise (InvalidSublist (string_of_expr ex)) )
-      | _ -> ignore(Printf.printf "semant expr"); raise Unimplemented
+      | _ ->
+          ignore (Printf.printf "semant expr");
+          raise Unimplemented
     and check_bool_expr table expr =
       let ty, e' = check_expr table expr in
       (* type of this expression must be a boolean *)
@@ -452,7 +453,9 @@ let check (globals, functions, structs) =
           | _, _ -> raise Invalid )
       | While (e, stmt) ->
           (SWhile (check_bool_expr table e, fst (check_stmt table stmt)), table)
-      | _ -> ignore(Printf.printf "semant stmt"); raise Unimplemented
+      | _ ->
+          ignore (Printf.printf "semant stmt");
+          raise Unimplemented
       (* Ignore for now *)
     in
 

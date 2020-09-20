@@ -38,14 +38,12 @@ let translate (globals, functions, structs) =
   and void_t = L.void_type context
   and string_t = L.named_struct_type context "string"
   and list_t = L.named_struct_type context "list"
-  and structs_t = List.fold_left 
-    (
-      fun map struct_ -> 
+  and structs_t =
+    List.fold_left
+      (fun map struct_ ->
         let name = struct_.sstruct_name in
-        StringMap.add name (L.named_struct_type context name) map
-    )
-    StringMap.empty 
-    structs
+        StringMap.add name (L.named_struct_type context name) map)
+      StringMap.empty structs
   in
 
   (* Return the LLVM type for a GlamC type *)
@@ -65,13 +63,13 @@ let translate (globals, functions, structs) =
     | _ -> raise Invalid
   in
 
-
   let lltype_of_struct_types = function
     | A.String -> string_t
     | A.List _ -> list_t
     | A.Struct name -> StringMap.find name structs_t
     | _ -> raise Invalid
   in
+
   (*
       struct String {
         int length;
@@ -86,17 +84,19 @@ let translate (globals, functions, structs) =
   *)
   let _ =
     ignore (L.struct_set_body string_t [| i32_t; L.pointer_type i8_t |] false);
-    ignore(L.struct_set_body list_t [| i32_t; i32_t; i32_t; L.pointer_type i8_t |] false);
-    List.iter 
-    (
-      fun struct_ ->
+    ignore
+      (L.struct_set_body list_t
+         [| i32_t; i32_t; i32_t; L.pointer_type i8_t |]
+         false);
+    List.iter
+      (fun struct_ ->
         let struct_name = struct_.sstruct_name in
         let llv_struct_type = StringMap.find struct_name structs_t in
         let get_property (ty, _) = lltype_of_type ty in
         let properties = List.map get_property struct_.sfields in
-        ignore (L.struct_set_body llv_struct_type (Array.of_list properties) false);
-    )
-    structs
+        ignore
+          (L.struct_set_body llv_struct_type (Array.of_list properties) false))
+      structs
   in
 
   let gmalloc_t = L.function_type (L.pointer_type i8_t) [| i64_t |] in
@@ -229,7 +229,8 @@ let translate (globals, functions, structs) =
     let function_decl map fdecl =
       let name = fdecl.sfunc_name
       and formal_types =
-        Array.of_list (List.map (fun (ty, _) -> lltype_of_type ty) fdecl.sparameters)
+        Array.of_list
+          (List.map (fun (ty, _) -> lltype_of_type ty) fdecl.sparameters)
       in
       let llvalue =
         L.function_type (lltype_of_type fdecl.sreturn_type) formal_types
@@ -242,35 +243,48 @@ let translate (globals, functions, structs) =
   let function_decls = ref function_decls in
 
   (* Map struct to functions <struct_name <struct_function, (llvalue, function_definition>>*)
-  let struct_functions : (L.llvalue * sfunc_def) StringMap.t StringMap.t = 
+  let struct_functions : (L.llvalue * sfunc_def) StringMap.t StringMap.t =
     let get_functions map struct_ =
       let struct_name = struct_.sstruct_name in
       let struct_function_decl map fdecl =
         let name = fdecl.sfunc_name in
         (* Inlcude struct in function parameters *)
-        let func_parameters = [(A.Struct(struct_name), "this")] @ fdecl.sparameters in
+        let func_parameters =
+          [ (A.Struct struct_name, "this") ] @ fdecl.sparameters
+        in
         let formal_types =
-          Array.of_list (List.map (fun (ty, _) -> lltype_of_type ty) func_parameters)
+          Array.of_list
+            (List.map (fun (ty, _) -> lltype_of_type ty) func_parameters)
         in
         let llvalue =
           L.function_type (lltype_of_type fdecl.sreturn_type) formal_types
         in
         let func_name = struct_name ^ "_" ^ name in
-        let tuple = (L.define_function (struct_name ^ "_" ^ name) llvalue the_module, fdecl) in
+        let tuple =
+          ( L.define_function (struct_name ^ "_" ^ name) llvalue the_module,
+            fdecl )
+        in
         function_decls := StringMap.add func_name tuple !function_decls;
         StringMap.add name tuple map
       in
-      StringMap.add struct_name (List.fold_left struct_function_decl StringMap.empty struct_.smethods) map
+      StringMap.add struct_name
+        (List.fold_left struct_function_decl StringMap.empty struct_.smethods)
+        map
     in
     List.fold_left get_functions StringMap.empty structs
   in
 
-
   (* Map the struct field to the index within struct so that we can access fields <struct_name, <field_name, index>>*)
   let struct_fields : (int * Ast.ty) StringMap.t StringMap.t =
     let get_fields map struct_ =
-      let indices = List.mapi (fun i (ty, name) -> (name, ty, i)) struct_.sfields in
-      let property_map = List.fold_left (fun map (name, ty, index) -> StringMap.add name (index, ty) map) StringMap.empty indices in
+      let indices =
+        List.mapi (fun i (ty, name) -> (name, ty, i)) struct_.sfields
+      in
+      let property_map =
+        List.fold_left
+          (fun map (name, ty, index) -> StringMap.add name (index, ty) map)
+          StringMap.empty indices
+      in
       StringMap.add struct_.sstruct_name property_map map
     in
     List.fold_left get_fields StringMap.empty structs
@@ -300,14 +314,18 @@ let translate (globals, functions, structs) =
     | A.List _ ->
         L.const_named_struct list_t
           [|
-            L.const_int i32_t 0;
-            L.const_int i32_t 0;
-            L.const_pointer_null i8_t;
+            L.const_int i32_t 0; L.const_int i32_t 0; L.const_pointer_null i8_t;
           |]
-    | A.Struct name -> 
-        let struct_ = List.find (fun struct_ -> struct_.sstruct_name = name) structs in
-        let initial_values = List.map (fun (ty, _) -> initialized_value ty) struct_.sfields in
-        L.const_named_struct (StringMap.find name structs_t) (Array.of_list initial_values)
+    | A.Struct name ->
+        let struct_ =
+          List.find (fun struct_ -> struct_.sstruct_name = name) structs
+        in
+        let initial_values =
+          List.map (fun (ty, _) -> initialized_value ty) struct_.sfields
+        in
+        L.const_named_struct
+          (StringMap.find name structs_t)
+          (Array.of_list initial_values)
     | _ -> raise Unimplemented
   in
 
@@ -334,9 +352,7 @@ let translate (globals, functions, structs) =
             let llvm_type = lltype_of_type el_ty in
             ignore
               (L.build_call initList
-                 [|
-                   var; L.size_of llvm_type; L.const_int i32_t 0; ptr;
-                 |]
+                 [| var; L.size_of llvm_type; L.const_int i32_t 0; ptr |]
                  "" builder)
         | _ -> ()
       in
@@ -388,51 +404,85 @@ let translate (globals, functions, structs) =
       | SFloatLit float_literal -> L.const_float float_t float_literal
       | SCharLit char_literal -> L.const_int i8_t (int_of_char char_literal)
       | SStringLit string_literal ->
-          let strptr = L.build_global_stringptr string_literal "string_const" builder in
+          let strptr =
+            L.build_global_stringptr string_literal "string_const" builder
+          in
           (* Allocate on heap*)
-          let pointer = L.build_call gmalloc [| L.size_of string_t |] "alloc" builder in
-          let string_struct = L.build_bitcast pointer (L.pointer_type string_t) "string" builder in
-          ignore (L.build_call initString [| string_struct; strptr |] "" builder);
+          let pointer =
+            L.build_call gmalloc [| L.size_of string_t |] "alloc" builder
+          in
+          let string_struct =
+            L.build_bitcast pointer (L.pointer_type string_t) "string" builder
+          in
+          ignore
+            (L.build_call initString [| string_struct; strptr |] "" builder);
           string_struct
       | SSeq seq ->
           let llvm_type_list = List.map (build_expr table builder) seq in
-          let seq_elem_type = 
-            match type_ with
-            | List ty -> ty
-            | _ -> raise Invalid
+          let seq_elem_type =
+            match type_ with List ty -> ty | _ -> raise Invalid
           in
 
           let llvm_seq_elem_type = lltype_of_type seq_elem_type in
           let llvm_list_length = L.const_int i32_t (List.length seq) in
-          
+
           (* Dynamically allocate memory on heap *)
-          let pointer = L.build_call gmalloc [| L.size_of list_t |] "alloc" builder in
-          let list_struct = L.build_bitcast pointer (L.pointer_type list_t) "list" builder in
-          
+          let pointer =
+            L.build_call gmalloc [| L.size_of list_t |] "alloc" builder
+          in
+          let list_struct =
+            L.build_bitcast pointer (L.pointer_type list_t) "list" builder
+          in
+
           let _ =
             if is_pointer_type seq_elem_type then (
-              let temp_store = L.build_alloca llvm_seq_elem_type "temp" builder in
+              let temp_store =
+                L.build_alloca llvm_seq_elem_type "temp" builder
+              in
               let append_to_list element =
                 ignore (L.build_store element temp_store builder);
-                let generic_element = L.build_bitcast temp_store (L.pointer_type i8_t) "generic" builder in
-                ignore (L.build_call addElement [|list_struct; generic_element|] "" builder);
+                let generic_element =
+                  L.build_bitcast temp_store (L.pointer_type i8_t) "generic"
+                    builder
+                in
+                ignore
+                  (L.build_call addElement
+                     [| list_struct; generic_element |]
+                     "" builder)
               in
               let pointer_size = L.size_of llvm_seq_elem_type in
               let zero_length = L.const_int i32_t 0 in
-              ignore (L.build_call initList [|list_struct; pointer_size; zero_length; pointer|] "" builder);
-              List.iter append_to_list llvm_type_list
-            ) else (
-              let const_array = L.const_array llvm_seq_elem_type (Array.of_list llvm_type_list) in
-              let const_global_array = L.define_global "global_temp" const_array the_module in
-              let array_pointer = L.build_bitcast const_global_array (L.pointer_type i8_t) "buffer" builder in
+              ignore
+                (L.build_call initList
+                   [| list_struct; pointer_size; zero_length; pointer |]
+                   "" builder);
+              List.iter append_to_list llvm_type_list )
+            else
+              let const_array =
+                L.const_array llvm_seq_elem_type (Array.of_list llvm_type_list)
+              in
+              let const_global_array =
+                L.define_global "global_temp" const_array the_module
+              in
+              let array_pointer =
+                L.build_bitcast const_global_array (L.pointer_type i8_t)
+                  "buffer" builder
+              in
               let llvm_seq_elem_size = L.size_of llvm_seq_elem_type in
-              ignore (L.build_call initList [| list_struct ;  llvm_seq_elem_size ; llvm_list_length; array_pointer |] "" builder);
-            )
+              ignore
+                (L.build_call initList
+                   [|
+                     list_struct;
+                     llvm_seq_elem_size;
+                     llvm_list_length;
+                     array_pointer;
+                   |]
+                   "" builder)
           in
           list_struct
-      | SId s -> 
-        let llvm_value, _ = lookup_identifier s table builder in
-        L.build_load llvm_value s builder
+      | SId s ->
+          let llvm_value, _ = lookup_identifier s table builder in
+          L.build_load llvm_value s builder
       | SBinop (e1, op, e2) -> (
           let e1' = build_expr table builder e1
           and e2' = build_expr table builder e2 in
@@ -453,8 +503,13 @@ let translate (globals, functions, structs) =
           match op with
           | A.Add ->
               if is_str then (
-                let pointer = L.build_call gmalloc [| L.size_of string_t |] "alloc" builder in
-                let new_string = L.build_bitcast pointer (lltype_of_type A.String) "string" builder in
+                let pointer =
+                  L.build_call gmalloc [| L.size_of string_t |] "alloc" builder
+                in
+                let new_string =
+                  L.build_bitcast pointer (lltype_of_type A.String) "string"
+                    builder
+                in
                 ignore
                   (L.build_call concat [| e1'; e2'; new_string |] "" builder);
                 new_string )
@@ -485,18 +540,18 @@ let translate (globals, functions, structs) =
               (get_compare L.Icmp.Sgt L.Fcmp.Ogt ty) e1' e2' "tmp" builder
           | A.Geq ->
               (get_compare L.Icmp.Sge L.Fcmp.Oge ty) e1' e2' "tmp" builder )
-      | SStructCall (struct_, func_name, arguments) -> 
-          let (llv, ty) = lookup_identifier struct_ table builder in
-          let struct_name = 
-            match ty with
-            | A.Struct name -> name
-            | _ -> raise Invalid
+      | SStructCall (struct_, func_name, arguments) ->
+          let llv, ty = lookup_identifier struct_ table builder in
+          let struct_name =
+            match ty with A.Struct name -> name | _ -> raise Invalid
           in
-          let my_functions = (StringMap.find struct_name struct_functions) in
+          let my_functions = StringMap.find struct_name struct_functions in
           let function_def = fst (StringMap.find func_name my_functions) in
           let llargs = List.map (build_expr table builder) arguments in
           let result = if type_ = Void then "" else func_name ^ "_result" in
-          L.build_call function_def (Array.of_list ([llv] @ llargs)) result builder
+          L.build_call function_def
+            (Array.of_list ([ llv ] @ llargs))
+            result builder
       | SCall (f, args) -> (
           try
             (* try to see if it's a built in function first *)
@@ -505,7 +560,9 @@ let translate (globals, functions, structs) =
             let fdef =
               try fst (StringMap.find f !function_decls)
               with Not_found ->
-                L.build_load (fst (lookup_identifier f table builder)) "" builder
+                L.build_load
+                  (fst (lookup_identifier f table builder))
+                  "" builder
             in
             let llargs =
               (* WHY IS THIS REVERSED???? *)
@@ -519,9 +576,11 @@ let translate (globals, functions, structs) =
           let iden_ty, _ = seq in
           match iden_ty with
           | A.String ->
-              L.build_call getChar [| seq_ref ; index_llval |] "idx" builder
+              L.build_call getChar [| seq_ref; index_llval |] "idx" builder
           | A.List ty ->
-              let temp = L.build_alloca (lltype_of_type ty) "tmp_store" builder in
+              let temp =
+                L.build_alloca (lltype_of_type ty) "tmp_store" builder
+              in
               let generic_ptr =
                 L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder
               in
@@ -532,15 +591,15 @@ let translate (globals, functions, structs) =
               L.build_load temp "element" builder
           | _ -> raise Invalid )
       | SStructAccess (struct_, field_name) ->
-          let (llv, ty) = lookup_identifier struct_ table builder in
-          let struct_name = 
-            match ty with
-            | Struct name -> name
-            | _ -> raise Invalid
+          let llv, ty = lookup_identifier struct_ table builder in
+          let struct_name =
+            match ty with Struct name -> name | _ -> raise Invalid
           in
           let my_properties = StringMap.find struct_name struct_fields in
-          let field_index, _ =  StringMap.find field_name my_properties in
-          let field_ptr = L.build_struct_gep llv field_index field_name builder in
+          let field_index, _ = StringMap.find field_name my_properties in
+          let field_ptr =
+            L.build_struct_gep llv field_index field_name builder
+          in
           L.build_load field_ptr field_name builder
       (* | StructAssign -> raise Unimplemented *)
       | SFunctionLit lambda ->
@@ -567,15 +626,24 @@ let translate (globals, functions, structs) =
           build_function_body lookup_identifier lambda;
           llfunc
       | SSubSeq (source_list, seq_start, seq_end) ->
-          let llvm_list  = build_expr table builder source_list in
+          let llvm_list = build_expr table builder source_list in
           let llvm_start = build_expr table builder seq_start in
           let llvm_end = build_expr table builder seq_end in
           (* Dynamically allocate memory on heap *)
-          let pointer = L.build_call gmalloc [| L.size_of list_t |] "alloc" builder in
-          let new_list = L.build_bitcast pointer (L.pointer_type list_t) "new_list" builder in
-          ignore (L.build_call subseq [| llvm_list ; llvm_start; llvm_end; new_list |] "" builder);
+          let pointer =
+            L.build_call gmalloc [| L.size_of list_t |] "alloc" builder
+          in
+          let new_list =
+            L.build_bitcast pointer (L.pointer_type list_t) "new_list" builder
+          in
+          ignore
+            (L.build_call subseq
+               [| llvm_list; llvm_start; llvm_end; new_list |]
+               "" builder);
           new_list
-      | _ -> ignore(Printf.printf "irgen expr"); raise Unimplemented
+      | _ ->
+          ignore (Printf.printf "irgen expr");
+          raise Unimplemented
     and check_built_in name e table builder =
       let args =
         match name with
@@ -629,11 +697,17 @@ let translate (globals, functions, structs) =
           let element_size = L.size_of llvm_type in
           let n = List.nth args 0 in
           let element = List.nth args 1 in
-          let pointer = L.build_call gmalloc [| L.size_of list_t |] "alloc" builder in
-          let result = L.build_bitcast pointer (L.pointer_type list_t) "result" builder in
+          let pointer =
+            L.build_call gmalloc [| L.size_of list_t |] "alloc" builder
+          in
+          let result =
+            L.build_bitcast pointer (L.pointer_type list_t) "result" builder
+          in
           let temp = L.build_alloca (lltype_of_type ty) "" builder in
           ignore (L.build_store element temp builder);
-          let generic = L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder in
+          let generic =
+            L.build_bitcast temp (L.pointer_type i8_t) "buff_ptr" builder
+          in
           ignore
             (L.build_call make_list
                [| result; element_size; n; generic |]
@@ -664,15 +738,13 @@ let translate (globals, functions, structs) =
             in
             get_newlist_type (fst (List.nth e 1))
           in
-          
+
           let llvm_newtype = lltype_of_type new_ty in
           (* Initialize a new list *)
           let var = L.build_call gmalloc [| L.size_of list_t |] name builder in
           ignore
             (L.build_call initList
-               [|
-                 var; L.size_of llvm_newtype; L.const_int i32_t 0; var;
-               |]
+               [| var; L.size_of llvm_newtype; L.const_int i32_t 0; var |]
                "" builder);
 
           (* Temporary for current list element *)
@@ -746,24 +818,43 @@ let translate (globals, functions, structs) =
           var
       | "read" ->
           let llvm_type = lltype_of_type A.String in
-          let buffer = L.build_call gmalloc [| L.size_of string_t |] "buffer" builder in
-          let string_struct = L.build_bitcast buffer llvm_type "string_struct" builder in
+          let buffer =
+            L.build_call gmalloc [| L.size_of string_t |] "buffer" builder
+          in
+          let string_struct =
+            L.build_bitcast buffer llvm_type "string_struct" builder
+          in
           ignore
-            (L.build_call read (Array.of_list (args @ [ string_struct ])) "" builder);
+            (L.build_call read
+               (Array.of_list (args @ [ string_struct ]))
+               "" builder);
           string_struct
       | "write" -> L.build_call write (Array.of_list args) "" builder
       | "split" ->
-          let llvm_type = lltype_of_type (A.List(A.String)) in
-          let pointer = L.build_call gmalloc [| L.size_of list_t |] "pointer" builder in
-          let list_struct = L.build_bitcast pointer llvm_type "string_struct" builder in
+          let llvm_type = lltype_of_type (A.List A.String) in
+          let pointer =
+            L.build_call gmalloc [| L.size_of list_t |] "pointer" builder
+          in
+          let list_struct =
+            L.build_bitcast pointer llvm_type "string_struct" builder
+          in
           ignore
-            (L.build_call split (Array.of_list (args @ [ list_struct ])) "" builder);
+            (L.build_call split
+               (Array.of_list (args @ [ list_struct ]))
+               "" builder);
           list_struct
       | "join" ->
           let llvm_type = lltype_of_type A.String in
-          let buffer = L.build_call gmalloc [| L.size_of string_t |] "buffer" builder in
-          let string_struct = L.build_bitcast buffer llvm_type "string_struct" builder in
-          ignore (L.build_call join (Array.of_list (args @ [ string_struct ])) "" builder);
+          let buffer =
+            L.build_call gmalloc [| L.size_of string_t |] "buffer" builder
+          in
+          let string_struct =
+            L.build_bitcast buffer llvm_type "string_struct" builder
+          in
+          ignore
+            (L.build_call join
+               (Array.of_list (args @ [ string_struct ]))
+               "" builder);
           string_struct
       | _ -> raise Not_found
     in
@@ -795,12 +886,13 @@ let translate (globals, functions, structs) =
           (builder, table)
       | SDeclare (ty, name) ->
           let llvm_type = lltype_of_type ty in
-          let variable = 
-            if is_pointer_type ty then (
+          let variable =
+            if is_pointer_type ty then
               let struct_type = lltype_of_struct_types ty in
-              let pointer = L.build_call gmalloc [| L.size_of struct_type |] "" builder in
+              let pointer =
+                L.build_call gmalloc [| L.size_of struct_type |] "" builder
+              in
               L.build_bitcast pointer llvm_type "variable" builder
-            )
             else L.build_alloca llvm_type name builder
           in
           let _ =
@@ -813,10 +905,7 @@ let translate (globals, functions, structs) =
                 let llvm_type = lltype_of_type element_type in
                 L.build_call initList
                   [|
-                    variable;
-                    L.size_of llvm_type;
-                    L.const_int i32_t 0;
-                    variable;
+                    variable; L.size_of llvm_type; L.const_int i32_t 0; variable;
                   |]
                   "" builder
             | Struct _ -> variable (* Can call init function as some later *)
@@ -1100,7 +1189,9 @@ let translate (globals, functions, structs) =
                 L.build_ret e builder
           in
           (builder, table)
-      | _ -> ignore(Printf.printf "irgen stmt"); raise Unimplemented
+      | _ ->
+          ignore (Printf.printf "irgen stmt");
+          raise Unimplemented
     in
 
     let funcbuilder =
@@ -1112,35 +1203,37 @@ let translate (globals, functions, structs) =
 
     if fdecl.sreturn_type = Void then add_terminal funcbuilder L.build_ret_void
   in
-  
-  let build_struct struct_ = 
+
+  let build_struct struct_ =
     let struct_name = struct_.sstruct_name in
     let struct_type = A.Struct struct_name in
-    let struct_methods = 
-      List.map 
-      (
-        fun method_ -> 
-        {
-          sfunc_name = struct_name ^ "_" ^ method_.sfunc_name;
-          sparameters = [(struct_type, "this")] @ method_.sparameters;
-          sreturn_type = method_.sreturn_type;
-          sbody = method_.sbody;
-        }
-      ) 
-      struct_.smethods 
+    let struct_methods =
+      List.map
+        (fun method_ ->
+          {
+            sfunc_name = struct_name ^ "_" ^ method_.sfunc_name;
+            sparameters = [ (struct_type, "this") ] @ method_.sparameters;
+            sreturn_type = method_.sreturn_type;
+            sbody = method_.sbody;
+          })
+        struct_.smethods
     in
     let my_fields = StringMap.find struct_name struct_fields in
     let lookup_identifier name table builder =
       try St.lookup_identifier name table
-      with e -> 
+      with e ->
         let struct_, _ = St.lookup_identifier "this" table in
         let index, ty = StringMap.find name my_fields in
-        let llv = (L.build_struct_gep (L.build_load struct_ "" builder) index "" builder) in
+        let llv =
+          L.build_struct_gep (L.build_load struct_ "" builder) index "" builder
+        in
         (llv, ty)
     in
-    List.iter (build_function_body lookup_identifier) struct_methods;
+    List.iter (build_function_body lookup_identifier) struct_methods
   in
 
   List.iter build_struct structs;
-  List.iter (build_function_body (fun name table _ -> St.lookup_identifier name table)) functions;
+  List.iter
+    (build_function_body (fun name table _ -> St.lookup_identifier name table))
+    functions;
   the_module
