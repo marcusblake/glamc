@@ -5,6 +5,25 @@
 #include <string>
 #include <stdlib.h>
 
+extern "C" char *gmalloc(int size) {
+    if (GCUtil::CURRENT_MEMORY >= GCUtil::MEMORY_LIMIT) {
+        // collect();
+        GCUtil::MEMORY_LIMIT *= 2;
+    }
+    char *a = (char *)malloc(size);
+    if (a == NULL) {
+        fprintf(stderr, "Fatal Error: Bad Malloc!");
+        exit(1);
+    }
+    memset(a, 0, size);
+    GCUtil::CURRENT_MEMORY += size;
+    uintptr_t address = (uintptr_t)a;
+    // printf("Memory address %lu\n", address);
+    // printf("Current stuff %lu\n", GCUtil::CURRENT_MEMORY);
+    GCUtil::pointers[address] = size;
+    return a;
+}
+
 extern "C" void initString(struct String *str, char *elements) {
     int n = strlen(elements) + 1;
     str->elements = (char *)gmalloc((size_t)n);
@@ -152,15 +171,15 @@ extern "C" int lenlist(struct List *list) {
 
 extern "C" void split(struct String *str, char delimeter, struct List *list) {
     /* Initialize list */
-    initList(list, sizeof(struct String), 0, (char *)0);
-
+    initList(list, sizeof(struct String*), 0, (char *)0);
     std::string temp;
-    struct String newString;
+    struct String *newString;
     for (int index = 0; index < str->length; index++) {
+        newString = (struct String *)gmalloc(sizeof(struct String));
         char current = str->elements[index];
         if (current == delimeter) {
             char *c_string = const_cast<char*>(temp.c_str());
-            initString(&newString, c_string);
+            initString(newString, c_string);
             addElement(list, (char *)&newString);
             temp = "";
         } else {
@@ -169,8 +188,9 @@ extern "C" void split(struct String *str, char delimeter, struct List *list) {
     }
 
     if (temp != "") {
+        newString = (struct String *)gmalloc(sizeof(struct String));
         char *c_string = const_cast<char*>(temp.c_str());
-        initString(&newString, c_string);
+        initString(newString, c_string);
         addElement(list, (char *)&newString);
     }
 }
@@ -178,11 +198,11 @@ extern "C" void split(struct String *str, char delimeter, struct List *list) {
 
 extern "C" void join(struct List *list, char delimeter,  struct String *str) {
     std::string temp = "";
-    struct String my_string;
+    struct String *my_string;
     int n = list->length;
     for (int i = 0; i < n; i++) {
         getElement(list, i, (char *)&my_string);
-        temp.append(my_string.elements);
+        temp.append(my_string->elements);
         if (i != n-1) {
             temp.append(1, delimeter);
         }

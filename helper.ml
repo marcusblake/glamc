@@ -163,5 +163,11 @@ let struct_name type_ =
   | _ -> raise Invalid
   end
 
+let is_pointer_type type_ =
+  begin match type_ with
+  | String | List _ | Struct _ -> true
+  | _ -> false
+  end
+
 
   

@@ -1,0 +1,30 @@
+
+class Node {
+    var m_x int;
+    var m_y int;
+    var m_data string;
+
+    func init(x: int, y: int, data: string) {
+        m_x = x;
+        m_y = y;
+        m_data = data;
+    }
+}
+
+func main() {
+    var x Node;
+
+    x.init(2, -1, "hello world");
+
+    if (x.m_x != 2) {
+        println("m_x field not set properly");
+    }
+    
+    if (x.m_y != -1) {
+        println("m_y field not set properly");
+    }
+
+    if (x.m_data != "hello world") {
+        println("m_data field not set properly");
+    }
+}

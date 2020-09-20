@@ -41,7 +41,7 @@ open Ast
 %token FLOAT
 %token CHAR
 %token STRING
-%token STRUCT
+%token CLASS
 %token LIST
 %token RETURN
 %token COMMA
@@ -105,7 +105,7 @@ return_type:
   | type_       { $1 }
 
 struct_decl:
-  STRUCT ID LBRACE vardecls_semi func_decls RBRACE
+  CLASS ID LBRACE vardecls_semi func_decls RBRACE
   {
     {
       struct_name = $2;

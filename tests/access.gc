@@ -5,14 +5,10 @@ func main() {
     a[1] = [101, 102, 103, 104, 105];
     n := len(a);
     i := 0;
-    while (i < n) {
-        j := 0;
-        m := len(a[i]);
-        while (j < m) {
-            println(a[i][j]);
-            j += 1;
+
+    for (row in a) {
+        for (element in row) {
+            println(element);
         }
-        i += 1;
     }
-    
 }

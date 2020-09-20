@@ -91,13 +91,13 @@ rule token = parse
 | "false"  { BLIT(false) }
 | "list"   { LIST }
 | "var"    { VAR }
-| "struct" { STRUCT }
+| "class"  { CLASS }
 | "func"   { FUNC }
 | "->"     { ARROW }
 | "make"   { MAKE }
 | digit+ as lem  { LITERAL(int_of_string lem) }
 | letter (digit | letter | '_')* as lem { ID(lem) }
-| ''' (escaped_char | letter | digit| ' ' | '_' | '%' | '.') ''' as lem { CHARLIT(get_char lem) }
+| ''' (escaped_char | letter | digit | ' ' | '_' | '%' | '.') ''' as lem { CHARLIT(get_char lem) }
 | '"' (letter | digit | escaped_char | ' ' | '_' | '%' | '.')* '"' as lem { STRLIT(get_str lem) }
 | (digit+ '.' digit+ exponent?) | (digit+ exponent) | ('.' digit+ exponent?) as lem { FLOATLIT(float_of_string lem) }
 | eof { EOF }
@@ -154,7 +154,7 @@ and comment = parse
   | VAR -> "VAR"
   | BLIT(b)  -> Printf.sprintf "BLIT(%B)" b
   | LIST -> "LIST"
-  | STRUCT -> "STRUCT"
+  | CLASS -> "CLASS"
   | FUNC -> "FUNC"
   | STRING -> "STRING"
   | ARROW -> "ARROW"

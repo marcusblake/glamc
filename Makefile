@@ -26,6 +26,9 @@ parser: parser-driver
 
 parser-driver:
 	menhir --table parser.mly
+	if [ ! -f parser.messages ]; then \
+		menhir --list-errors parser.mly > parser.messages; \
+	fi;
 	menhir --compile-errors parser.messages parser.mly > parser_messages.ml
 
 semant:

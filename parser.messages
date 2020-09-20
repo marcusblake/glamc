@@ -1,6 +1,90 @@
+program: CLASS ID LBRACE FUNC ID LPAREN RPAREN LBRACE RBRACE WHILE
+##
+## Ends in an error in state: 215.
+##
+## func_decls -> func_decl . func_decls [ RBRACE ]
+##
+## The known suffix of the stack is as follows:
+## func_decl
+##
+
+<fdsfasdfa>
+
+program: CLASS ID LBRACE RBRACE WHILE
+##
+## Ends in an error in state: 222.
+##
+## decls -> struct_decl . decls [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## struct_decl
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: CLASS ID LBRACE VAR ID BOOL SEMI WHILE
+##
+## Ends in an error in state: 218.
+##
+## vardecls_semi -> vardecl SEMI . vardecls_semi [ RBRACE FUNC ]
+##
+## The known suffix of the stack is as follows:
+## vardecl SEMI
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: CLASS ID LBRACE VAR ID BOOL WHILE
+##
+## Ends in an error in state: 217.
+##
+## vardecls_semi -> vardecl . SEMI vardecls_semi [ RBRACE FUNC ]
+##
+## The known suffix of the stack is as follows:
+## vardecl
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: CLASS ID LBRACE WHILE
+##
+## Ends in an error in state: 211.
+##
+## struct_decl -> CLASS ID LBRACE . vardecls_semi func_decls RBRACE [ VAR FUNC EOF CLASS ]
+##
+## The known suffix of the stack is as follows:
+## CLASS ID LBRACE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: CLASS ID WHILE
+##
+## Ends in an error in state: 210.
+##
+## struct_decl -> CLASS ID . LBRACE vardecls_semi func_decls RBRACE [ VAR FUNC EOF CLASS ]
+##
+## The known suffix of the stack is as follows:
+## CLASS ID
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: CLASS WHILE
+##
+## Ends in an error in state: 209.
+##
+## struct_decl -> CLASS . ID LBRACE vardecls_semi func_decls RBRACE [ VAR FUNC EOF CLASS ]
+##
+## The known suffix of the stack is as follows:
+## CLASS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
 program: FUNC ID LPAREN ID COLON BOOL COMMA WHILE
 ##
-## Ends in an error in state: 38.
+## Ends in an error in state: 34.
 ##
 ## funcparam_comma -> funcparam COMMA . funcparam_comma [ RPAREN ]
 ##
@@ -12,7 +96,7 @@ program: FUNC ID LPAREN ID COLON BOOL COMMA WHILE
 
 program: FUNC ID LPAREN ID COLON BOOL WHILE
 ##
-## Ends in an error in state: 37.
+## Ends in an error in state: 33.
 ##
 ## funcparam_comma -> funcparam . [ RPAREN ]
 ## funcparam_comma -> funcparam . COMMA funcparam_comma [ RPAREN ]
@@ -25,7 +109,7 @@ program: FUNC ID LPAREN ID COLON BOOL WHILE
 
 program: FUNC ID LPAREN ID COLON WHILE
 ##
-## Ends in an error in state: 34.
+## Ends in an error in state: 30.
 ##
 ## funcparam -> ID COLON . type_ [ RPAREN COMMA ]
 ##
@@ -37,7 +121,7 @@ program: FUNC ID LPAREN ID COLON WHILE
 
 program: FUNC ID LPAREN ID WHILE
 ##
-## Ends in an error in state: 33.
+## Ends in an error in state: 29.
 ##
 ## funcparam -> ID . COLON type_ [ RPAREN COMMA ]
 ##
@@ -72,9 +156,9 @@ program: FUNC ID LPAREN RPAREN LBRACE FOR LPAREN ID IN STRLIT ELIPS STRLIT SEMI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -117,9 +201,9 @@ program: FUNC ID LPAREN RPAREN LBRACE FOR LPAREN ID IN STRLIT SEMI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -178,7 +262,7 @@ program: FUNC ID LPAREN RPAREN LBRACE FOR WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE FUNC LPAREN RPAREN ARROW WHILE
 ##
-## Ends in an error in state: 64.
+## Ends in an error in state: 60.
 ##
 ## anonymous_function -> FUNC LPAREN func_params RPAREN return_type ARROW . block [ SEMI RPAREN RBRACKET RBRACE ELIPS COMMA ]
 ##
@@ -190,7 +274,7 @@ program: FUNC ID LPAREN RPAREN LBRACE FUNC LPAREN RPAREN ARROW WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE FUNC LPAREN RPAREN STRING AND
 ##
-## Ends in an error in state: 63.
+## Ends in an error in state: 59.
 ##
 ## anonymous_function -> FUNC LPAREN func_params RPAREN return_type . ARROW block [ SEMI RPAREN RBRACKET RBRACE ELIPS COMMA ]
 ##
@@ -202,7 +286,7 @@ program: FUNC ID LPAREN RPAREN LBRACE FUNC LPAREN RPAREN STRING AND
 
 program: FUNC ID LPAREN RPAREN LBRACE FUNC LPAREN RPAREN WHILE
 ##
-## Ends in an error in state: 62.
+## Ends in an error in state: 58.
 ##
 ## anonymous_function -> FUNC LPAREN func_params RPAREN . return_type ARROW block [ SEMI RPAREN RBRACKET RBRACE ELIPS COMMA ]
 ##
@@ -214,7 +298,7 @@ program: FUNC ID LPAREN RPAREN LBRACE FUNC LPAREN RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE FUNC LPAREN WHILE
 ##
-## Ends in an error in state: 60.
+## Ends in an error in state: 56.
 ##
 ## anonymous_function -> FUNC LPAREN . func_params RPAREN return_type ARROW block [ SEMI RPAREN RBRACKET RBRACE ELIPS COMMA ]
 ##
@@ -226,7 +310,7 @@ program: FUNC ID LPAREN RPAREN LBRACE FUNC LPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE FUNC WHILE
 ##
-## Ends in an error in state: 59.
+## Ends in an error in state: 55.
 ##
 ## anonymous_function -> FUNC . LPAREN func_params RPAREN return_type ARROW block [ SEMI RPAREN RBRACKET RBRACE ELIPS COMMA ]
 ##
@@ -261,9 +345,9 @@ program: FUNC ID LPAREN RPAREN LBRACE ID DEFINE BLIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ## In state 170, spurious reduction of production assignment -> ID DEFINE expr 
 ##
 
@@ -295,9 +379,9 @@ program: FUNC ID LPAREN RPAREN LBRACE ID DOT ID ASSIGN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE ID DOT ID LPAREN STRLIT RBRACKET
 ##
-## Ends in an error in state: 107.
+## Ends in an error in state: 103.
 ##
-## valexpr_ -> ID DOT ID LPAREN expr_params . RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## valexpr_ -> ID DOT ID LPAREN expr_params . RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## ID DOT ID LPAREN expr_params
@@ -306,20 +390,20 @@ program: FUNC ID LPAREN RPAREN LBRACE ID DOT ID LPAREN STRLIT RBRACKET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
-## In state 110, spurious reduction of production expr_list -> expr 
-## In state 109, spurious reduction of production expr_params -> expr_list 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
+## In state 106, spurious reduction of production expr_list -> expr 
+## In state 105, spurious reduction of production expr_params -> expr_list 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 program: FUNC ID LPAREN RPAREN LBRACE ID DOT ID LPAREN WHILE
 ##
-## Ends in an error in state: 74.
+## Ends in an error in state: 70.
 ##
-## valexpr_ -> ID DOT ID LPAREN . expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## valexpr_ -> ID DOT ID LPAREN . expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## ID DOT ID LPAREN
@@ -381,9 +465,9 @@ program: FUNC ID LPAREN RPAREN LBRACE ID LBRACE ID COLON BLIT SEMI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ## In state 121, spurious reduction of production anon_decl -> ID COLON expr 
 ##
 
@@ -429,7 +513,7 @@ program: FUNC ID LPAREN RPAREN LBRACE ID LPAREN STRLIT RBRACKET
 ##
 ## Ends in an error in state: 116.
 ##
-## valexpr_ -> ID LPAREN expr_params . RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## valexpr_ -> ID LPAREN expr_params . RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## ID LPAREN expr_params
@@ -438,20 +522,20 @@ program: FUNC ID LPAREN RPAREN LBRACE ID LPAREN STRLIT RBRACKET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
-## In state 110, spurious reduction of production expr_list -> expr 
-## In state 109, spurious reduction of production expr_params -> expr_list 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
+## In state 106, spurious reduction of production expr_list -> expr 
+## In state 105, spurious reduction of production expr_params -> expr_list 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 program: FUNC ID LPAREN RPAREN LBRACE ID LPAREN WHILE
 ##
-## Ends in an error in state: 58.
+## Ends in an error in state: 54.
 ##
-## valexpr_ -> ID LPAREN . expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## valexpr_ -> ID LPAREN . expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## ID LPAREN
@@ -543,9 +627,9 @@ program: FUNC ID LPAREN RPAREN LBRACE IF LPAREN STRLIT RPAREN LBRACE RBRACE ELSE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -636,9 +720,9 @@ program: FUNC ID LPAREN RPAREN LBRACE IF LPAREN STRLIT SEMI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -675,7 +759,7 @@ program: FUNC ID LPAREN RPAREN LBRACE IF WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE LBRACKET STRLIT COMMA WHILE
 ##
-## Ends in an error in state: 111.
+## Ends in an error in state: 107.
 ##
 ## expr_list -> expr COMMA . expr_list [ RPAREN RBRACKET ]
 ##
@@ -689,7 +773,7 @@ program: FUNC ID LPAREN RPAREN LBRACE LBRACKET STRLIT RPAREN
 ##
 ## Ends in an error in state: 128.
 ##
-## value -> LBRACKET expr_params . RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
+## value -> LBRACKET expr_params . RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## LBRACKET expr_params
@@ -698,18 +782,18 @@ program: FUNC ID LPAREN RPAREN LBRACE LBRACKET STRLIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
-## In state 110, spurious reduction of production expr_list -> expr 
-## In state 109, spurious reduction of production expr_params -> expr_list 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
+## In state 106, spurious reduction of production expr_list -> expr 
+## In state 105, spurious reduction of production expr_params -> expr_list 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 program: FUNC ID LPAREN RPAREN LBRACE LBRACKET STRLIT SEMI
 ##
-## Ends in an error in state: 110.
+## Ends in an error in state: 106.
 ##
 ## expr_list -> expr . [ RPAREN RBRACKET ]
 ## expr_list -> expr . COMMA expr_list [ RPAREN RBRACKET ]
@@ -721,18 +805,18 @@ program: FUNC ID LPAREN RPAREN LBRACE LBRACKET STRLIT SEMI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 program: FUNC ID LPAREN RPAREN LBRACE LBRACKET WHILE
 ##
-## Ends in an error in state: 56.
+## Ends in an error in state: 52.
 ##
-## value -> LBRACKET . expr_params RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
+## value -> LBRACKET . expr_params RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## LBRACKET
@@ -764,9 +848,187 @@ program: FUNC ID LPAREN RPAREN LBRACE LPAREN LPAREN STRLIT RPAREN WHILE
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-program: FUNC ID LPAREN RPAREN LBRACE LPAREN STRLIT RPAREN WHILE
+program: FUNC ID LPAREN RPAREN LBRACE LPAREN STRLIT SEMI
 ##
-## Ends in an error in state: 76.
+## Ends in an error in state: 130.
+##
+## valexpr -> valexpr_ . [ PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## valexpr -> LPAREN valexpr_ . RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN valexpr_
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 65, spurious reduction of production valexpr_ -> value 
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE LPAREN WHILE
+##
+## Ends in an error in state: 50.
+##
+## valexpr -> LPAREN . valexpr_ RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE MAKE LPAREN STRING COMMA STRLIT RBRACKET
+##
+## Ends in an error in state: 133.
+##
+## valexpr_ -> MAKE LPAREN type_ COMMA expr_params . RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## MAKE LPAREN type_ COMMA expr_params
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
+## In state 106, spurious reduction of production expr_list -> expr 
+## In state 105, spurious reduction of production expr_params -> expr_list 
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE MAKE LPAREN STRING COMMA WHILE
+##
+## Ends in an error in state: 49.
+##
+## valexpr_ -> MAKE LPAREN type_ COMMA . expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## MAKE LPAREN type_ COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE MAKE LPAREN STRING WHILE
+##
+## Ends in an error in state: 48.
+##
+## valexpr_ -> MAKE LPAREN type_ . COMMA expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## MAKE LPAREN type_
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE MAKE LPAREN WHILE
+##
+## Ends in an error in state: 47.
+##
+## valexpr_ -> MAKE LPAREN . type_ COMMA expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## MAKE LPAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE MAKE WHILE
+##
+## Ends in an error in state: 46.
+##
+## valexpr_ -> MAKE . LPAREN type_ COMMA expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## MAKE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE MINUS LPAREN STRLIT RPAREN WHILE
+##
+## Ends in an error in state: 135.
+##
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## unary_expression -> MINUS valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## MINUS valexpr
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE MINUS WHILE
+##
+## Ends in an error in state: 45.
+##
+## unary_expression -> MINUS . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## MINUS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE NOT ID WHILE
+##
+## Ends in an error in state: 67.
+##
+## valexpr_ -> ID . LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## valexpr_ -> ID . DOT ID LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## value -> ID . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## value -> ID . DOT ID [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## ID
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE NOT LPAREN STRLIT RPAREN WHILE
+##
+## Ends in an error in state: 136.
+##
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## unary_expression -> NOT valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## NOT valexpr
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE NOT STRLIT COLON
+##
+## Ends in an error in state: 72.
 ##
 ## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
 ## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
@@ -786,183 +1048,15 @@ program: FUNC ID LPAREN RPAREN LBRACE LPAREN STRLIT RPAREN WHILE
 ## The known suffix of the stack is as follows:
 ## valexpr
 ##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE LPAREN STRLIT SEMI
-##
-## Ends in an error in state: 130.
-##
-## valexpr -> valexpr_ . [ PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## valexpr -> LPAREN valexpr_ . RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN valexpr_
-##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE LPAREN WHILE
-##
-## Ends in an error in state: 54.
-##
-## valexpr -> LPAREN . valexpr_ RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE MAKE LPAREN STRING COMMA STRLIT RBRACKET
-##
-## Ends in an error in state: 133.
-##
-## valexpr_ -> MAKE LPAREN type_ COMMA expr_params . RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## MAKE LPAREN type_ COMMA expr_params
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
-## In state 110, spurious reduction of production expr_list -> expr 
-## In state 109, spurious reduction of production expr_params -> expr_list 
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE MAKE LPAREN STRING COMMA WHILE
-##
-## Ends in an error in state: 53.
-##
-## valexpr_ -> MAKE LPAREN type_ COMMA . expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## MAKE LPAREN type_ COMMA
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE MAKE LPAREN STRING WHILE
-##
-## Ends in an error in state: 52.
-##
-## valexpr_ -> MAKE LPAREN type_ . COMMA expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## MAKE LPAREN type_
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE MAKE LPAREN WHILE
-##
-## Ends in an error in state: 51.
-##
-## valexpr_ -> MAKE LPAREN . type_ COMMA expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## MAKE LPAREN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE MAKE WHILE
-##
-## Ends in an error in state: 50.
-##
-## valexpr_ -> MAKE . LPAREN type_ COMMA expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## MAKE
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE MINUS LPAREN STRLIT RPAREN WHILE
-##
-## Ends in an error in state: 135.
-##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## unary_expression -> MINUS valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## MINUS valexpr
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE MINUS WHILE
-##
-## Ends in an error in state: 49.
-##
-## unary_expression -> MINUS . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## MINUS
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE NOT ID WHILE
-##
-## Ends in an error in state: 71.
-##
-## valexpr_ -> ID . LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## valexpr_ -> ID . DOT ID LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## value -> ID . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
-## value -> ID . DOT ID [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## ID
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: FUNC ID LPAREN RPAREN LBRACE NOT LPAREN STRLIT RPAREN WHILE
-##
-## Ends in an error in state: 136.
-##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## unary_expression -> NOT valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-##
-## The known suffix of the stack is as follows:
-## NOT valexpr
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 136, spurious reduction of production unary_expression -> NOT valexpr 
+## In state 77, spurious reduction of production valexpr_ -> unary_expression 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -980,21 +1074,21 @@ program: FUNC ID LPAREN RPAREN LBRACE NOT STRLIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
 ## In state 136, spurious reduction of production unary_expression -> NOT valexpr 
-## In state 81, spurious reduction of production valexpr_ -> unary_expression 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 77, spurious reduction of production valexpr_ -> unary_expression 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 program: FUNC ID LPAREN RPAREN LBRACE NOT WHILE
 ##
-## Ends in an error in state: 48.
+## Ends in an error in state: 44.
 ##
-## unary_expression -> NOT . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## unary_expression -> NOT . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## NOT
@@ -1004,7 +1098,7 @@ program: FUNC ID LPAREN RPAREN LBRACE NOT WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE RBRACE WHILE
 ##
-## Ends in an error in state: 219.
+## Ends in an error in state: 223.
 ##
 ## decls -> func_decl . decls [ EOF ]
 ##
@@ -1016,10 +1110,10 @@ program: FUNC ID LPAREN RPAREN LBRACE RBRACE WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE RETURN ID DOT ID WHILE
 ##
-## Ends in an error in state: 73.
+## Ends in an error in state: 69.
 ##
-## valexpr_ -> ID DOT ID . LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## value -> ID DOT ID . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
+## valexpr_ -> ID DOT ID . LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## value -> ID DOT ID . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## ID DOT ID
@@ -1029,10 +1123,10 @@ program: FUNC ID LPAREN RPAREN LBRACE RETURN ID DOT ID WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE RETURN ID DOT WHILE
 ##
-## Ends in an error in state: 72.
+## Ends in an error in state: 68.
 ##
-## valexpr_ -> ID DOT . ID LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## value -> ID DOT . ID [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
+## valexpr_ -> ID DOT . ID LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## value -> ID DOT . ID [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## ID DOT
@@ -1042,7 +1136,7 @@ program: FUNC ID LPAREN RPAREN LBRACE RETURN ID DOT WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE RETURN ID WHILE
 ##
-## Ends in an error in state: 57.
+## Ends in an error in state: 53.
 ##
 ## struct_ -> ID . LBRACE struct_fields RBRACE [ SEMI RPAREN RBRACKET RBRACE ELIPS COMMA ]
 ## valexpr_ -> ID . LPAREN expr_params RPAREN [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
@@ -1058,22 +1152,23 @@ program: FUNC ID LPAREN RPAREN LBRACE RETURN ID WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE RETURN STRLIT LBRACKET STRLIT SEMI
 ##
-## Ends in an error in state: 114.
+## Ends in an error in state: 110.
 ##
-## boolean_expr -> valexpr . LT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . GT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . AND valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . OR valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . EQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . MULT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . DIV valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## value -> value LBRACKET valexpr . RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## sub_sequence -> valexpr . COLON valexpr [ RBRACKET ]
+## value -> value LBRACKET valexpr . RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## value LBRACKET valexpr
@@ -1082,17 +1177,18 @@ program: FUNC ID LPAREN RPAREN LBRACE RETURN STRLIT LBRACKET STRLIT SEMI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 program: FUNC ID LPAREN RPAREN LBRACE RETURN STRLIT LBRACKET WHILE
 ##
-## Ends in an error in state: 70.
+## Ends in an error in state: 66.
 ##
-## value -> value LBRACKET . valexpr RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
+## value -> value LBRACKET . valexpr RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## value -> value LBRACKET . sub_sequence RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## value LBRACKET
@@ -1113,19 +1209,20 @@ program: FUNC ID LPAREN RPAREN LBRACE RETURN STRLIT RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 program: FUNC ID LPAREN RPAREN LBRACE RETURN STRLIT WHILE
 ##
-## Ends in an error in state: 69.
+## Ends in an error in state: 65.
 ##
-## valexpr_ -> value . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## value -> value . LBRACKET valexpr RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA AND ]
+## valexpr_ -> value . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## value -> value . LBRACKET valexpr RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## value -> value . LBRACKET sub_sequence RBRACKET [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## value
@@ -1148,22 +1245,22 @@ program: FUNC ID LPAREN RPAREN LBRACE RETURN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT AND LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 105.
+## Ends in an error in state: 101.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr AND valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr AND valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr AND valexpr
@@ -1173,9 +1270,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT AND LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT AND WHILE
 ##
-## Ends in an error in state: 104.
+## Ends in an error in state: 100.
 ##
-## boolean_expr -> valexpr AND . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr AND . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr AND
@@ -1185,9 +1282,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT AND WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT DIV WHILE
 ##
-## Ends in an error in state: 86.
+## Ends in an error in state: 82.
 ##
-## numerical_expr -> valexpr DIV . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## numerical_expr -> valexpr DIV . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr DIV
@@ -1197,22 +1294,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT DIV WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT EQ LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 103.
+## Ends in an error in state: 99.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr EQ valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr EQ valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr EQ valexpr
@@ -1222,9 +1319,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT EQ LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT EQ WHILE
 ##
-## Ends in an error in state: 102.
+## Ends in an error in state: 98.
 ##
-## boolean_expr -> valexpr EQ . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr EQ . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr EQ
@@ -1234,22 +1331,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT EQ WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT GT LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 101.
+## Ends in an error in state: 97.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr GT valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr GT valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr GT valexpr
@@ -1259,9 +1356,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT GT LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT GT WHILE
 ##
-## Ends in an error in state: 100.
+## Ends in an error in state: 96.
 ##
-## boolean_expr -> valexpr GT . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr GT . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr GT
@@ -1271,22 +1368,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT GT WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT GTEQ LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 99.
+## Ends in an error in state: 95.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr GTEQ valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr GTEQ valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr GTEQ valexpr
@@ -1296,12 +1393,56 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT GTEQ LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT GTEQ WHILE
 ##
-## Ends in an error in state: 98.
+## Ends in an error in state: 94.
 ##
-## boolean_expr -> valexpr GTEQ . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr GTEQ . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr GTEQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE STRLIT LBRACKET STRLIT COLON STRLIT SEMI
+##
+## Ends in an error in state: 113.
+##
+## boolean_expr -> valexpr . LT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## boolean_expr -> valexpr . GT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## boolean_expr -> valexpr . AND valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## boolean_expr -> valexpr . OR valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## boolean_expr -> valexpr . EQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## numerical_expr -> valexpr . MULT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## numerical_expr -> valexpr . DIV valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## sub_sequence -> valexpr COLON valexpr . [ RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## valexpr COLON valexpr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+program: FUNC ID LPAREN RPAREN LBRACE STRLIT LBRACKET STRLIT COLON WHILE
+##
+## Ends in an error in state: 112.
+##
+## sub_sequence -> valexpr COLON . valexpr [ RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## valexpr COLON
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1336,19 +1477,20 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT LBRACKET STRLIT SEMI
 ## Ends in an error in state: 191.
 ##
 ## assignment -> value LBRACKET valexpr . RBRACKET ASSIGN expr [ SEMI ]
-## boolean_expr -> valexpr . LT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . GT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . AND valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . OR valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . EQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . MULT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . DIV valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
+## boolean_expr -> valexpr . LT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ RBRACKET PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV COLON AND ]
+## sub_sequence -> valexpr . COLON valexpr [ RBRACKET ]
 ## value -> value LBRACKET valexpr . RBRACKET [ SEMI PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ DIV AND ]
 ##
 ## The known suffix of the stack is as follows:
@@ -1358,8 +1500,8 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT LBRACKET STRLIT SEMI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1370,6 +1512,7 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT LBRACKET WHILE
 ##
 ## assignment -> value LBRACKET . valexpr RBRACKET ASSIGN expr [ SEMI ]
 ## value -> value LBRACKET . valexpr RBRACKET [ SEMI PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ DIV AND ]
+## value -> value LBRACKET . sub_sequence RBRACKET [ SEMI PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ DIV AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## value LBRACKET
@@ -1379,22 +1522,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT LBRACKET WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT LT LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 97.
+## Ends in an error in state: 93.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr LT valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr LT valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr LT valexpr
@@ -1404,9 +1547,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT LT LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT LT WHILE
 ##
-## Ends in an error in state: 96.
+## Ends in an error in state: 92.
 ##
-## boolean_expr -> valexpr LT . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr LT . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr LT
@@ -1416,22 +1559,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT LT WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT LTEQ LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 95.
+## Ends in an error in state: 91.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr LTEQ valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr LTEQ valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr LTEQ valexpr
@@ -1441,9 +1584,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT LTEQ LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT LTEQ WHILE
 ##
-## Ends in an error in state: 94.
+## Ends in an error in state: 90.
 ##
-## boolean_expr -> valexpr LTEQ . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr LTEQ . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr LTEQ
@@ -1453,22 +1596,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT LTEQ WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT MINUS LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 93.
+## Ends in an error in state: 89.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr MINUS valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr MINUS valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr MINUS valexpr
@@ -1478,9 +1621,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT MINUS LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT MINUS WHILE
 ##
-## Ends in an error in state: 92.
+## Ends in an error in state: 88.
 ##
-## numerical_expr -> valexpr MINUS . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## numerical_expr -> valexpr MINUS . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr MINUS
@@ -1490,9 +1633,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT MINUS WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT MODULUS WHILE
 ##
-## Ends in an error in state: 84.
+## Ends in an error in state: 80.
 ##
-## numerical_expr -> valexpr MODULUS . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## numerical_expr -> valexpr MODULUS . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr MODULUS
@@ -1502,9 +1645,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT MODULUS WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT MULT WHILE
 ##
-## Ends in an error in state: 79.
+## Ends in an error in state: 75.
 ##
-## numerical_expr -> valexpr MULT . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## numerical_expr -> valexpr MULT . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr MULT
@@ -1514,22 +1657,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT MULT WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT NEQ LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 91.
+## Ends in an error in state: 87.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr NEQ valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr NEQ valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr NEQ valexpr
@@ -1539,9 +1682,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT NEQ LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT NEQ WHILE
 ##
-## Ends in an error in state: 90.
+## Ends in an error in state: 86.
 ##
-## boolean_expr -> valexpr NEQ . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr NEQ . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr NEQ
@@ -1551,22 +1694,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT NEQ WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT OR LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 89.
+## Ends in an error in state: 85.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr OR valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr OR valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr OR valexpr
@@ -1576,9 +1719,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT OR LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT OR WHILE
 ##
-## Ends in an error in state: 88.
+## Ends in an error in state: 84.
 ##
-## boolean_expr -> valexpr OR . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr OR . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr OR
@@ -1588,22 +1731,22 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT OR WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT PLUS LPAREN BLIT RPAREN WHILE
 ##
-## Ends in an error in state: 78.
+## Ends in an error in state: 74.
 ##
-## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr PLUS valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
-## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## boolean_expr -> valexpr . LT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . GTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . LTEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . AND valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . OR valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . EQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## boolean_expr -> valexpr . NEQ valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . PLUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr PLUS valexpr . [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MINUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MULT valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . DIV valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
+## numerical_expr -> valexpr . MODULUS valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr PLUS valexpr
@@ -1613,9 +1756,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT PLUS LPAREN BLIT RPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE STRLIT PLUS WHILE
 ##
-## Ends in an error in state: 77.
+## Ends in an error in state: 73.
 ##
-## numerical_expr -> valexpr PLUS . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA AND ]
+## numerical_expr -> valexpr PLUS . valexpr [ SEMI RPAREN RBRACKET RBRACE PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ ELIPS DIV COMMA COLON AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## valexpr PLUS
@@ -1642,6 +1785,7 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT WHILE
 ## assignment -> value . LBRACKET valexpr RBRACKET ASSIGN expr [ SEMI ]
 ## valexpr_ -> value . [ SEMI PLUS OR NEQ MULT MODULUS MINUS LTEQ LT GTEQ GT EQ DIV AND ]
 ## value -> value . LBRACKET valexpr RBRACKET [ SEMI PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ DIV AND ]
+## value -> value . LBRACKET sub_sequence RBRACKET [ SEMI PLUS OR NEQ MULT MODULUS MINUS LTEQ LT LBRACKET GTEQ GT EQ DIV AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## value
@@ -1651,9 +1795,9 @@ program: FUNC ID LPAREN RPAREN LBRACE STRLIT WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE SUBEQ
 ##
-## Ends in an error in state: 44.
+## Ends in an error in state: 40.
 ##
-## block -> LBRACE . stmt_list RBRACE [ WHILE VAR STRUCT STRLIT SEMI RPAREN RETURN RBRACKET RBRACE NOT MINUS MAKE LPAREN LITERAL LBRACKET LBRACE IF ID FUNC FOR FLOATLIT EOF ELSE ELIPS COMMA CHARLIT BLIT ]
+## block -> LBRACE . stmt_list RBRACE [ WHILE VAR STRLIT SEMI RPAREN RETURN RBRACKET RBRACE NOT MINUS MAKE LPAREN LITERAL LBRACKET LBRACE IF ID FUNC FOR FLOATLIT EOF ELSE ELIPS COMMA CLASS CHARLIT BLIT ]
 ##
 ## The known suffix of the stack is as follows:
 ## LBRACE
@@ -1711,16 +1855,16 @@ program: FUNC ID LPAREN RPAREN LBRACE WHILE LPAREN STRLIT SEMI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 69, spurious reduction of production valexpr_ -> value 
-## In state 75, spurious reduction of production valexpr -> valexpr_ 
-## In state 76, spurious reduction of production expr -> valexpr 
+## In state 65, spurious reduction of production valexpr_ -> value 
+## In state 71, spurious reduction of production valexpr -> valexpr_ 
+## In state 72, spurious reduction of production expr -> valexpr 
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 program: FUNC ID LPAREN RPAREN LBRACE WHILE LPAREN WHILE
 ##
-## Ends in an error in state: 46.
+## Ends in an error in state: 42.
 ##
 ## control_flow -> WHILE LPAREN . expr RPAREN block [ WHILE VAR STRLIT RETURN RBRACE NOT MINUS MAKE LPAREN LITERAL LBRACKET LBRACE IF ID FUNC FOR FLOATLIT CHARLIT BLIT ]
 ##
@@ -1732,7 +1876,7 @@ program: FUNC ID LPAREN RPAREN LBRACE WHILE LPAREN WHILE
 
 program: FUNC ID LPAREN RPAREN LBRACE WHILE WHILE
 ##
-## Ends in an error in state: 45.
+## Ends in an error in state: 41.
 ##
 ## control_flow -> WHILE . LPAREN expr RPAREN block [ WHILE VAR STRLIT RETURN RBRACE NOT MINUS MAKE LPAREN LITERAL LBRACKET LBRACE IF ID FUNC FOR FLOATLIT CHARLIT BLIT ]
 ##
@@ -1744,9 +1888,9 @@ program: FUNC ID LPAREN RPAREN LBRACE WHILE WHILE
 
 program: FUNC ID LPAREN RPAREN STRING INT
 ##
-## Ends in an error in state: 43.
+## Ends in an error in state: 39.
 ##
-## func_decl -> FUNC ID LPAREN func_params RPAREN return_type . block [ VAR STRUCT RBRACE FUNC EOF ]
+## func_decl -> FUNC ID LPAREN func_params RPAREN return_type . block [ VAR RBRACE FUNC EOF CLASS ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC ID LPAREN func_params RPAREN return_type
@@ -1756,9 +1900,9 @@ program: FUNC ID LPAREN RPAREN STRING INT
 
 program: FUNC ID LPAREN RPAREN WHILE
 ##
-## Ends in an error in state: 41.
+## Ends in an error in state: 37.
 ##
-## func_decl -> FUNC ID LPAREN func_params RPAREN . return_type block [ VAR STRUCT RBRACE FUNC EOF ]
+## func_decl -> FUNC ID LPAREN func_params RPAREN . return_type block [ VAR RBRACE FUNC EOF CLASS ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC ID LPAREN func_params RPAREN
@@ -1768,9 +1912,9 @@ program: FUNC ID LPAREN RPAREN WHILE
 
 program: FUNC ID LPAREN WHILE
 ##
-## Ends in an error in state: 32.
+## Ends in an error in state: 28.
 ##
-## func_decl -> FUNC ID LPAREN . func_params RPAREN return_type block [ VAR STRUCT RBRACE FUNC EOF ]
+## func_decl -> FUNC ID LPAREN . func_params RPAREN return_type block [ VAR RBRACE FUNC EOF CLASS ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC ID LPAREN
@@ -1780,9 +1924,9 @@ program: FUNC ID LPAREN WHILE
 
 program: FUNC ID WHILE
 ##
-## Ends in an error in state: 31.
+## Ends in an error in state: 27.
 ##
-## func_decl -> FUNC ID . LPAREN func_params RPAREN return_type block [ VAR STRUCT RBRACE FUNC EOF ]
+## func_decl -> FUNC ID . LPAREN func_params RPAREN return_type block [ VAR RBRACE FUNC EOF CLASS ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC ID
@@ -1792,9 +1936,9 @@ program: FUNC ID WHILE
 
 program: FUNC WHILE
 ##
-## Ends in an error in state: 30.
+## Ends in an error in state: 26.
 ##
-## func_decl -> FUNC . ID LPAREN func_params RPAREN return_type block [ VAR STRUCT RBRACE FUNC EOF ]
+## func_decl -> FUNC . ID LPAREN func_params RPAREN return_type block [ VAR RBRACE FUNC EOF CLASS ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC
@@ -1802,93 +1946,9 @@ program: FUNC WHILE
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-program: STRUCT ID LBRACE FUNC ID LPAREN RPAREN LBRACE RBRACE WHILE
-##
-## Ends in an error in state: 211.
-##
-## func_decls -> func_decl . func_decls [ RBRACE ]
-##
-## The known suffix of the stack is as follows:
-## func_decl
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: STRUCT ID LBRACE RBRACE WHILE
-##
-## Ends in an error in state: 218.
-##
-## decls -> struct_decl . decls [ EOF ]
-##
-## The known suffix of the stack is as follows:
-## struct_decl
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: STRUCT ID LBRACE VAR ID BOOL SEMI WHILE
-##
-## Ends in an error in state: 214.
-##
-## vardecls_semi -> vardecl SEMI . vardecls_semi [ RBRACE FUNC ]
-##
-## The known suffix of the stack is as follows:
-## vardecl SEMI
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: STRUCT ID LBRACE VAR ID BOOL WHILE
-##
-## Ends in an error in state: 213.
-##
-## vardecls_semi -> vardecl . SEMI vardecls_semi [ RBRACE FUNC ]
-##
-## The known suffix of the stack is as follows:
-## vardecl
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: STRUCT ID LBRACE WHILE
-##
-## Ends in an error in state: 28.
-##
-## struct_decl -> STRUCT ID LBRACE . vardecls_semi func_decls RBRACE [ VAR STRUCT FUNC EOF ]
-##
-## The known suffix of the stack is as follows:
-## STRUCT ID LBRACE
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: STRUCT ID WHILE
-##
-## Ends in an error in state: 27.
-##
-## struct_decl -> STRUCT ID . LBRACE vardecls_semi func_decls RBRACE [ VAR STRUCT FUNC EOF ]
-##
-## The known suffix of the stack is as follows:
-## STRUCT ID
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-program: STRUCT WHILE
-##
-## Ends in an error in state: 26.
-##
-## struct_decl -> STRUCT . ID LBRACE vardecls_semi func_decls RBRACE [ VAR STRUCT FUNC EOF ]
-##
-## The known suffix of the stack is as follows:
-## STRUCT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
 program: VAR ID BOOL SEMI WHILE
 ##
-## Ends in an error in state: 217.
+## Ends in an error in state: 221.
 ##
 ## decls -> vardecl SEMI . decls [ EOF ]
 ##
@@ -1900,7 +1960,7 @@ program: VAR ID BOOL SEMI WHILE
 
 program: VAR ID BOOL WHILE
 ##
-## Ends in an error in state: 216.
+## Ends in an error in state: 220.
 ##
 ## decls -> vardecl . SEMI decls [ EOF ]
 ##

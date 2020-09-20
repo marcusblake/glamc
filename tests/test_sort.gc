@@ -23,16 +23,22 @@ func selection_sort(a: list<int>) list<int> {
         swap(a, i, idx);
         i += 1;
     }
-
     return a;
 }
 
 
 func main() {
-    result := selection_sort([99, 22, 54, 24, 554, 24, 7885, 22, 11, 34, 44, 224, 455, 77, 422, 9, 88, 33,213, 55, 88, 353,22,10]);
+    result := selection_sort([-1, 4 , 0, 12, 44, 30, 99, -6, 33, 23, 66, 10]);
+    sorted := [-6, -1, 0, 4, 10, 12, 23, 30, 33, 44, 66, 99];
 
-    for (num in result) {
-        println(num);
+    if (len(result) != len(sorted)) {
+        println("result and sorted have unequal lengths");
     }
 
+    var length int = len(result);
+    for (index in 0...length) {
+        if (result[index] != sorted[index]) {
+            println("result and sorted have unequal values");
+        }
+    }
 }

@@ -12,6 +12,7 @@
 		char *elements;
 	};
 
+	extern "C" char *gmalloc(int size);
 	extern "C" void emptyList(struct List *list, int element_size);
 	extern "C" void initList(struct List *list, int element_size, int num, char *elements);
 	extern "C" void make(struct List *list, int element_size, int num, char *initializer);

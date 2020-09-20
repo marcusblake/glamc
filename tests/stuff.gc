@@ -1,5 +1,0 @@
-
-
-func main() {
-    write("stuff.txt", "Hello World\n\tGoodbye World");
-}

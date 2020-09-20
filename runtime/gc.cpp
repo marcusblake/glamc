@@ -2,12 +2,6 @@
 #include <unordered_set>
 #include <stack>
 
-unsigned long GCUtil::MEMORY_LIMIT = 1024;
-unsigned long GCUtil::CURRENT_MEMORY = 0;
-void *GCUtil::stack_bottom = nullptr;
-std::unordered_map<uintptr_t, size_t> GCUtil::pointers;
-
-
 
 // extern "C" void gcInit(void *bottom) {
 //     stack_bottom = bottom;
@@ -53,24 +47,6 @@ std::unordered_map<uintptr_t, size_t> GCUtil::pointers;
 //         }
 //     }
 // }
-
-void *gmalloc(size_t size) {
-    if (GCUtil::CURRENT_MEMORY >= GCUtil::MEMORY_LIMIT) {
-        // collect();
-        GCUtil::MEMORY_LIMIT *= 2;
-    }
-    void *a = malloc(size);
-    if (a == NULL) {
-        fprintf(stderr, "Fatal Error: Bad Malloc!");
-        exit(1);
-    }
-    GCUtil::CURRENT_MEMORY += size;
-    uintptr_t address = (uintptr_t)a;
-    printf("%lu\n", address);
-    printf("Current stuff %lu", GCUtil::CURRENT_MEMORY);
-    GCUtil::pointers[address] = size;
-    return a;
-}
 
 void gfree(void *pointer) {
     free(pointer);

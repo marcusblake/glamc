@@ -1,7 +1,9 @@
 func main() {
     var a list<bool> = make(bool, 10, true);
 
-    for (counter in 1...10000) {
+    count := 10000;
+
+    for (counter in 0...count) {
         append(a, false);
     }
 
@@ -14,6 +16,12 @@ func main() {
             falseCount += 1;
         }
     }
-    println(trueCount);
-    println(falseCount);
+    
+    if (trueCount != 10) {
+        println("incorrect number of true in list");
+    }
+
+    if (falseCount != count) {
+        println("incorrect number of false in list");
+    }
 }

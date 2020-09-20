@@ -1,0 +1,7 @@
+func main() {
+    lst := ["Hello", "World", "I", "Like", "Pickles"];
+    str := join(lst, '%');
+    if (str != "Hello%World%I%Like%Pickles") {
+        println("join failed returned " + str);
+    }
+}

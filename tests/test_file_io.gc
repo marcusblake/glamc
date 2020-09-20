@@ -1,0 +1,17 @@
+func main() {
+    write("stuff.txt", "Hello World\nGoodbye World");
+    buffer := read("stuff.txt");
+    my_strings := split(buffer, '\n');
+
+    if (len(my_strings) != 2) {
+        println("incorrect string length");
+    }
+
+    if (my_strings[0] != "Hello World") {
+        println("incorrect string at index 0 " + my_strings[0]);
+    }
+
+    if (my_strings[1] != "Goodbye World") {
+        println("incorrect string at index 1 " + my_strings[1]);
+    }
+}

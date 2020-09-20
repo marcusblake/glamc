@@ -1,0 +1,34 @@
+func fib_iter(n: int) int {
+    if (n == 0) {
+        return 1;
+    } else if (n == 1) {
+        return 1;
+    }
+
+    memo := make(int, n+2, 0);
+    
+    memo[0] = 0;
+    memo[1] = 1;
+    for (i in 2...n+1) {
+        memo[i] = memo[i-1] + memo[i-2];
+    }
+    return memo[n];
+}
+
+func fib_rec(n: int) int {
+    if (n == 0) {
+        return 0;
+    } else if (n < 2) {
+        return 1;
+    }
+    return fib_rec(n-1) + fib_rec(n-2);
+}
+
+
+func main() {
+    for (number in 1...13) {
+        if (fib_rec(number) != fib_iter(number)) {
+            println("inconsistent fibonacci values");
+        }
+    }
+}

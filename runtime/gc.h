@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 class GCUtil {
     public:
@@ -13,8 +14,12 @@ class GCUtil {
         static std::unordered_map<uintptr_t, size_t> pointers;
 };
 
+unsigned long GCUtil::MEMORY_LIMIT = 1024;
+unsigned long GCUtil::CURRENT_MEMORY = 0;
+void *GCUtil::stack_bottom = nullptr;
+std::unordered_map<uintptr_t, size_t> GCUtil::pointers;
+
 extern "C" void gcInit(void *bottom);
-void *gmalloc(size_t size);
 void gfree(void *pointer);
 void collect();
 std::vector<int> crawl_memory(void *bottom, void *top);

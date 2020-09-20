@@ -38,6 +38,10 @@ exception IllegalAccess of string
 
 exception IllegalCondition
 
+exception IRGenerationError of string
+
+exception SemanticError of string
+
 exception Invalid_struct_access
 
 exception Empty_sequence
