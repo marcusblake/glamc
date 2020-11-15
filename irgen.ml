@@ -15,6 +15,7 @@
 open Sast
 open Exceptions
 open Helper
+open Print_ast
 module L = Llvm
 module A = Ast
 module St = Symbol_table
@@ -550,7 +551,7 @@ let translate (globals, functions, structs) =
           let llargs = List.map (build_expr table builder) arguments in
           let result = if type_ = Void then "" else func_name ^ "_result" in
           L.build_call function_def
-            (Array.of_list ([ llv ] @ llargs))
+            (Array.of_list ([ L.build_load llv "" builder ] @ llargs))
             result builder
       | SCall (f, args) -> (
           try
@@ -598,7 +599,7 @@ let translate (globals, functions, structs) =
           let my_properties = StringMap.find struct_name struct_fields in
           let field_index, _ = StringMap.find field_name my_properties in
           let field_ptr =
-            L.build_struct_gep llv field_index field_name builder
+            L.build_struct_gep (L.build_load llv "" builder) field_index field_name builder
           in
           L.build_load field_ptr field_name builder
       (* | StructAssign -> raise Unimplemented *)
@@ -886,31 +887,38 @@ let translate (globals, functions, structs) =
           (builder, table)
       | SDeclare (ty, name) ->
           let llvm_type = lltype_of_type ty in
-          let variable =
-            if is_pointer_type ty then
+          let variable = L.build_alloca llvm_type name builder in
+          let initial_value =
+            if is_pointer_type ty then (
               let struct_type = lltype_of_struct_types ty in
               let pointer =
                 L.build_call gmalloc [| L.size_of struct_type |] "" builder
               in
-              L.build_bitcast pointer llvm_type "variable" builder
-            else L.build_alloca llvm_type name builder
+              let pointer = 
+                L.build_bitcast pointer llvm_type "variable" builder
+              in
+              let _ =
+                match ty with
+                | String ->
+                    L.build_call initString
+                      [| pointer; gep_str empty_initialize 0 |]
+                      "" builder
+                | List element_type ->
+                    let llvm_type = lltype_of_type element_type in
+                    L.build_call initList
+                      [|
+                        pointer; L.size_of llvm_type; L.const_int i32_t 0; gep_str empty_initialize 0;
+                      |]
+                      "" builder
+                | Struct _ -> pointer (* Can call init function as some later *)
+                | _ -> 
+                  let error_msg = string_of_typ ty ^ " is not a pointer type" in
+                  raise (IRGenerationError(error_msg))
+              in
+              pointer
+            ) else initialized_value ty
           in
-          let _ =
-            match ty with
-            | String ->
-                L.build_call initString
-                  [| variable; gep_str empty_initialize 0 |]
-                  "" builder
-            | List element_type ->
-                let llvm_type = lltype_of_type element_type in
-                L.build_call initList
-                  [|
-                    variable; L.size_of llvm_type; L.const_int i32_t 0; variable;
-                  |]
-                  "" builder
-            | Struct _ -> variable (* Can call init function as some later *)
-            | _ -> L.build_store (initialized_value ty) variable builder
-          in
+          ignore (L.build_store initial_value variable builder);
           let table = St.add_current_scope table name (variable, ty) in
           (builder, table)
       | SDefine (name, sexpr) ->

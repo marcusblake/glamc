@@ -1,0 +1,4 @@
+func main() {
+    var my_list list<int>;
+    append(my_list, 10);
+}

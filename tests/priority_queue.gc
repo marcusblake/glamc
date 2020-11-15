@@ -1,0 +1,85 @@
+class Queue
+{
+    var q list<int>;
+    var comparator func (int, int) bool;
+
+    func init()
+    {
+        q = make(int, 0, 0);
+    }
+
+    func enqueue(n: int)
+    {
+        append(q, n);
+    }
+
+    func dequeue() int
+    {
+        element := q[0];
+        q = q[1:len(q)];
+        return element;
+    }
+
+    func front() int
+    {
+        return q[0];
+    }
+
+    func size() int
+    {
+        return len(q);
+    }
+}
+
+func breadth_first_search(graph: list<list<int>>) list<int>
+{
+    var visited list<int>;
+    var order list<int>;
+    var queue Queue;
+    queue.init();
+
+    is_visited := func (visited: list<int>, node: int) bool -> {
+        /* Have to do this because... no hashmap/set :( */
+        for (i in visited) {
+            if (i == node) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    queue.enqueue(0);
+    append(visited, 0);
+    while (queue.size() != 0) 
+    {
+        current := queue.dequeue();
+        append(order, current);
+        adjacent := graph[current];
+        for (node in 0...len(adjacent))
+        {
+            if (graph[current][node] == 1 && is_visited(visited, node) == false)
+            {
+                queue.enqueue(node);
+                append(visited, node);
+            }
+        }
+    }
+
+    return order;
+}
+
+func main()
+{
+    graph := [
+        [0,0,1,0],
+        [0,0,1,0],
+        [1,1,0,1],
+        [0,0,1,0]
+    ];
+
+    ordering := breadth_first_search(graph);
+    for (node in ordering)
+    {
+        println(node);
+    }
+}

@@ -91,7 +91,8 @@ extern "C" void subSequence(struct List *list, int start, int end, struct List *
         fprintf(stderr, "Fatal Error: Invalid Indices\n");
         exit(1);
     }
-    initList(newList, list->element_size, end - start, list->list); /* Initialize list */
+    char *elements = list->list + (list->element_size * start);
+    initList(newList, list->element_size, end - start, elements); /* Initialize list */
 }
 
 extern "C" void make(struct List *list, int element_size, int num, char *initializer) {
